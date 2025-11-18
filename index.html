@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Anay Garodia</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="header-top">
+          <div>
+            <h1>Anay Garodia</h1>
+            <p class="subtitle">
+              Freshman at Columbia University studying Mathematics & Computer
+              Science
+            </p>
+          </div>
+          <button class="theme-toggle" aria-label="Toggle dark mode">
+            <svg
+              class="sun-icon"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+            <svg
+              class="moon-icon"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          </button>
+        </div>
+        <div class="contact-links">
+          <a href="mailto:ag5250@columbia.edu">Email</a>
+          <a
+            href="https://www.linkedin.com/in/anay-garodia-a863a6257/"
+            target="_blank"
+            >LinkedIn</a
+          >
+          <a href="#about">About</a>
+          <a href="#experiments">Experiments</a>
+          <a href="#writing">Writing</a>
+          <a href="#projects">Projects</a>
+        </div>
+      </header>
+
+      <section id="about">
+        <h2>About</h2>
+        <p style="margin-bottom: 1.5rem; font-size: 1.1rem">
+          I'm interested in math, physics, and computing, and I like working on
+          things that help me understand them better. Recently that's included
+          simulating fusion reactor behavior, reading about how we evaluate AI
+          systems, and studying abstract algebra. I don't have a fixed direction
+          yet, but I enjoy learning, asking questions, and taking on projects
+          that teach me something new.
+        </p>
+      </section>
+
+      <section id="experiments">
+        <h2>Experiments & Interactive Projects</h2>
+        <div class="experiments-grid">
+          <a
+            href="experiments/wikispeed.html"
+            class="experiment-card card-wikispeed"
+          >
+            <div class="card-content">
+              <h3>Wikipedia Speed Run!</h3>
+            </div>
+          </a>
+
+          <a
+            href="experiments/group-theory-viz.html"
+            class="experiment-card card-group-theory"
+          >
+            <div class="card-content">
+              <h3>Group Theory Visualizer</h3>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section id="writing">
+        <h2>Writing</h2>
+
+        <!-- Technical Writing -->
+        <div class="writing-category">
+          <h3 class="category-title">Technical</h3>
+          <div class="articles-container" data-category="technical">
+            <a href="articles/group-theory.html" class="article-link">
+              <h4>The Beauty of Group Theory</h4>
+              <p>
+                What I learned about abstract algebra at Stanford SUMaC and why
+                symmetry is everywhere in math.
+              </p>
+            </a>
+
+            <a href="articles/monte-carlo.html" class="article-link hidden">
+              <h4>Understanding Monte Carlo Methods</h4>
+              <p>
+                Breaking down Monte Carlo simulations with practical Python
+                examples from my fusion research.
+              </p>
+            </a>
+
+            <a href="articles/ml-math.html" class="article-link hidden">
+              <h4>The Math Behind Machine Learning</h4>
+              <p>
+                Linear algebra, calculus, and probability theory as the
+                foundation of modern ML.
+              </p>
+            </a>
+          </div>
+          <button class="expand-btn" data-section="technical">
+            Show All Technical Articles →
+          </button>
+        </div>
+
+        <!-- Essays -->
+        <div class="writing-category">
+          <h3 class="category-title">Essays</h3>
+          <div class="articles-container" data-category="essays">
+            <a href="articles/rhodes-scholaring.html" class="article-link">
+              <h4>Rhodes Scholaring: Grammar and Power in Decolonial Speech</h4>
+              <p>
+                An analysis of how language shapes authority and identity in
+                academic settings (written for the university writing class at
+                Columbia).
+              </p>
+            </a>
+
+            <a href="articles/luiselli-ending.html" class="article-link">
+              <h4>
+                What's In An Ending? Narrative Refusal in Tell Me How It Ends
+              </h4>
+              <p>
+                An exploration of how Valeria Luiselli refuses narrative closure
+                in "Tell Me How It Ends" to resist the extraction and
+                commodification of migrant children's trauma (written for the
+                university writing class at Columbia).
+              </p>
+            </a>
+
+            <a href="articles/game-theory.html" class="article-link hidden">
+              <h4>From Board Games to Game Theory</h4>
+              <p>
+                How strategic games taught me about Nash equilibria and
+                computational thinking.
+              </p>
+            </a>
+          </div>
+          <button class="expand-btn" data-section="essays">
+            Show All Essays →
+          </button>
+        </div>
+
+        <!-- Blog -->
+        <div class="writing-category">
+          <h3 class="category-title">Blog</h3>
+          <div class="articles-container" data-category="blog">
+            <a href="articles/stem-newsletter.html" class="article-link">
+              <h4>Why I Started a STEM Newsletter</h4>
+              <p>
+                Reflections on science communication and making STEM accessible
+                through student publishing.
+              </p>
+            </a>
+          </div>
+          <button class="expand-btn" data-section="blog">
+            Show All Blog Posts →
+          </button>
+        </div>
+      </section>
+
+      <section id="projects">
+        <h2>Projects</h2>
+
+        <div class="projects-container">
+          <a href="projects/ai-sentience.html" class="timeline-item-link">
+            <div class="timeline-item">
+              <h3>AI Sentience Testing Frameworks</h3>
+              <div class="timeline-meta">
+                2024-Present • Non-Trivial Fellowship
+              </div>
+              <p>
+                Working on new ways to think about AI sentience beyond the
+                Turing Test. Trying to build frameworks that actually make sense
+                from a cognitive science perspective.
+              </p>
+              <div class="tags">
+                <span class="tag">AI</span>
+                <span class="tag">Philosophy</span>
+                <span class="tag">Research</span>
+              </div>
+            </div>
+          </a>
+
+          <a href="projects/fusion-reactor.html" class="timeline-item-link">
+            <div class="timeline-item">
+              <h3>Fusion Reactor Neutronics Optimization</h3>
+              <div class="timeline-meta">
+                2023-2024 • Polygence Research Program
+              </div>
+              <p>
+                Used Monte Carlo simulations in Python with OpenMC to analyze
+                neutron behavior in fusion reactors. Found that octalithium
+                plumbate could be a good breeding blanket material—which was
+                pretty cool to discover.
+              </p>
+              <div class="tags">
+                <span class="tag">Nuclear Physics</span>
+                <span class="tag">Python</span>
+                <span class="tag">Simulation</span>
+              </div>
+            </div>
+          </a>
+
+          <a href="projects/student-attrition.html" class="timeline-item-link">
+            <div class="timeline-item">
+              <h3>Student Attrition Prediction Model</h3>
+              <div class="timeline-meta">
+                2024 • Published in Curieux Academic Journal
+              </div>
+              <p>
+                Looked at what factors influence student dropout rates using
+                linear regression. Got published in the July issue (pages
+                509-519).
+              </p>
+              <div class="tags">
+                <span class="tag">Machine Learning</span>
+                <span class="tag">Education</span>
+              </div>
+            </div>
+          </a>
+
+          <a
+            href="projects/space-settlement.html"
+            class="timeline-item-link hidden"
+          >
+            <div class="timeline-item">
+              <h3>Space Settlement Design Competition</h3>
+              <div class="timeline-meta">2023 • National Runners-Up</div>
+              <p>
+                Founded my school's first INSSDC team and somehow made it to
+                national runners-up. Coordinated 20 people and wrote a 60-page
+                proposal for an orbital space settlement.
+              </p>
+              <div class="tags">
+                <span class="tag">Engineering</span>
+                <span class="tag">Leadership</span>
+              </div>
+            </div>
+          </a>
+
+          <a
+            href="projects/math-visualization.html"
+            class="timeline-item-link hidden"
+          >
+            <div class="timeline-item">
+              <h3>Mathematical Visualization Tools</h3>
+              <div class="timeline-meta">2024 • Personal Project</div>
+              <p>
+                Making interactive visualizations for abstract math using Python
+                and Manim. Focusing on linear transformations, group theory, and
+                topology.
+              </p>
+              <div class="tags">
+                <span class="tag">Mathematics</span>
+                <span class="tag">Python</span>
+                <span class="tag">Manim</span>
+              </div>
+            </div>
+          </a>
+
+          <a
+            href="projects/cern-beamline.html"
+            class="timeline-item-link hidden"
+          >
+            <div class="timeline-item">
+              <h3>CERN Beamline for Schools</h3>
+              <div class="timeline-meta">2023</div>
+              <p>
+                Proposed an experiment to measure muon lifetime. Got feedback
+                from actual CERN physicists which was honestly surreal.
+              </p>
+              <div class="tags">
+                <span class="tag">Particle Physics</span>
+                <span class="tag">Experimental Design</span>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <button class="expand-btn" data-section="projects">
+          Show All Projects →
+        </button>
+      </section>
+
+      <section id="experiences">
+        <h2>Experiences</h2>
+
+        <div class="timeline-item">
+          <h3>Columbia University</h3>
+          <div class="timeline-meta">
+            2025-2029 • Mathematics and Computer Science
+          </div>
+          <p>
+            Member of Quant Group, AI Alignment Club, Undergraduate Mathematics
+            Society, Journal of Undergraduate Math, and Physics Scholars
+            Program.
+          </p>
+        </div>
+
+        <div class="timeline-item">
+          <h3>Math Programs</h3>
+          <div class="timeline-meta">Summer 2024</div>
+          <p>
+            Stanford University Math Camp (SUMaC): Studied abstract algebra.
+            Euler Circle: Studied number theory, combinatorics, real analysis,
+            and cryptography.
+          </p>
+        </div>
+
+        <div class="timeline-item">
+          <h3>Leadership & Initiatives</h3>
+          <div class="timeline-meta">2021-2025</div>
+          <p>
+            School Prefect, Founder of the Space Settlement Design Team and
+            Quanta (STEM newsletter), MUN Director, Founder's Medal Awardee
+            (2023). All India Rank 4 in ICSE and ISC exams.
+          </p>
+        </div>
+      </section>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
