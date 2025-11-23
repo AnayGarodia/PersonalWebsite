@@ -3,352 +3,1064 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Anay Garodia</title>
-    <link rel="stylesheet" href="styles.css" />
+    <title>FREQUENCY // DECIPHER</title>
+    <style>
+      :root {
+        --bg-color: #f4f4f0;
+        --accent: #ff4757;
+        --success: #2ed573;
+        --text: #2f3542;
+        --border: 3px solid #2f3542;
+        --shadow: 4px 4px 0px #2f3542;
+        --highlight: #dfe4ea;
+        --mapped-bg: #2f3542;
+        --mapped-text: #ffffff;
+        --eng-freq-color: #bdc3c7;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Courier New", Courier, monospace;
+        background: var(--bg-color);
+        color: var(--text);
+        line-height: 1.6;
+        padding-bottom: 2rem;
+        height: 100vh;
+        overflow-y: auto;
+      }
+
+      /* --- Layout --- */
+      .container {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        background: white;
+        border: var(--border);
+        box-shadow: var(--shadow);
+        margin-bottom: 1.5rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: -1px;
+      }
+
+      .game-grid {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 1.5rem;
+        flex-grow: 1;
+        align-items: start;
+      }
+
+      @media (max-width: 900px) {
+        .game-grid {
+          grid-template-columns: 1fr;
+        }
+        .sidebar {
+          order: -1; /* Sidebar on top for mobile */
+        }
+      }
+
+      /* --- Main Area (The Cipher) --- */
+      .cipher-board {
+        background: white;
+        border: var(--border);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        min-height: 50vh;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+
+      .level-indicator {
+        position: absolute;
+        top: -15px;
+        left: 20px;
+        background: var(--accent);
+        color: white;
+        padding: 0.5rem 1rem;
+        font-weight: bold;
+        border: var(--border);
+        transform: rotate(-2deg);
+      }
+
+      .text-area {
+        font-size: 1.5rem;
+        line-height: 2.2;
+        margin-top: 1rem;
+        user-select: none;
+      }
+
+      .word-break {
+        display: inline-block;
+        margin-right: 1rem; /* Visual space for words */
+      }
+
+      .char-slot {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        width: 30px;
+        margin: 0 2px;
+        cursor: pointer;
+        vertical-align: top;
+        position: relative;
+      }
+
+      .char-slot:hover .cipher-char {
+        background: var(--highlight);
+      }
+
+      .char-slot.selected .cipher-char {
+        background: var(--text);
+        color: white;
+      }
+
+      .decoded-char {
+        font-size: 1.4rem;
+        font-weight: bold;
+        color: var(--accent);
+        height: 30px;
+        border-bottom: 2px solid #ddd;
+        width: 100%;
+        text-align: center;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+      }
+
+      .cipher-char {
+        font-size: 0.9rem;
+        color: #888;
+        font-weight: bold;
+        width: 100%;
+        text-align: center;
+        border-radius: 4px;
+      }
+
+      .punctuation {
+        display: inline-flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        width: 15px;
+        height: 60px;
+        text-align: center;
+        font-size: 1.5rem;
+        color: var(--text);
+        padding-bottom: 5px;
+      }
+
+      /* --- Sidebar (Tools) --- */
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .tool-panel {
+        background: white;
+        border: var(--border);
+        box-shadow: var(--shadow);
+        padding: 1rem;
+      }
+
+      .panel-title {
+        font-size: 1rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      /* Frequency Chart */
+      .freq-legend {
+        display: flex;
+        gap: 10px;
+        font-size: 0.7rem;
+        margin-bottom: 10px;
+        justify-content: flex-end;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .legend-box {
+        width: 10px;
+        height: 10px;
+      }
+
+      .freq-chart {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        max-height: 400px;
+        overflow-y: auto;
+        padding-right: 5px;
+      }
+
+      .freq-row {
+        display: flex;
+        align-items: center;
+        font-size: 0.8rem;
+        cursor: pointer;
+      }
+      .freq-row:hover .freq-label {
+        color: var(--accent);
+      }
+
+      .freq-label {
+        width: 20px;
+        font-weight: bold;
+      }
+
+      .freq-bar-container {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        height: 14px;
+        background: transparent;
+      }
+
+      /* Overlapping bars logic */
+      .bar {
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        border-radius: 2px;
+      }
+
+      .bar.english {
+        background: var(--eng-freq-color);
+        z-index: 1;
+        opacity: 0.5;
+      }
+      .bar.cipher {
+        background: var(--text);
+        z-index: 2;
+        height: 60%; /* Slightly thinner to show overlap clearly */
+        top: 20%;
+      }
+
+      /* Bigrams */
+      .bigram-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+      }
+      .bigram-item {
+        background: #eee;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.9rem;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      /* --- Controls --- */
+      .keyboard-input {
+        display: none; /* Hidden input for mobile typing */
+      }
+
+      button {
+        background: var(--text);
+        color: white;
+        border: none;
+        padding: 1rem;
+        font-family: inherit;
+        font-weight: 900;
+        font-size: 1rem;
+        cursor: pointer;
+        border: 3px solid transparent;
+        transition: all 0.2s;
+        text-transform: uppercase;
+        width: 100%;
+      }
+
+      button:hover {
+        background: white;
+        color: var(--text);
+        border: var(--border);
+        transform: translate(-2px, -2px);
+        box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+      }
+
+      button.secondary {
+        background: #ddd;
+        color: var(--text);
+      }
+
+      /* --- Modals --- */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal {
+        background: white;
+        padding: 3rem;
+        max-width: 600px;
+        width: 90%;
+        border: var(--border);
+        box-shadow: 10px 10px 0px var(--accent);
+        text-align: center;
+      }
+
+      .modal h2 {
+        font-size: 3rem;
+        color: var(--accent);
+        margin-bottom: 1rem;
+      }
+
+      .stat-row {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin: 2rem 0;
+      }
+      .stat-val {
+        font-size: 2rem;
+        font-weight: 900;
+      }
+      .stat-lbl {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        color: #666;
+      }
+
+      /* Intro Screen */
+      #introScreen {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 80vh;
+        text-align: center;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .intro-card {
+        background: white;
+        border: var(--border);
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        width: 100%;
+      }
+    </style>
   </head>
   <body>
+    <!-- Hidden Input for Mobile Keyboard Support -->
+    <input
+      type="text"
+      id="hiddenInput"
+      class="keyboard-input"
+      autocomplete="off"
+    />
+
     <div class="container">
-      <header>
-        <div class="header-top">
+      <!-- Intro Screen -->
+      <div id="introScreen">
+        <h1 style="font-size: 4rem; margin-bottom: 1rem">Frequency</h1>
+        <div class="intro-card">
+          <p style="margin-bottom: 1.5rem">
+            Decrypt the messages. Patterns are your only weapon.
+          </p>
+          <div style="text-align: left; margin-bottom: 2rem; font-size: 0.9rem">
+            <p><strong>Levels are randomized.</strong></p>
+            <p>Use the gray frequency bars as a guide to standard English.</p>
+          </div>
+          <button id="startBtn">Initialize Decryption</button>
+        </div>
+      </div>
+
+      <!-- Game Screen -->
+      <div
+        id="gameScreen"
+        class="hidden"
+        style="display: none; height: 100%; flex-direction: column"
+      >
+        <header>
           <div>
-            <h1>Anay Garodia</h1>
-            <p class="subtitle">
-              Freshman at Columbia University studying Mathematics & Computer
-              Science
-            </p>
+            <h1>Frequency</h1>
+            <small id="levelName">Level 1 // The Primer</small>
           </div>
-          <button class="theme-toggle" aria-label="Toggle dark mode">
-            <svg
-              class="sun-icon"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
+          <div style="text-align: right">
+            <div style="font-size: 2rem; font-weight: 900" id="timer">0:00</div>
+            <button
+              class="secondary"
+              id="hintBtn"
+              style="
+                padding: 0.2rem 0.5rem;
+                font-size: 0.8rem;
+                width: auto;
+                margin-top: 0.5rem;
+              "
             >
-              <circle cx="12" cy="12" r="5" />
-              <line x1="12" y1="1" x2="12" y2="3" />
-              <line x1="12" y1="21" x2="12" y2="23" />
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-              <line x1="1" y1="12" x2="3" y2="12" />
-              <line x1="21" y1="12" x2="23" y2="12" />
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-            </svg>
-            <svg
-              class="moon-icon"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
+              Reveal 1 Char (+30s)
+            </button>
+          </div>
+        </header>
+
+        <div class="game-grid">
+          <main class="cipher-board">
+            <div class="level-indicator" id="levelBadge">LEVEL 01</div>
+            <div id="cipherContent" class="text-area">
+              <!-- Text generated here -->
+            </div>
+          </main>
+
+          <aside class="sidebar">
+            <!-- Frequency Analysis -->
+            <div class="tool-panel">
+              <div class="panel-title">
+                <span>Spectral Analysis</span>
+                <span style="font-size: 0.7rem; color: #888"
+                  >ENG vs CIPHER</span
+                >
+              </div>
+
+              <div class="freq-legend">
+                <div class="legend-item">
+                  <div
+                    class="legend-box"
+                    style="background: var(--eng-freq-color)"
+                  ></div>
+                  <span>Standard English</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-box" style="background: var(--text)"></div>
+                  <span>Current Cipher</span>
+                </div>
+              </div>
+
+              <div class="freq-chart" id="freqChart">
+                <!-- Bars generated here -->
+              </div>
+            </div>
+
+            <!-- Bigram Analysis -->
+            <div class="tool-panel">
+              <div class="panel-title">
+                <span>Top Bigrams</span>
+                <span style="font-size: 0.7rem; color: #888"
+                  >2-CHAR PATTERNS</span
+                >
+              </div>
+              <div class="bigram-list" id="bigramList">
+                <!-- Bigrams generated here -->
+              </div>
+            </div>
+
+            <div
+              class="tool-panel"
+              style="background: #eee; border: none; box-shadow: none"
             >
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-            </svg>
-          </button>
-        </div>
-        <div class="contact-links">
-          <a href="mailto:ag5250@columbia.edu">Email</a>
-          <a
-            href="https://www.linkedin.com/in/anay-garodia-a863a6257/"
-            target="_blank"
-            >LinkedIn</a
-          >
-          <a href="#about">About</a>
-          <a href="#experiments">Experiments</a>
-          <a href="#writing">Writing</a>
-          <a href="#projects">Projects</a>
-        </div>
-      </header>
-
-      <section id="about">
-        <h2>About</h2>
-        <p style="margin-bottom: 1.5rem; font-size: 1.1rem">
-          I'm interested in math, physics, and computing, and I like working on
-          things that help me understand them better. Recently that's included
-          simulating fusion reactor behavior, reading about how we evaluate AI
-          systems, and studying abstract algebra. I don't have a fixed direction
-          yet, but I enjoy learning, asking questions, and taking on projects
-          that teach me something new.
-        </p>
-      </section>
-
-      <section id="experiments">
-        <h2>Experiments & Interactive Projects</h2>
-        <div class="experiments-grid">
-          <a
-            href="experiments/wikispeed.html"
-            class="experiment-card card-wikispeed"
-          >
-            <div class="card-content">
-              <h3>Wikipedia Speed Run!</h3>
+              <p style="font-size: 0.8rem; text-align: center; color: #666">
+                <strong>Controls:</strong> Click a letter, then type on keyboard
+                to swap. <br />Press SPACE to clear a letter.
+              </p>
             </div>
-          </a>
-
-          <a href="experiments/frequency.html" class="experiment-card">
-            <div class="card-content">
-              <h3>Frequency</h3>
-            </div>
-          </a>
+          </aside>
         </div>
-      </section>
-
-      <section id="writing">
-        <h2>Writing</h2>
-
-        <!-- Technical Writing -->
-        <div class="writing-category">
-          <h3 class="category-title">Technical</h3>
-          <div class="articles-container" data-category="technical">
-            <a href="articles/group-theory.html" class="article-link">
-              <h4>The Beauty of Group Theory</h4>
-              <p>
-                What I learned about abstract algebra at Stanford SUMaC and why
-                symmetry is everywhere in math.
-              </p>
-            </a>
-
-            <a href="articles/monte-carlo.html" class="article-link hidden">
-              <h4>Understanding Monte Carlo Methods</h4>
-              <p>
-                Breaking down Monte Carlo simulations with practical Python
-                examples from my fusion research.
-              </p>
-            </a>
-
-            <a href="articles/ml-math.html" class="article-link hidden">
-              <h4>The Math Behind Machine Learning</h4>
-              <p>
-                Linear algebra, calculus, and probability theory as the
-                foundation of modern ML.
-              </p>
-            </a>
-          </div>
-          <button class="expand-btn" data-section="technical">
-            Show All Technical Articles →
-          </button>
-        </div>
-
-        <!-- Essays -->
-        <div class="writing-category">
-          <h3 class="category-title">Essays</h3>
-          <div class="articles-container" data-category="essays">
-            <a href="articles/rhodes-scholaring.html" class="article-link">
-              <h4>Rhodes Scholaring: Grammar and Power in Decolonial Speech</h4>
-              <p>
-                An analysis of how language shapes authority and identity in
-                academic settings (written for the university writing class at
-                Columbia).
-              </p>
-            </a>
-
-            <a href="articles/luiselli-ending.html" class="article-link">
-              <h4>
-                What's In An Ending? Narrative Refusal in Tell Me How It Ends
-              </h4>
-              <p>
-                An exploration of how Valeria Luiselli refuses narrative closure
-                in "Tell Me How It Ends" to resist the extraction and
-                commodification of migrant children's trauma (written for the
-                university writing class at Columbia).
-              </p>
-            </a>
-
-            <a href="articles/game-theory.html" class="article-link hidden">
-              <h4>From Board Games to Game Theory</h4>
-              <p>
-                How strategic games taught me about Nash equilibria and
-                computational thinking.
-              </p>
-            </a>
-          </div>
-          <button class="expand-btn" data-section="essays">
-            Show All Essays →
-          </button>
-        </div>
-
-        <!-- Blog -->
-        <div class="writing-category">
-          <h3 class="category-title">Blog</h3>
-          <div class="articles-container" data-category="blog">
-            <a href="articles/stem-newsletter.html" class="article-link">
-              <h4>Why I Started a STEM Newsletter</h4>
-              <p>
-                Reflections on science communication and making STEM accessible
-                through student publishing.
-              </p>
-            </a>
-          </div>
-          <button class="expand-btn" data-section="blog">
-            Show All Blog Posts →
-          </button>
-        </div>
-      </section>
-
-      <section id="projects">
-        <h2>Projects</h2>
-
-        <div class="projects-container">
-          <a href="projects/ai-sentience.html" class="timeline-item-link">
-            <div class="timeline-item">
-              <h3>AI Sentience Testing Frameworks</h3>
-              <div class="timeline-meta">
-                2024-Present • Non-Trivial Fellowship
-              </div>
-              <p>
-                Working on new ways to think about AI sentience beyond the
-                Turing Test. Trying to build frameworks that actually make sense
-                from a cognitive science perspective.
-              </p>
-              <div class="tags">
-                <span class="tag">AI</span>
-                <span class="tag">Philosophy</span>
-                <span class="tag">Research</span>
-              </div>
-            </div>
-          </a>
-
-          <a href="projects/fusion-reactor.html" class="timeline-item-link">
-            <div class="timeline-item">
-              <h3>Fusion Reactor Neutronics Optimization</h3>
-              <div class="timeline-meta">
-                2023-2024 • Polygence Research Program
-              </div>
-              <p>
-                Used Monte Carlo simulations in Python with OpenMC to analyze
-                neutron behavior in fusion reactors. Found that octalithium
-                plumbate could be a good breeding blanket material—which was
-                pretty cool to discover.
-              </p>
-              <div class="tags">
-                <span class="tag">Nuclear Physics</span>
-                <span class="tag">Python</span>
-                <span class="tag">Simulation</span>
-              </div>
-            </div>
-          </a>
-
-          <a href="projects/student-attrition.html" class="timeline-item-link">
-            <div class="timeline-item">
-              <h3>Student Attrition Prediction Model</h3>
-              <div class="timeline-meta">
-                2024 • Published in Curieux Academic Journal
-              </div>
-              <p>
-                Looked at what factors influence student dropout rates using
-                linear regression. Got published in the July issue (pages
-                509-519).
-              </p>
-              <div class="tags">
-                <span class="tag">Machine Learning</span>
-                <span class="tag">Education</span>
-              </div>
-            </div>
-          </a>
-
-          <a
-            href="projects/space-settlement.html"
-            class="timeline-item-link hidden"
-          >
-            <div class="timeline-item">
-              <h3>Space Settlement Design Competition</h3>
-              <div class="timeline-meta">2023 • National Runners-Up</div>
-              <p>
-                Founded my school's first INSSDC team and somehow made it to
-                national runners-up. Coordinated 20 people and wrote a 60-page
-                proposal for an orbital space settlement.
-              </p>
-              <div class="tags">
-                <span class="tag">Engineering</span>
-                <span class="tag">Leadership</span>
-              </div>
-            </div>
-          </a>
-
-          <a
-            href="projects/math-visualization.html"
-            class="timeline-item-link hidden"
-          >
-            <div class="timeline-item">
-              <h3>Mathematical Visualization Tools</h3>
-              <div class="timeline-meta">2024 • Personal Project</div>
-              <p>
-                Making interactive visualizations for abstract math using Python
-                and Manim. Focusing on linear transformations, group theory, and
-                topology.
-              </p>
-              <div class="tags">
-                <span class="tag">Mathematics</span>
-                <span class="tag">Python</span>
-                <span class="tag">Manim</span>
-              </div>
-            </div>
-          </a>
-
-          <a
-            href="projects/cern-beamline.html"
-            class="timeline-item-link hidden"
-          >
-            <div class="timeline-item">
-              <h3>CERN Beamline for Schools</h3>
-              <div class="timeline-meta">2023</div>
-              <p>
-                Proposed an experiment to measure muon lifetime. Got feedback
-                from actual CERN physicists which was honestly surreal.
-              </p>
-              <div class="tags">
-                <span class="tag">Particle Physics</span>
-                <span class="tag">Experimental Design</span>
-              </div>
-            </div>
-          </a>
-        </div>
-
-        <button class="expand-btn" data-section="projects">
-          Show All Projects →
-        </button>
-      </section>
-
-      <section id="experiences">
-        <h2>Experiences</h2>
-
-        <div class="timeline-item">
-          <h3>Columbia University</h3>
-          <div class="timeline-meta">
-            2025-2029 • Mathematics and Computer Science
-          </div>
-          <p>
-            Member of Quant Group, AI Alignment Club, Undergraduate Mathematics
-            Society, Journal of Undergraduate Math, and Physics Scholars
-            Program.
-          </p>
-        </div>
-
-        <div class="timeline-item">
-          <h3>Math Programs</h3>
-          <div class="timeline-meta">Summer 2024</div>
-          <p>
-            Stanford University Math Camp (SUMaC): Studied abstract algebra.
-            Euler Circle: Studied number theory, combinatorics, real analysis,
-            and cryptography.
-          </p>
-        </div>
-
-        <div class="timeline-item">
-          <h3>Leadership & Initiatives</h3>
-          <div class="timeline-meta">2021-2025</div>
-          <p>
-            School Prefect, Founder of the Space Settlement Design Team and
-            Quanta (STEM newsletter), MUN Director, Founder's Medal Awardee
-            (2023). All India Rank 4 in ICSE and ISC exams.
-          </p>
-        </div>
-      </section>
+      </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Victory Modal -->
+    <div class="modal-overlay" id="winModal">
+      <div class="modal">
+        <h2>DECRYPTED</h2>
+        <p id="winQuote" style="font-style: italic; margin-bottom: 1rem">
+          "Quote"
+        </p>
+        <p
+          id="winSource"
+          style="font-size: 0.8rem; color: #666; margin-bottom: 2rem"
+        >
+          - Author
+        </p>
+
+        <div class="stat-row">
+          <div>
+            <div class="stat-val" id="finalTime">0:00</div>
+            <div class="stat-lbl">Time</div>
+          </div>
+          <div>
+            <div class="stat-val" id="finalLevel">1</div>
+            <div class="stat-lbl">Level Complete</div>
+          </div>
+        </div>
+        <button id="nextLevelBtn">Next Assignment</button>
+      </div>
+    </div>
+
+    <script>
+      /* --- GAME DATA --- */
+
+      const QUOTES_DB = {
+        EASY: [
+          {
+            text: "The art of cryptography is to make the complex simple, and the simple complex. Secrecy is a weapon.",
+            source: "Unknown",
+          },
+          {
+            text: "Knowledge is power. Information is liberty. Education is the premise of progress, in every society.",
+            source: "Kofi Annan",
+          },
+          {
+            text: "In the middle of difficulty lies opportunity.",
+            source: "Albert Einstein",
+          },
+          {
+            text: "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+            source: "Winston Churchill",
+          },
+          {
+            text: "To be or not to be, that is the question.",
+            source: "William Shakespeare",
+          },
+          {
+            text: "All we have to decide is what to do with the time that is given us.",
+            source: "J.R.R. Tolkien",
+          },
+          {
+            text: "It always seems impossible until it is done.",
+            source: "Nelson Mandela",
+          },
+          {
+            text: "Be the change that you wish to see in the world.",
+            source: "Mahatma Gandhi",
+          },
+        ],
+        MEDIUM: [
+          {
+            text: "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.",
+            source: "Jane Austen",
+          },
+          {
+            text: "It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness.",
+            source: "Charles Dickens",
+          },
+          {
+            text: "I have seen things you people wouldn't believe. Attack ships on fire off the shoulder of Orion.",
+            source: "Blade Runner",
+          },
+          {
+            text: "Any sufficiently advanced technology is indistinguishable from magic.",
+            source: "Arthur C. Clarke",
+          },
+          {
+            text: "Two roads diverged in a wood, and I took the one less traveled by, and that has made all the difference.",
+            source: "Robert Frost",
+          },
+          {
+            text: "The only thing necessary for the triumph of evil is for good men to do nothing.",
+            source: "Edmund Burke",
+          },
+          {
+            text: "Life is what happens when you are busy making other plans.",
+            source: "John Lennon",
+          },
+        ],
+        HARD: [
+          {
+            text: "In the beginning the Universe was created. This has made a lot of people very angry and been widely regarded as a bad move.",
+            source: "Douglas Adams",
+          },
+          {
+            text: "We live in a fantasy world, a world of illusion. The great task in life is to find reality.",
+            source: "Iris Murdoch",
+          },
+          {
+            text: "Time is an illusion. Lunchtime doubly so.",
+            source: "Douglas Adams",
+          },
+          {
+            text: "If you wish to make an apple pie from scratch, you must first invent the universe.",
+            source: "Carl Sagan",
+          },
+          {
+            text: "There is no such thing as a moral or an immoral book. Books are well written, or badly written. That is all.",
+            source: "Oscar Wilde",
+          },
+          {
+            text: "Deep in the human unconscious is a pervasive need for a logical universe that makes sense. But the real universe is always one step beyond logic.",
+            source: "Frank Herbert",
+          },
+        ],
+      };
+
+      // English Letter Frequency (Standard %)
+      const ENGLISH_FREQ = {
+        E: 12.7,
+        T: 9.1,
+        A: 8.2,
+        O: 7.5,
+        I: 7.0,
+        N: 6.7,
+        S: 6.3,
+        H: 6.1,
+        R: 6.0,
+        D: 4.3,
+        L: 4.0,
+        C: 2.8,
+        U: 2.8,
+        M: 2.4,
+        W: 2.4,
+        F: 2.2,
+        G: 2.0,
+        Y: 2.0,
+        P: 1.9,
+        B: 1.5,
+        V: 1.0,
+        K: 0.8,
+        J: 0.15,
+        X: 0.15,
+        Q: 0.1,
+        Z: 0.07,
+      };
+
+      /* --- STATE --- */
+      let state = {
+        levelQueue: [],
+        currentLevelIdx: 0,
+        cipherMap: {},
+        userMap: {},
+        cipherText: "",
+        originalText: "",
+        originalSource: "",
+        selectedChar: null,
+        startTime: 0,
+        timerInterval: null,
+        timePenalty: 0,
+        currentMode: "NORMAL",
+      };
+
+      /* --- CORE LOGIC --- */
+
+      function initGame() {
+        // Generate a random 6-level playlist
+        state.levelQueue = [];
+
+        // 2 Easy (Normal Mode)
+        addRandomLevel("EASY", "NORMAL");
+        addRandomLevel("EASY", "NORMAL");
+
+        // 2 Medium (Telegram Mode - No Punctuation)
+        addRandomLevel("MEDIUM", "NO_PUNCTUATION");
+        addRandomLevel("MEDIUM", "NO_PUNCTUATION");
+
+        // 2 Hard (Scriptio Continua - No Spaces)
+        addRandomLevel("HARD", "SCRIPTIO_CONTINUA");
+        addRandomLevel("HARD", "SCRIPTIO_CONTINUA");
+
+        document.getElementById("introScreen").style.display = "none";
+        document.getElementById("gameScreen").style.display = "flex";
+        loadLevel(0);
+      }
+
+      function addRandomLevel(difficulty, mode) {
+        const pool = QUOTES_DB[difficulty];
+        const randomQuote = pool[Math.floor(Math.random() * pool.length)];
+        state.levelQueue.push({
+          quote: randomQuote,
+          mode: mode,
+          difficultyName: difficulty,
+        });
+      }
+
+      function loadLevel(idx) {
+        if (idx >= state.levelQueue.length) {
+          // End of playlist
+          if (confirm("MISSION ACCOMPLISHED. Play again with new levels?")) {
+            location.reload();
+          }
+          return;
+        }
+
+        state.currentLevelIdx = idx;
+        const levelData = state.levelQueue[idx];
+        state.originalSource = levelData.quote.source;
+        state.currentMode = levelData.mode;
+
+        // 1. Prepare Text based on Mode
+        let cleanText = levelData.quote.text.toUpperCase();
+        if (levelData.mode === "NO_PUNCTUATION") {
+          cleanText = cleanText.replace(/[^A-Z\s]/g, "");
+        } else if (levelData.mode === "SCRIPTIO_CONTINUA") {
+          cleanText = cleanText.replace(/[^A-Z]/g, "");
+        }
+        state.originalText = cleanText;
+
+        // 2. Generate Cipher Map (New Map for every level)
+        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+        const shuffled = [...alphabet].sort(() => Math.random() - 0.5);
+        state.cipherMap = {};
+
+        alphabet.forEach((char, i) => {
+          state.cipherMap[char] = shuffled[i];
+        });
+
+        // 3. Generate Cipher Text
+        state.cipherText = state.originalText
+          .split("")
+          .map((char) => {
+            return /[A-Z]/.test(char) ? state.cipherMap[char] : char;
+          })
+          .join("");
+
+        // 4. Reset User State
+        state.userMap = {};
+        state.selectedChar = null;
+        state.timePenalty = 0;
+
+        // 5. Update UI
+        let modeName = "Standard Intercept";
+        if (levelData.mode === "NO_PUNCTUATION") modeName = "Telegram Mode";
+        if (levelData.mode === "SCRIPTIO_CONTINUA")
+          modeName = "Scriptio Continua";
+
+        document.getElementById("levelName").textContent = `Level ${
+          idx + 1
+        } // ${modeName}`;
+        document.getElementById("levelBadge").textContent = `LEVEL ${String(
+          idx + 1
+        ).padStart(2, "0")}`;
+        renderBoard();
+        renderTools();
+
+        // 6. Start Timer
+        state.startTime = Date.now();
+        if (state.timerInterval) clearInterval(state.timerInterval);
+        state.timerInterval = setInterval(updateTimer, 1000);
+      }
+
+      /* --- RENDERING --- */
+
+      function renderBoard() {
+        const container = document.getElementById("cipherContent");
+        container.innerHTML = "";
+
+        // If scriptio continua, we have one massive word basically.
+        // We need to break it visually so it doesn't overflow container
+        // CSS 'word-break: break-all' handles text, but for our spans...
+
+        // Simple split strategy
+        const words = state.cipherText.split(/(\s+)/);
+
+        words.forEach((word) => {
+          if (/^\s+$/.test(word)) {
+            const space = document.createElement("span");
+            space.className = "word-break";
+            space.innerHTML = "&nbsp;";
+            container.appendChild(space);
+            return;
+          }
+
+          const wordSpan = document.createElement("span");
+          wordSpan.className = "word-break";
+
+          word.split("").forEach((char) => {
+            if (/[A-Z]/.test(char)) {
+              const slot = document.createElement("div");
+              slot.className = "char-slot";
+              if (state.selectedChar === char) slot.classList.add("selected");
+
+              slot.onclick = (e) => {
+                e.stopPropagation();
+                selectChar(char);
+              };
+
+              const decoded = document.createElement("div");
+              decoded.className = "decoded-char";
+              decoded.textContent = state.userMap[char] || "";
+
+              const original = document.createElement("div");
+              original.className = "cipher-char";
+              original.textContent = char;
+
+              slot.appendChild(decoded);
+              slot.appendChild(original);
+              wordSpan.appendChild(slot);
+            } else {
+              const punc = document.createElement("div");
+              punc.className = "punctuation";
+              punc.textContent = char;
+              wordSpan.appendChild(punc);
+            }
+          });
+          container.appendChild(wordSpan);
+        });
+      }
+
+      function renderTools() {
+        renderFreqChart();
+        renderBigrams();
+      }
+
+      function renderFreqChart() {
+        const container = document.getElementById("freqChart");
+        container.innerHTML = "";
+
+        // Count frequencies in Cipher Text
+        const counts = {};
+        let total = 0;
+        state.cipherText.split("").forEach((c) => {
+          if (/[A-Z]/.test(c)) {
+            counts[c] = (counts[c] || 0) + 1;
+            total++;
+          }
+        });
+
+        // Sort Cipher Chars by frequency descending
+        const sortedCipherChars = Object.keys(counts).sort(
+          (a, b) => counts[b] - counts[a]
+        );
+
+        sortedCipherChars.forEach((char) => {
+          const freq = (counts[char] / total) * 100;
+
+          // Determine likely candidate for Ghost Bar?
+          // No, the ghost bar should represent the ACTUAL English freq of the *mapped* letter if we knew it?
+          // OR just a static comparison?
+          // The most helpful UI is: "Here is Cipher 'X' (12%). Here is English 'E' (12%)."
+          // But we don't know X is E yet.
+          // So we should just sort English letters by frequency and show them alongside?
+          // NO. That's confusing.
+
+          // Better approach for "Standard English Frequency":
+          // Just show the standard English frequency for the letter "E", "T", "A"... in order?
+          // No, we are displaying by Cipher Character.
+
+          // User Request: "Show normal english frequency somewhere so i dont have to keep googling"
+          // Usually this implies a sorted list: E (12%), T (9%), A (8%)...
+          // Let's add a "Reference" tooltip or just draw the bars?
+
+          // Let's try this: We list the Cipher Chars by frequency.
+          // BEHIND them, we draw the bar for the Nth most frequent English letter.
+          // e.g. The #1 Cipher char gets the #1 English char (E) frequency bar behind it.
+          // This visually suggests "This is probably E".
+
+          // Find the index of this char in the sorted list
+          const rankIndex = sortedCipherChars.indexOf(char);
+
+          // Get the Nth most frequent English letter's frequency
+          const sortedEngKeys = Object.keys(ENGLISH_FREQ).sort(
+            (a, b) => ENGLISH_FREQ[b] - ENGLISH_FREQ[a]
+          );
+          const engRefKey = sortedEngKeys[rankIndex] || "Z";
+          const engRefFreq = ENGLISH_FREQ[engRefKey];
+
+          const row = document.createElement("div");
+          row.className = "freq-row";
+          row.onclick = () => selectChar(char);
+
+          // Visual Multiplier for bar width (so 12% isn't tiny)
+          const scale = 4;
+
+          row.innerHTML = `
+            <div class="freq-label">${char}</div>
+            <div class="freq-bar-container">
+              <!-- Ghost Bar (English Prediction) -->
+              <div class="bar english" style="width: ${
+                engRefFreq * scale
+              }%" title="Avg English '${engRefKey}': ${engRefFreq}%"></div>
+              <!-- Actual Cipher Bar -->
+              <div class="bar cipher" style="width: ${
+                freq * scale
+              }%" title="Cipher '${char}': ${freq.toFixed(1)}%"></div>
+            </div>
+            <div style="font-size: 0.7rem; margin-left: 5px; min-width: 35px;">${freq.toFixed(
+              1
+            )}%</div>
+          `;
+
+          if (state.userMap[char]) {
+            row.innerHTML += `<div style="margin-left: 5px; color: var(--accent); font-weight:bold;">→ ${state.userMap[char]}</div>`;
+          }
+
+          container.appendChild(row);
+        });
+      }
+
+      function renderBigrams() {
+        const container = document.getElementById("bigramList");
+        container.innerHTML = "";
+
+        const bigrams = {};
+        const txt = state.cipherText.replace(/[^A-Z]/g, "");
+
+        for (let i = 0; i < txt.length - 1; i++) {
+          const bg = txt.substring(i, i + 2);
+          bigrams[bg] = (bigrams[bg] || 0) + 1;
+        }
+
+        const sorted = Object.keys(bigrams)
+          .sort((a, b) => bigrams[b] - bigrams[a])
+          .slice(0, 8);
+
+        sorted.forEach((bg) => {
+          const item = document.createElement("div");
+          item.className = "bigram-item";
+          const c1 = state.userMap[bg[0]] || "?";
+          const c2 = state.userMap[bg[1]] || "?";
+
+          item.innerHTML = `<span>${bg}</span> <span style="color: var(--accent)">${c1}${c2}</span>`;
+          container.appendChild(item);
+        });
+      }
+
+      /* --- INTERACTION --- */
+
+      function selectChar(char) {
+        state.selectedChar = char;
+        renderBoard();
+        const input = document.getElementById("hiddenInput");
+        input.focus();
+      }
+
+      function handleInput(key) {
+        if (!state.selectedChar) return;
+        key = key.toUpperCase();
+
+        if (key === " " || key === "BACKSPACE" || key === "DELETE") {
+          delete state.userMap[state.selectedChar];
+        } else if (/[A-Z]/.test(key) && key.length === 1) {
+          state.userMap[state.selectedChar] = key;
+          // Auto deselect for flow?
+          state.selectedChar = null;
+        }
+
+        renderBoard();
+        renderTools();
+        checkWin();
+      }
+
+      function checkWin() {
+        const currentDecoded = state.cipherText
+          .split("")
+          .map((char) => {
+            if (/[A-Z]/.test(char)) return state.userMap[char] || "*";
+            return char;
+          })
+          .join("");
+
+        if (currentDecoded === state.originalText) {
+          clearInterval(state.timerInterval);
+          document.getElementById(
+            "winQuote"
+          ).textContent = `"${state.originalText}"`;
+          document.getElementById(
+            "winSource"
+          ).textContent = `- ${state.originalSource}`;
+          document.getElementById("finalTime").textContent =
+            document.getElementById("timer").textContent;
+          document.getElementById("finalLevel").textContent =
+            state.currentLevelIdx + 1;
+          document.getElementById("winModal").style.display = "flex";
+        }
+      }
+
+      function updateTimer() {
+        const delta =
+          Math.floor((Date.now() - state.startTime) / 1000) + state.timePenalty;
+        const mins = Math.floor(delta / 60);
+        const secs = delta % 60;
+        document.getElementById("timer").textContent = `${mins}:${secs
+          .toString()
+          .padStart(2, "0")}`;
+      }
+
+      function revealHint() {
+        const uniqueCipherChars = [
+          ...new Set(state.cipherText.match(/[A-Z]/g)),
+        ];
+        uniqueCipherChars.sort(() => Math.random() - 0.5);
+
+        for (let c of uniqueCipherChars) {
+          const correctPlain = Object.keys(state.cipherMap).find(
+            (key) => state.cipherMap[key] === c
+          );
+          if (state.userMap[c] !== correctPlain) {
+            state.userMap[c] = correctPlain;
+            state.timePenalty += 30;
+            renderBoard();
+            renderTools();
+            checkWin();
+            updateTimer();
+            return;
+          }
+        }
+      }
+
+      /* --- EVENTS --- */
+      document.addEventListener("keydown", (e) => {
+        if (e.target.tagName === "INPUT" && e.target.id !== "hiddenInput")
+          return;
+        if (state.selectedChar) {
+          if (
+            e.key.length === 1 ||
+            e.key === "Backspace" ||
+            e.key === "Delete"
+          ) {
+            handleInput(e.key);
+          }
+        }
+      });
+
+      document.getElementById("hiddenInput").addEventListener("input", (e) => {
+        if (e.data) {
+          handleInput(e.data.slice(-1));
+          e.target.value = "";
+        }
+      });
+
+      document.getElementById("startBtn").addEventListener("click", initGame);
+
+      document.getElementById("nextLevelBtn").addEventListener("click", () => {
+        document.getElementById("winModal").style.display = "none";
+        loadLevel(state.currentLevelIdx + 1);
+      });
+
+      document.getElementById("hintBtn").addEventListener("click", revealHint);
+
+      document.body.addEventListener("click", (e) => {
+        if (
+          !e.target.closest(".char-slot") &&
+          !e.target.closest(".freq-row") &&
+          !e.target.closest("#hintBtn")
+        ) {
+          state.selectedChar = null;
+          renderBoard();
+        }
+      });
+    </script>
   </body>
 </html>
