@@ -802,7 +802,11 @@
         for (let i = 0; i < 3; i++) addRandomLevel("HARD", "SCRIPTIO_CONTINUA");
 
         document.getElementById("introScreen").style.display = "none";
-        document.getElementById("gameScreen").style.display = "flex";
+        // FIX: Remove the .hidden class which uses !important
+        const gameScreen = document.getElementById("gameScreen");
+        gameScreen.classList.remove("hidden");
+        gameScreen.style.display = "flex";
+
         loadLevel(0);
       }
 
