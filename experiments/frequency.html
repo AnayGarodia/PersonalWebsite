@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FREQUENCY // DECIPHER</title>
+    <style>
+      :root {
+        --bg-color: #f4f4f0;
+        --accent: #ff4757;
+        --success: #2ed573;
+        --text: #2f3542;
+        --border: 3px solid #2f3542;
+        --shadow: 4px 4px 0px #2f3542;
+        --highlight: #dfe4ea;
+        --mapped-bg: #2f3542;
+        --mapped-text: #ffffff;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Courier New", Courier, monospace;
+        background: var(--bg-color);
+        color: var(--text);
+        line-height: 1.6;
+        padding-bottom: 2rem;
+        height: 100vh;
+        overflow-y: auto;
+      }
+
+      /* --- Layout --- */
+      .container {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        background: white;
+        border: var(--border);
+        box-shadow: var(--shadow);
+        margin-bottom: 1.5rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: -1px;
+      }
+
+      .game-grid {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 1.5rem;
+        flex-grow: 1;
+        align-items: start;
+      }
+
+      @media (max-width: 900px) {
+        .game-grid {
+          grid-template-columns: 1fr;
+        }
+        .sidebar {
+          order: -1; /* Sidebar on top for mobile */
+        }
+      }
+
+      /* --- Main Area (The Cipher) --- */
+      .cipher-board {
+        background: white;
+        border: var(--border);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        min-height: 50vh;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+
+      .level-indicator {
+        position: absolute;
+        top: -15px;
+        left: 20px;
+        background: var(--accent);
+        color: white;
+        padding: 0.5rem 1rem;
+        font-weight: bold;
+        border: var(--border);
+        transform: rotate(-2deg);
+      }
+
+      .text-area {
+        font-size: 1.5rem;
+        line-height: 2.2;
+        margin-top: 1rem;
+        user-select: none;
+      }
+
+      .word-break {
+        display: inline-block;
+        margin-right: 1rem; /* Visual space for words */
+      }
+
+      .char-slot {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        width: 30px;
+        margin: 0 2px;
+        cursor: pointer;
+        vertical-align: top;
+        position: relative;
+      }
+
+      .char-slot:hover .cipher-char {
+        background: var(--highlight);
+      }
+
+      .char-slot.selected .cipher-char {
+        background: var(--text);
+        color: white;
+      }
+
+      .decoded-char {
+        font-size: 1.4rem;
+        font-weight: bold;
+        color: var(--accent);
+        height: 30px;
+        border-bottom: 2px solid #ddd;
+        width: 100%;
+        text-align: center;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+      }
+
+      .cipher-char {
+        font-size: 0.9rem;
+        color: #888;
+        font-weight: bold;
+        width: 100%;
+        text-align: center;
+        border-radius: 4px;
+      }
+
+      .punctuation {
+        display: inline-flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        width: 15px;
+        height: 60px;
+        text-align: center;
+        font-size: 1.5rem;
+        color: var(--text);
+        padding-bottom: 5px;
+      }
+
+      /* --- Sidebar (Tools) --- */
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .tool-panel {
+        background: white;
+        border: var(--border);
+        box-shadow: var(--shadow);
+        padding: 1rem;
+      }
+
+      .panel-title {
+        font-size: 1rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      /* Frequency Chart */
+      .freq-chart {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+
+      .freq-row {
+        display: flex;
+        align-items: center;
+        font-size: 0.8rem;
+      }
+
+      .freq-label {
+        width: 20px;
+        font-weight: bold;
+      }
+
+      .freq-bar-container {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .bar {
+        height: 8px;
+        transition: width 0.3s;
+      }
+
+      .bar.english {
+        background: #ddd;
+      }
+      .bar.cipher {
+        background: var(--text);
+      }
+
+      /* Bigrams */
+      .bigram-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+      }
+      .bigram-item {
+        background: #eee;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.9rem;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      /* --- Controls --- */
+      .keyboard-input {
+        display: none; /* Hidden input for mobile typing */
+      }
+
+      button {
+        background: var(--text);
+        color: white;
+        border: none;
+        padding: 1rem;
+        font-family: inherit;
+        font-weight: 900;
+        font-size: 1rem;
+        cursor: pointer;
+        border: 3px solid transparent;
+        transition: all 0.2s;
+        text-transform: uppercase;
+        width: 100%;
+      }
+
+      button:hover {
+        background: white;
+        color: var(--text);
+        border: var(--border);
+        transform: translate(-2px, -2px);
+        box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+      }
+
+      button.secondary {
+        background: #ddd;
+        color: var(--text);
+      }
+
+      /* --- Modals --- */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal {
+        background: white;
+        padding: 3rem;
+        max-width: 500px;
+        width: 90%;
+        border: var(--border);
+        box-shadow: 10px 10px 0px var(--accent);
+        text-align: center;
+      }
+
+      .modal h2 {
+        font-size: 3rem;
+        color: var(--accent);
+        margin-bottom: 1rem;
+      }
+
+      .stat-row {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin: 2rem 0;
+      }
+      .stat-val {
+        font-size: 2rem;
+        font-weight: 900;
+      }
+      .stat-lbl {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        color: #666;
+      }
+
+      /* Intro Screen */
+      #introScreen {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 80vh;
+        text-align: center;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .intro-card {
+        background: white;
+        border: var(--border);
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Hidden Input for Mobile Keyboard Support -->
+    <input
+      type="text"
+      id="hiddenInput"
+      class="keyboard-input"
+      autocomplete="off"
+    />
+
+    <div class="container">
+      <!-- Intro Screen -->
+      <div id="introScreen">
+        <h1 style="font-size: 4rem; margin-bottom: 1rem">Frequency</h1>
+        <div class="intro-card">
+          <p style="margin-bottom: 1.5rem">
+            Decrypt the messages. Patterns are your only weapon.
+          </p>
+          <div style="text-align: left; margin-bottom: 2rem; font-size: 0.9rem">
+            <p><strong>LEVEL 1:</strong> Standard Intercept (Spaces intact)</p>
+            <p><strong>LEVEL 2:</strong> Telegram Mode (No punctuation)</p>
+            <p><strong>LEVEL 3:</strong> Scriptio Continua (No spaces)</p>
+          </div>
+          <button id="startBtn">Initialize Decryption</button>
+        </div>
+      </div>
+
+      <!-- Game Screen -->
+      <div
+        id="gameScreen"
+        class="hidden"
+        style="display: none; height: 100%; flex-direction: column"
+      >
+        <header>
+          <div>
+            <h1>Frequency</h1>
+            <small id="levelName">Level 1 // The Primer</small>
+          </div>
+          <div style="text-align: right">
+            <div style="font-size: 2rem; font-weight: 900" id="timer">0:00</div>
+            <button
+              class="secondary"
+              id="hintBtn"
+              style="
+                padding: 0.2rem 0.5rem;
+                font-size: 0.8rem;
+                width: auto;
+                margin-top: 0.5rem;
+              "
+            >
+              Reveal 1 Char (+30s)
+            </button>
+          </div>
+        </header>
+
+        <div class="game-grid">
+          <main class="cipher-board">
+            <div class="level-indicator" id="levelBadge">LEVEL 01</div>
+            <div id="cipherContent" class="text-area">
+              <!-- Text generated here -->
+            </div>
+          </main>
+
+          <aside class="sidebar">
+            <!-- Frequency Analysis -->
+            <div class="tool-panel">
+              <div class="panel-title">
+                <span>Spectral Analysis</span>
+                <span style="font-size: 0.7rem; color: #888"
+                  >ENG vs CIPHER</span
+                >
+              </div>
+              <div class="freq-chart" id="freqChart">
+                <!-- Bars generated here -->
+              </div>
+            </div>
+
+            <!-- Bigram Analysis -->
+            <div class="tool-panel">
+              <div class="panel-title">
+                <span>Top Bigrams</span>
+                <span style="font-size: 0.7rem; color: #888"
+                  >2-CHAR PATTERNS</span
+                >
+              </div>
+              <div class="bigram-list" id="bigramList">
+                <!-- Bigrams generated here -->
+              </div>
+            </div>
+
+            <div
+              class="tool-panel"
+              style="background: #eee; border: none; box-shadow: none"
+            >
+              <p style="font-size: 0.8rem; text-align: center; color: #666">
+                <strong>Controls:</strong> Click a letter, then type on keyboard
+                to swap. <br />Press SPACE to clear a letter.
+              </p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+    <!-- Victory Modal -->
+    <div class="modal-overlay" id="winModal">
+      <div class="modal">
+        <h2>DECRYPTED</h2>
+        <p id="winQuote" style="font-style: italic; margin-bottom: 1rem">
+          "Quote"
+        </p>
+        <div class="stat-row">
+          <div>
+            <div class="stat-val" id="finalTime">0:00</div>
+            <div class="stat-lbl">Time</div>
+          </div>
+          <div>
+            <div class="stat-val" id="finalLevel">1</div>
+            <div class="stat-lbl">Level Complete</div>
+          </div>
+        </div>
+        <button id="nextLevelBtn">Next Assignment</button>
+      </div>
+    </div>
+
+    <script>
+      /* --- GAME DATA --- */
+      const LEVELS = [
+        {
+          id: 1,
+          name: "The Primer",
+          mode: "NORMAL", // Spaces and punctuation kept
+          text: "The art of cryptography is to make the complex simple, and the simple complex. Secrecy is a weapon.",
+        },
+        {
+          id: 2,
+          name: "The Primer II",
+          mode: "NORMAL",
+          text: "Knowledge is power. Information is liberty. Education is the premise of progress, in every society, in every family.",
+        },
+        {
+          id: 3,
+          name: "The Telegram",
+          mode: "NO_PUNCTUATION", // Remove punctuation, keep spaces
+          text: "We have intercepted a message from the western front stop supplies are running low stop send reinforcements immediately stop",
+        },
+        {
+          id: 4,
+          name: "The Scholar",
+          mode: "NO_PUNCTUATION",
+          text: "It is a truth universally acknowledged that a single man in possession of a good fortune must be in want of a wife",
+        },
+        {
+          id: 5,
+          name: "The Monolith",
+          mode: "SCRIPTIO_CONTINUA", // No spaces, no punctuation
+          text: "IN THE BEGINNING THE UNIVERSE WAS CREATED THIS HAS MADE A LOT OF PEOPLE VERY ANGRY AND BEEN WIDELY REGARDED AS A BAD MOVE",
+        },
+        {
+          id: 6,
+          name: "The Architect",
+          mode: "SCRIPTIO_CONTINUA",
+          text: "WE LIVE IN A FANTASY WORLD A WORLD OF ILLUSION THE GREAT TASK IN LIFE IS TO FIND REALITY",
+        },
+      ];
+
+      // English Letter Frequency (Approximate %)
+      const ENGLISH_FREQ = {
+        E: 12.7,
+        T: 9.1,
+        A: 8.2,
+        O: 7.5,
+        I: 7.0,
+        N: 6.7,
+        S: 6.3,
+        H: 6.1,
+        R: 6.0,
+        D: 4.3,
+        L: 4.0,
+        C: 2.8,
+        U: 2.8,
+        M: 2.4,
+        W: 2.4,
+        F: 2.2,
+        G: 2.0,
+        Y: 2.0,
+        P: 1.9,
+        B: 1.5,
+        V: 1.0,
+        K: 0.8,
+        J: 0.15,
+        X: 0.15,
+        Q: 0.1,
+        Z: 0.07,
+      };
+
+      /* --- STATE --- */
+      let state = {
+        currentLevelIdx: 0,
+        cipherMap: {}, // The real mapping (A -> X)
+        userMap: {}, // The user's guess mapping (X -> A)
+        cipherText: "", // The scrambled text
+        originalText: "", // The clean solution
+        selectedChar: null, // Currently clicked ciphertext char
+        startTime: 0,
+        timerInterval: null,
+        timePenalty: 0,
+      };
+
+      /* --- CORE LOGIC --- */
+
+      function initGame() {
+        document.getElementById("introScreen").style.display = "none";
+        document.getElementById("gameScreen").style.display = "flex";
+        loadLevel(0);
+      }
+
+      function loadLevel(idx) {
+        if (idx >= LEVELS.length) {
+          alert("ALL MISSIONS COMPLETE. YOU ARE A MASTER CRYPTOGRAPHER.");
+          location.reload();
+          return;
+        }
+
+        state.currentLevelIdx = idx;
+        const level = LEVELS[idx];
+
+        // 1. Prepare Text
+        let cleanText = level.text.toUpperCase();
+        if (level.mode === "NO_PUNCTUATION") {
+          cleanText = cleanText.replace(/[^A-Z\s]/g, "");
+        } else if (level.mode === "SCRIPTIO_CONTINUA") {
+          cleanText = cleanText.replace(/[^A-Z]/g, "");
+        }
+        state.originalText = cleanText;
+
+        // 2. Generate Cipher Map
+        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+        const shuffled = [...alphabet].sort(() => Math.random() - 0.5);
+        state.cipherMap = {};
+
+        // Create bijection
+        alphabet.forEach((char, i) => {
+          state.cipherMap[char] = shuffled[i];
+        });
+
+        // 3. Generate Cipher Text
+        state.cipherText = state.originalText
+          .split("")
+          .map((char) => {
+            return /[A-Z]/.test(char) ? state.cipherMap[char] : char;
+          })
+          .join("");
+
+        // 4. Reset User State
+        state.userMap = {};
+        state.selectedChar = null;
+        state.timePenalty = 0;
+
+        // 5. Update UI
+        document.getElementById(
+          "levelName"
+        ).textContent = `Level ${level.id} // ${level.name}`;
+        document.getElementById("levelBadge").textContent = `LEVEL ${String(
+          level.id
+        ).padStart(2, "0")}`;
+        renderBoard();
+        renderTools();
+
+        // 6. Start Timer
+        state.startTime = Date.now();
+        if (state.timerInterval) clearInterval(state.timerInterval);
+        state.timerInterval = setInterval(updateTimer, 1000);
+      }
+
+      /* --- RENDERING --- */
+
+      function renderBoard() {
+        const container = document.getElementById("cipherContent");
+        container.innerHTML = "";
+
+        const words = state.cipherText.split(/(\s+)/); // Split by whitespace but keep delimiters
+
+        words.forEach((word) => {
+          if (/^\s+$/.test(word)) {
+            // Render whitespace
+            const space = document.createElement("span");
+            space.className = "word-break";
+            space.innerHTML = "&nbsp;";
+            container.appendChild(space);
+            return;
+          }
+
+          const wordSpan = document.createElement("span");
+          wordSpan.className = "word-break"; // actually a word container
+
+          word.split("").forEach((char) => {
+            if (/[A-Z]/.test(char)) {
+              // It's a cipher character
+              const slot = document.createElement("div");
+              slot.className = "char-slot";
+              if (state.selectedChar === char) slot.classList.add("selected");
+
+              slot.onclick = (e) => {
+                e.stopPropagation();
+                selectChar(char);
+              };
+
+              const decoded = document.createElement("div");
+              decoded.className = "decoded-char";
+              // Show user guess or empty
+              decoded.textContent = state.userMap[char] || "";
+
+              const original = document.createElement("div");
+              original.className = "cipher-char";
+              original.textContent = char;
+
+              slot.appendChild(decoded);
+              slot.appendChild(original);
+              wordSpan.appendChild(slot);
+            } else {
+              // Punctuation
+              const punc = document.createElement("div");
+              punc.className = "punctuation";
+              punc.textContent = char;
+              wordSpan.appendChild(punc);
+            }
+          });
+          container.appendChild(wordSpan);
+        });
+      }
+
+      function renderTools() {
+        renderFreqChart();
+        renderBigrams();
+      }
+
+      function renderFreqChart() {
+        const container = document.getElementById("freqChart");
+        container.innerHTML = "";
+
+        // Count frequencies in Cipher Text
+        const counts = {};
+        let total = 0;
+        state.cipherText.split("").forEach((c) => {
+          if (/[A-Z]/.test(c)) {
+            counts[c] = (counts[c] || 0) + 1;
+            total++;
+          }
+        });
+
+        // Sort alphabet by ENGLISH frequency to make comparison easy?
+        // Or sort by Cipher Frequency? Let's sort by Cipher Frequency descending
+        const sortedCipherChars = Object.keys(counts).sort(
+          (a, b) => counts[b] - counts[a]
+        );
+
+        // We display top 10 or all? All fits in scrolling.
+        sortedCipherChars.forEach((char) => {
+          const freq = (counts[char] / total) * 100;
+
+          // Find what standard English percentage we might expect roughly
+          // This is hard to map directly, so we just show the English average bar for "E" as a reference line?
+          // Better: Just show the bar.
+
+          const row = document.createElement("div");
+          row.className = "freq-row";
+
+          // Interactive: Clicking the chart selects the letter
+          row.onclick = () => selectChar(char);
+          row.style.cursor = "pointer";
+
+          row.innerHTML = `
+            <div class="freq-label">${char}</div>
+            <div class="freq-bar-container">
+              <div class="bar cipher" style="width: ${freq * 3}%"></div>
+            </div>
+            <div style="font-size: 0.7rem; margin-left: 5px;">${freq.toFixed(
+              1
+            )}%</div>
+          `;
+
+          // If this char is mapped to something by user, show it
+          if (state.userMap[char]) {
+            row.innerHTML += `<div style="margin-left: 5px; color: var(--accent); font-weight:bold;">→ ${state.userMap[char]}</div>`;
+          }
+
+          container.appendChild(row);
+        });
+      }
+
+      function renderBigrams() {
+        const container = document.getElementById("bigramList");
+        container.innerHTML = "";
+
+        const bigrams = {};
+        const txt = state.cipherText.replace(/[^A-Z]/g, "");
+
+        for (let i = 0; i < txt.length - 1; i++) {
+          const bg = txt.substring(i, i + 2);
+          bigrams[bg] = (bigrams[bg] || 0) + 1;
+        }
+
+        const sorted = Object.keys(bigrams)
+          .sort((a, b) => bigrams[b] - bigrams[a])
+          .slice(0, 8);
+
+        sorted.forEach((bg) => {
+          const item = document.createElement("div");
+          item.className = "bigram-item";
+          // If decoded, show decoded version
+          const c1 = state.userMap[bg[0]] || "?";
+          const c2 = state.userMap[bg[1]] || "?";
+
+          item.innerHTML = `<span>${bg}</span> <span style="color: var(--accent)">${c1}${c2}</span>`;
+          container.appendChild(item);
+        });
+      }
+
+      /* --- INTERACTION --- */
+
+      function selectChar(char) {
+        state.selectedChar = char;
+
+        // Rerender just the selection classes to save DOM perf?
+        // For this scale, full rerender is fine and cleaner
+        renderBoard();
+
+        // Focus hidden input for mobile keyboard
+        const input = document.getElementById("hiddenInput");
+        input.focus();
+      }
+
+      function handleInput(key) {
+        if (!state.selectedChar) return;
+
+        key = key.toUpperCase();
+
+        if (key === " " || key === "BACKSPACE" || key === "DELETE") {
+          // Clear mapping
+          delete state.userMap[state.selectedChar];
+        } else if (/[A-Z]/.test(key) && key.length === 1) {
+          // Set mapping
+          // Check if this target letter is already used?
+          // We allow duplicates in UI (conflicts), but maybe highlight them?
+          // For simplicity: just overwrite.
+          state.userMap[state.selectedChar] = key;
+
+          // Auto-advance? No, that can be annoying in non-linear puzzles.
+          // Deselect?
+          state.selectedChar = null;
+        }
+
+        renderBoard();
+        renderTools();
+        checkWin();
+      }
+
+      function checkWin() {
+        // Construct the user's current text
+        const currentDecoded = state.cipherText
+          .split("")
+          .map((char) => {
+            if (/[A-Z]/.test(char)) return state.userMap[char] || "*";
+            return char;
+          })
+          .join("");
+
+        if (currentDecoded === state.originalText) {
+          clearInterval(state.timerInterval);
+          document.getElementById(
+            "winQuote"
+          ).textContent = `"${state.originalText}"`;
+          document.getElementById("finalTime").textContent =
+            document.getElementById("timer").textContent;
+          document.getElementById("finalLevel").textContent =
+            state.currentLevelIdx + 1;
+          document.getElementById("winModal").style.display = "flex";
+        }
+      }
+
+      function updateTimer() {
+        const delta =
+          Math.floor((Date.now() - state.startTime) / 1000) + state.timePenalty;
+        const mins = Math.floor(delta / 60);
+        const secs = delta % 60;
+        document.getElementById("timer").textContent = `${mins}:${secs
+          .toString()
+          .padStart(2, "0")}`;
+      }
+
+      function revealHint() {
+        // Find an unmapped or incorrectly mapped character
+        const cipherChars = Object.keys(state.cipherMap);
+        let candidate = null;
+
+        // Try to find one that is currently wrong
+        for (let c of cipherChars) {
+          if (
+            state.userMap[c] !==
+            Object.keys(state.cipherMap).find(
+              (key) => state.cipherMap[key] === state.cipherMap[c]
+            )
+          ) {
+            // Wait, logic: state.cipherMap is Plain -> Cipher
+            // We need Cipher -> Plain
+          }
+        }
+
+        // Simpler: iterate over cipher text chars
+        const uniqueCipherChars = [
+          ...new Set(state.cipherText.match(/[A-Z]/g)),
+        ];
+
+        // Shuffle them to pick random
+        uniqueCipherChars.sort(() => Math.random() - 0.5);
+
+        for (let c of uniqueCipherChars) {
+          // What is the correct plain letter for cipher char C?
+          // state.cipherMap maps Plain -> Cipher.
+          // Find P where state.cipherMap[P] == c
+          const correctPlain = Object.keys(state.cipherMap).find(
+            (key) => state.cipherMap[key] === c
+          );
+
+          if (state.userMap[c] !== correctPlain) {
+            state.userMap[c] = correctPlain;
+            state.timePenalty += 30; // 30s penalty
+            renderBoard();
+            renderTools();
+            checkWin();
+            updateTimer(); // Update immediately to show penalty
+            return;
+          }
+        }
+      }
+
+      /* --- EVENT LISTENERS --- */
+
+      // Physical Keyboard
+      document.addEventListener("keydown", (e) => {
+        // Don't trigger if in input field
+        if (e.target.tagName === "INPUT" && e.target.id !== "hiddenInput")
+          return;
+
+        if (state.selectedChar) {
+          if (
+            e.key.length === 1 ||
+            e.key === "Backspace" ||
+            e.key === "Delete"
+          ) {
+            handleInput(e.key);
+          }
+        }
+      });
+
+      // Hidden Input (Mobile)
+      document.getElementById("hiddenInput").addEventListener("input", (e) => {
+        if (e.data) {
+          handleInput(e.data.slice(-1));
+          e.target.value = ""; // Clear input
+        }
+      });
+
+      document.getElementById("startBtn").addEventListener("click", initGame);
+
+      document.getElementById("nextLevelBtn").addEventListener("click", () => {
+        document.getElementById("winModal").style.display = "none";
+        loadLevel(state.currentLevelIdx + 1);
+      });
+
+      document.getElementById("hintBtn").addEventListener("click", revealHint);
+
+      // Click outside to deselect
+      document.body.addEventListener("click", (e) => {
+        if (
+          !e.target.closest(".char-slot") &&
+          !e.target.closest(".freq-row") &&
+          !e.target.closest("#hintBtn")
+        ) {
+          state.selectedChar = null;
+          renderBoard();
+        }
+      });
+    </script>
+  </body>
+</html>
