@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FREQUENCY // DECIPHER</title>
+    <title>FREQUENCY // MASSIVE</title>
     <style>
       :root {
         --bg-color: #f4f4f0;
@@ -15,7 +15,8 @@
         --highlight: #dfe4ea;
         --mapped-bg: #2f3542;
         --mapped-text: #ffffff;
-        --eng-freq-color: #bdc3c7;
+        --tab-active: #2f3542;
+        --tab-inactive: #e0e0e0;
       }
 
       * {
@@ -172,14 +173,50 @@
       .sidebar {
         display: flex;
         flex-direction: column;
-        gap: 1.5rem;
+        gap: 0; /* Gap handled by margins to allow tabs to sit flush */
+        background: transparent;
       }
 
-      .tool-panel {
+      .sidebar-tabs {
+        display: flex;
+        gap: 5px;
+        margin-bottom: -3px; /* Overlap border */
+        z-index: 10;
+        padding-left: 5px;
+      }
+
+      .tab-btn {
+        flex: 1;
+        padding: 0.8rem;
+        font-size: 0.8rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        border: var(--border);
+        border-bottom: none;
+        background: var(--tab-inactive);
+        color: #888;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .tab-btn.active {
+        background: white;
+        color: var(--text);
+        padding-bottom: 1rem; /* visual pop */
+        margin-top: -5px;
+        box-shadow: 0px -2px 0px rgba(0, 0, 0, 0.1);
+      }
+
+      .tools-container {
         background: white;
         border: var(--border);
         box-shadow: var(--shadow);
         padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        position: relative;
+        z-index: 5;
       }
 
       .panel-title {
@@ -194,23 +231,6 @@
       }
 
       /* Frequency Chart */
-      .freq-legend {
-        display: flex;
-        gap: 10px;
-        font-size: 0.7rem;
-        margin-bottom: 10px;
-        justify-content: flex-end;
-      }
-      .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-      }
-      .legend-box {
-        width: 10px;
-        height: 10px;
-      }
-
       .freq-chart {
         display: flex;
         flex-direction: column;
@@ -225,44 +245,33 @@
         align-items: center;
         font-size: 0.8rem;
         cursor: pointer;
+        transition: background 0.1s;
       }
-      .freq-row:hover .freq-label {
-        color: var(--accent);
+      .freq-row:hover {
+        background: #f9f9f9;
       }
 
       .freq-label {
-        width: 20px;
+        width: 25px;
         font-weight: bold;
       }
 
       .freq-bar-container {
         flex-grow: 1;
         display: flex;
-        flex-direction: column;
-        position: relative;
+        align-items: center;
         height: 14px;
-        background: transparent;
       }
 
-      /* Overlapping bars logic */
       .bar {
         height: 100%;
-        position: absolute;
-        top: 0;
-        left: 0;
         border-radius: 2px;
       }
-
-      .bar.english {
-        background: var(--eng-freq-color);
-        z-index: 1;
-        opacity: 0.5;
-      }
-      .bar.cipher {
+      .bar.puzzle {
         background: var(--text);
-        z-index: 2;
-        height: 60%; /* Slightly thinner to show overlap clearly */
-        top: 20%;
+      }
+      .bar.reference {
+        background: #95a5a6;
       }
 
       /* Bigrams */
@@ -374,6 +383,10 @@
         box-shadow: var(--shadow);
         width: 100%;
       }
+
+      .hidden {
+        display: none !important;
+      }
     </style>
   </head>
   <body>
@@ -394,10 +407,14 @@
             Decrypt the messages. Patterns are your only weapon.
           </p>
           <div style="text-align: left; margin-bottom: 2rem; font-size: 0.9rem">
-            <p><strong>Levels are randomized.</strong></p>
-            <p>Use the gray frequency bars as a guide to standard English.</p>
+            <p><strong>MISSION PROFILE:</strong> 10 Levels</p>
+            <p><strong>PROTOCOL:</strong> 3 Easy, 4 Medium, 3 Hard</p>
+            <p>
+              <strong>TOOLS:</strong> Switch tabs to compare puzzle data vs
+              standard English.
+            </p>
           </div>
-          <button id="startBtn">Initialize Decryption</button>
+          <button id="startBtn">Initialize Mission</button>
         </div>
       </div>
 
@@ -438,55 +455,41 @@
           </main>
 
           <aside class="sidebar">
-            <!-- Frequency Analysis -->
-            <div class="tool-panel">
-              <div class="panel-title">
-                <span>Spectral Analysis</span>
-                <span style="font-size: 0.7rem; color: #888"
-                  >ENG vs CIPHER</span
-                >
+            <div class="sidebar-tabs">
+              <div
+                class="tab-btn active"
+                id="tabPuzzle"
+                onclick="switchTab('puzzle')"
+              >
+                Puzzle Data
               </div>
-
-              <div class="freq-legend">
-                <div class="legend-item">
-                  <div
-                    class="legend-box"
-                    style="background: var(--eng-freq-color)"
-                  ></div>
-                  <span>Standard English</span>
-                </div>
-                <div class="legend-item">
-                  <div class="legend-box" style="background: var(--text)"></div>
-                  <span>Current Cipher</span>
-                </div>
-              </div>
-
-              <div class="freq-chart" id="freqChart">
-                <!-- Bars generated here -->
+              <div
+                class="tab-btn"
+                id="tabEnglish"
+                onclick="switchTab('english')"
+              >
+                English Ref
               </div>
             </div>
 
-            <!-- Bigram Analysis -->
-            <div class="tool-panel">
-              <div class="panel-title">
-                <span>Top Bigrams</span>
-                <span style="font-size: 0.7rem; color: #888"
-                  >2-CHAR PATTERNS</span
-                >
+            <div class="tools-container">
+              <!-- DYNAMIC CONTENT AREA -->
+              <div id="toolsContent">
+                <!-- Populated by JS -->
               </div>
-              <div class="bigram-list" id="bigramList">
-                <!-- Bigrams generated here -->
-              </div>
-            </div>
 
-            <div
-              class="tool-panel"
-              style="background: #eee; border: none; box-shadow: none"
-            >
-              <p style="font-size: 0.8rem; text-align: center; color: #666">
-                <strong>Controls:</strong> Click a letter, then type on keyboard
-                to swap. <br />Press SPACE to clear a letter.
-              </p>
+              <div
+                style="
+                  margin-top: auto;
+                  padding-top: 1rem;
+                  border-top: 2px solid #eee;
+                "
+              >
+                <p style="font-size: 0.8rem; text-align: center; color: #666">
+                  <strong>Controls:</strong> Click letter, Type key. <br />Space
+                  to clear.
+                </p>
+              </div>
             </div>
           </aside>
         </div>
@@ -522,7 +525,7 @@
     </div>
 
     <script>
-      /* --- GAME DATA --- */
+      /* --- MASSIVE DATA POOL --- */
 
       const QUOTES_DB = {
         EASY: [
@@ -558,6 +561,35 @@
             text: "Be the change that you wish to see in the world.",
             source: "Mahatma Gandhi",
           },
+          {
+            text: "The only true wisdom is in knowing you know nothing.",
+            source: "Socrates",
+          },
+          { text: "I think, therefore I am.", source: "René Descartes" },
+          {
+            text: "That's one small step for man, one giant leap for mankind.",
+            source: "Neil Armstrong",
+          },
+          { text: "May the Force be with you.", source: "Star Wars" },
+          { text: "Elementary, my dear Watson.", source: "Sherlock Holmes" },
+          { text: "Life finds a way.", source: "Jurassic Park" },
+          { text: "Houston, we have a problem.", source: "Apollo 13" },
+          { text: "I'll be back.", source: "The Terminator" },
+          {
+            text: "Keep your friends close, but your enemies closer.",
+            source: "The Godfather",
+          },
+          { text: "Just keep swimming.", source: "Finding Nemo" },
+          {
+            text: "Power tends to corrupt, and absolute power corrupts absolutely.",
+            source: "Lord Acton",
+          },
+          {
+            text: "The journey of a thousand miles begins with one step.",
+            source: "Lao Tzu",
+          },
+          { text: "To infinity and beyond!", source: "Toy Story" },
+          { text: "Winter is coming.", source: "Game of Thrones" },
         ],
         MEDIUM: [
           {
@@ -588,6 +620,55 @@
             text: "Life is what happens when you are busy making other plans.",
             source: "John Lennon",
           },
+          {
+            text: "War is peace. Freedom is slavery. Ignorance is strength.",
+            source: "George Orwell",
+          },
+          {
+            text: "We are all in the gutter, but some of us are looking at the stars.",
+            source: "Oscar Wilde",
+          },
+          {
+            text: "Do not go gentle into that good night. Rage, rage against the dying of the light.",
+            source: "Dylan Thomas",
+          },
+          {
+            text: "I became insane, with long intervals of horrible sanity.",
+            source: "Edgar Allan Poe",
+          },
+          {
+            text: "Whatever our souls are made of, his and mine are the same.",
+            source: "Emily Brontë",
+          },
+          {
+            text: "The cosmos is within us. We are made of star-stuff. We are a way for the universe to know itself.",
+            source: "Carl Sagan",
+          },
+          {
+            text: "Nothing in life is to be feared, it is only to be understood. Now is the time to understand more, so that we may fear less.",
+            source: "Marie Curie",
+          },
+          {
+            text: "History will be kind to me for I intend to write it.",
+            source: "Winston Churchill",
+          },
+          {
+            text: "A room without books is like a body without a soul.",
+            source: "Cicero",
+          },
+          {
+            text: "You must not lose faith in humanity. Humanity is an ocean; if a few drops of the ocean are dirty, the ocean does not become dirty.",
+            source: "Mahatma Gandhi",
+          },
+          {
+            text: "The sky above the port was the color of television, tuned to a dead channel.",
+            source: "William Gibson",
+          },
+          { text: "Call me Ishmael.", source: "Herman Melville" },
+          {
+            text: "Happy families are all alike; every unhappy family is unhappy in its own way.",
+            source: "Leo Tolstoy",
+          },
         ],
         HARD: [
           {
@@ -613,6 +694,51 @@
           {
             text: "Deep in the human unconscious is a pervasive need for a logical universe that makes sense. But the real universe is always one step beyond logic.",
             source: "Frank Herbert",
+          },
+          {
+            text: "He who fights with monsters should look to it that he himself does not become a monster. And if you gaze long into an abyss, the abyss also gazes into you.",
+            source: "Friedrich Nietzsche",
+          },
+          {
+            text: "Man is condemned to be free; because once thrown into the world, he is responsible for everything he does.",
+            source: "Jean-Paul Sartre",
+          },
+          {
+            text: "The mystery of life isn't a problem to solve, but a reality to experience.",
+            source: "Frank Herbert",
+          },
+          {
+            text: "Science is not only compatible with spirituality; it is a profound source of spirituality.",
+            source: "Carl Sagan",
+          },
+          {
+            text: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.",
+            source: "Aristotle",
+          },
+          {
+            text: "I suppose it is tempting, if the only tool you have is a hammer, to treat everything as if it were a nail.",
+            source: "Abraham Maslow",
+          },
+          { text: "To define is to limit.", source: "Oscar Wilde" },
+          {
+            text: "Those who cannot remember the past are condemned to repeat it.",
+            source: "George Santayana",
+          },
+          {
+            text: "Logic will get you from A to B. Imagination will take you everywhere.",
+            source: "Albert Einstein",
+          },
+          {
+            text: "The measure of intelligence is the ability to change.",
+            source: "Albert Einstein",
+          },
+          {
+            text: "Real knowledge is to know the extent of one's ignorance.",
+            source: "Confucius",
+          },
+          {
+            text: "The unexamined life is not worth living.",
+            source: "Socrates",
           },
         ],
       };
@@ -647,6 +773,8 @@
         Z: 0.07,
       };
 
+      const ENGLISH_BIGRAMS = ["TH", "HE", "IN", "ER", "AN", "RE", "ND", "AT"];
+
       /* --- STATE --- */
       let state = {
         levelQueue: [],
@@ -661,25 +789,17 @@
         timerInterval: null,
         timePenalty: 0,
         currentMode: "NORMAL",
+        activeTab: "puzzle", // 'puzzle' or 'english'
       };
 
       /* --- CORE LOGIC --- */
 
       function initGame() {
-        // Generate a random 6-level playlist
         state.levelQueue = [];
 
-        // 2 Easy (Normal Mode)
-        addRandomLevel("EASY", "NORMAL");
-        addRandomLevel("EASY", "NORMAL");
-
-        // 2 Medium (Telegram Mode - No Punctuation)
-        addRandomLevel("MEDIUM", "NO_PUNCTUATION");
-        addRandomLevel("MEDIUM", "NO_PUNCTUATION");
-
-        // 2 Hard (Scriptio Continua - No Spaces)
-        addRandomLevel("HARD", "SCRIPTIO_CONTINUA");
-        addRandomLevel("HARD", "SCRIPTIO_CONTINUA");
+        for (let i = 0; i < 3; i++) addRandomLevel("EASY", "NORMAL");
+        for (let i = 0; i < 4; i++) addRandomLevel("MEDIUM", "NO_PUNCTUATION");
+        for (let i = 0; i < 3; i++) addRandomLevel("HARD", "SCRIPTIO_CONTINUA");
 
         document.getElementById("introScreen").style.display = "none";
         document.getElementById("gameScreen").style.display = "flex";
@@ -698,8 +818,13 @@
 
       function loadLevel(idx) {
         if (idx >= state.levelQueue.length) {
-          // End of playlist
-          if (confirm("MISSION ACCOMPLISHED. Play again with new levels?")) {
+          if (
+            confirm(
+              `MISSION COMPLETE.\nTotal Time: ${
+                document.getElementById("timer").textContent
+              }\n\nPlay again with new levels?`
+            )
+          ) {
             location.reload();
           }
           return;
@@ -710,7 +835,6 @@
         state.originalSource = levelData.quote.source;
         state.currentMode = levelData.mode;
 
-        // 1. Prepare Text based on Mode
         let cleanText = levelData.quote.text.toUpperCase();
         if (levelData.mode === "NO_PUNCTUATION") {
           cleanText = cleanText.replace(/[^A-Z\s]/g, "");
@@ -719,16 +843,11 @@
         }
         state.originalText = cleanText;
 
-        // 2. Generate Cipher Map (New Map for every level)
         const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
         const shuffled = [...alphabet].sort(() => Math.random() - 0.5);
         state.cipherMap = {};
+        alphabet.forEach((char, i) => (state.cipherMap[char] = shuffled[i]));
 
-        alphabet.forEach((char, i) => {
-          state.cipherMap[char] = shuffled[i];
-        });
-
-        // 3. Generate Cipher Text
         state.cipherText = state.originalText
           .split("")
           .map((char) => {
@@ -736,12 +855,10 @@
           })
           .join("");
 
-        // 4. Reset User State
         state.userMap = {};
         state.selectedChar = null;
         state.timePenalty = 0;
 
-        // 5. Update UI
         let modeName = "Standard Intercept";
         if (levelData.mode === "NO_PUNCTUATION") modeName = "Telegram Mode";
         if (levelData.mode === "SCRIPTIO_CONTINUA")
@@ -749,14 +866,14 @@
 
         document.getElementById("levelName").textContent = `Level ${
           idx + 1
-        } // ${modeName}`;
+        } / ${state.levelQueue.length} // ${modeName}`;
         document.getElementById("levelBadge").textContent = `LEVEL ${String(
           idx + 1
         ).padStart(2, "0")}`;
+
         renderBoard();
         renderTools();
 
-        // 6. Start Timer
         state.startTime = Date.now();
         if (state.timerInterval) clearInterval(state.timerInterval);
         state.timerInterval = setInterval(updateTimer, 1000);
@@ -768,11 +885,6 @@
         const container = document.getElementById("cipherContent");
         container.innerHTML = "";
 
-        // If scriptio continua, we have one massive word basically.
-        // We need to break it visually so it doesn't overflow container
-        // CSS 'word-break: break-all' handles text, but for our spans...
-
-        // Simple split strategy
         const words = state.cipherText.split(/(\s+)/);
 
         words.forEach((word) => {
@@ -820,16 +932,46 @@
         });
       }
 
-      function renderTools() {
-        renderFreqChart();
-        renderBigrams();
+      /* --- TABBED TOOL SYSTEM --- */
+
+      function switchTab(tabName) {
+        state.activeTab = tabName;
+        document.getElementById("tabPuzzle").className =
+          tabName === "puzzle" ? "tab-btn active" : "tab-btn";
+        document.getElementById("tabEnglish").className =
+          tabName === "english" ? "tab-btn active" : "tab-btn";
+        renderTools();
       }
 
-      function renderFreqChart() {
-        const container = document.getElementById("freqChart");
+      function renderTools() {
+        const container = document.getElementById("toolsContent");
         container.innerHTML = "";
 
-        // Count frequencies in Cipher Text
+        if (state.activeTab === "puzzle") {
+          renderPuzzleTools(container);
+        } else {
+          renderEnglishTools(container);
+        }
+      }
+
+      function renderPuzzleTools(container) {
+        // 1. Frequency Analysis Title
+        container.innerHTML += `
+            <div class="panel-title">
+                <span>Cipher Frequency</span>
+                <span style="font-size: 0.7rem; color: #888;">SINGLE LETTERS</span>
+            </div>
+            <div class="freq-chart" id="puzzleFreqChart"></div>
+            
+            <div class="panel-title" style="margin-top: 1.5rem;">
+                <span>Cipher Bigrams</span>
+                <span style="font-size: 0.7rem; color: #888;">TOP PAIRS</span>
+            </div>
+            <div class="bigram-list" id="puzzleBigramList"></div>
+        `;
+
+        // 2. Generate Chart
+        const chart = container.querySelector("#puzzleFreqChart");
         const counts = {};
         let total = 0;
         state.cipherText.split("").forEach((c) => {
@@ -839,63 +981,20 @@
           }
         });
 
-        // Sort Cipher Chars by frequency descending
         const sortedCipherChars = Object.keys(counts).sort(
           (a, b) => counts[b] - counts[a]
         );
 
         sortedCipherChars.forEach((char) => {
           const freq = (counts[char] / total) * 100;
-
-          // Determine likely candidate for Ghost Bar?
-          // No, the ghost bar should represent the ACTUAL English freq of the *mapped* letter if we knew it?
-          // OR just a static comparison?
-          // The most helpful UI is: "Here is Cipher 'X' (12%). Here is English 'E' (12%)."
-          // But we don't know X is E yet.
-          // So we should just sort English letters by frequency and show them alongside?
-          // NO. That's confusing.
-
-          // Better approach for "Standard English Frequency":
-          // Just show the standard English frequency for the letter "E", "T", "A"... in order?
-          // No, we are displaying by Cipher Character.
-
-          // User Request: "Show normal english frequency somewhere so i dont have to keep googling"
-          // Usually this implies a sorted list: E (12%), T (9%), A (8%)...
-          // Let's add a "Reference" tooltip or just draw the bars?
-
-          // Let's try this: We list the Cipher Chars by frequency.
-          // BEHIND them, we draw the bar for the Nth most frequent English letter.
-          // e.g. The #1 Cipher char gets the #1 English char (E) frequency bar behind it.
-          // This visually suggests "This is probably E".
-
-          // Find the index of this char in the sorted list
-          const rankIndex = sortedCipherChars.indexOf(char);
-
-          // Get the Nth most frequent English letter's frequency
-          const sortedEngKeys = Object.keys(ENGLISH_FREQ).sort(
-            (a, b) => ENGLISH_FREQ[b] - ENGLISH_FREQ[a]
-          );
-          const engRefKey = sortedEngKeys[rankIndex] || "Z";
-          const engRefFreq = ENGLISH_FREQ[engRefKey];
-
           const row = document.createElement("div");
           row.className = "freq-row";
           row.onclick = () => selectChar(char);
 
-          // Visual Multiplier for bar width (so 12% isn't tiny)
-          const scale = 4;
-
           row.innerHTML = `
             <div class="freq-label">${char}</div>
             <div class="freq-bar-container">
-              <!-- Ghost Bar (English Prediction) -->
-              <div class="bar english" style="width: ${
-                engRefFreq * scale
-              }%" title="Avg English '${engRefKey}': ${engRefFreq}%"></div>
-              <!-- Actual Cipher Bar -->
-              <div class="bar cipher" style="width: ${
-                freq * scale
-              }%" title="Cipher '${char}': ${freq.toFixed(1)}%"></div>
+              <div class="bar puzzle" style="width: ${freq * 4}%"></div>
             </div>
             <div style="font-size: 0.7rem; margin-left: 5px; min-width: 35px;">${freq.toFixed(
               1
@@ -905,15 +1004,11 @@
           if (state.userMap[char]) {
             row.innerHTML += `<div style="margin-left: 5px; color: var(--accent); font-weight:bold;">→ ${state.userMap[char]}</div>`;
           }
-
-          container.appendChild(row);
+          chart.appendChild(row);
         });
-      }
 
-      function renderBigrams() {
-        const container = document.getElementById("bigramList");
-        container.innerHTML = "";
-
+        // 3. Generate Bigrams
+        const bigramList = container.querySelector("#puzzleBigramList");
         const bigrams = {};
         const txt = state.cipherText.replace(/[^A-Z]/g, "");
 
@@ -922,18 +1017,68 @@
           bigrams[bg] = (bigrams[bg] || 0) + 1;
         }
 
-        const sorted = Object.keys(bigrams)
+        const sortedBigrams = Object.keys(bigrams)
           .sort((a, b) => bigrams[b] - bigrams[a])
           .slice(0, 8);
 
-        sorted.forEach((bg) => {
+        sortedBigrams.forEach((bg) => {
           const item = document.createElement("div");
           item.className = "bigram-item";
           const c1 = state.userMap[bg[0]] || "?";
           const c2 = state.userMap[bg[1]] || "?";
-
           item.innerHTML = `<span>${bg}</span> <span style="color: var(--accent)">${c1}${c2}</span>`;
-          container.appendChild(item);
+          bigramList.appendChild(item);
+        });
+      }
+
+      function renderEnglishTools(container) {
+        // 1. Title
+        container.innerHTML += `
+            <div class="panel-title">
+                <span>English Reference</span>
+                <span style="font-size: 0.7rem; color: #888;">STANDARD FREQ</span>
+            </div>
+            <div class="freq-chart" id="engFreqChart"></div>
+
+            <div class="panel-title" style="margin-top: 1.5rem;">
+                <span>Common Bigrams</span>
+                <span style="font-size: 0.7rem; color: #888;">STANDARD PAIRS</span>
+            </div>
+            <div class="bigram-list" id="engBigramList"></div>
+        `;
+
+        // 2. Generate English Chart
+        const chart = container.querySelector("#engFreqChart");
+        const sortedEng = Object.keys(ENGLISH_FREQ).sort(
+          (a, b) => ENGLISH_FREQ[b] - ENGLISH_FREQ[a]
+        );
+
+        sortedEng.forEach((char) => {
+          const freq = ENGLISH_FREQ[char];
+          const row = document.createElement("div");
+          row.className = "freq-row";
+          row.style.cursor = "default";
+          // No click event needed for ref
+
+          row.innerHTML = `
+                <div class="freq-label">${char}</div>
+                <div class="freq-bar-container">
+                    <div class="bar reference" style="width: ${
+                      freq * 4
+                    }%"></div>
+                </div>
+                <div style="font-size: 0.7rem; margin-left: 5px; min-width: 35px;">${freq}%</div>
+            `;
+          chart.appendChild(row);
+        });
+
+        // 3. Generate English Bigrams
+        const list = container.querySelector("#engBigramList");
+        ENGLISH_BIGRAMS.forEach((bg) => {
+          const item = document.createElement("div");
+          item.className = "bigram-item";
+          item.innerHTML = `<span>${bg}</span>`;
+          list.appendChild(item);
         });
       }
 
@@ -959,7 +1104,8 @@
         }
 
         renderBoard();
-        renderTools();
+        // Only re-render tools if we are on puzzle tab, to update user map arrows
+        if (state.activeTab === "puzzle") renderTools();
         checkWin();
       }
 
@@ -1012,7 +1158,7 @@
             state.userMap[c] = correctPlain;
             state.timePenalty += 30;
             renderBoard();
-            renderTools();
+            if (state.activeTab === "puzzle") renderTools();
             checkWin();
             updateTimer();
             return;
