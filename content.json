@@ -1,0 +1,117 @@
+{
+  "articles": [
+    {
+      "id": "group-theory",
+      "title": "The Beauty of Group Theory",
+      "description": "What I learned about abstract algebra at Stanford SUMaC and why symmetry is everywhere in math.",
+      "category": "technical",
+      "date": "2024-10",
+      "featured": true,
+      "tags": ["mathematics", "abstract-algebra", "group-theory"]
+    },
+    {
+      "id": "rhodes-scholaring",
+      "title": "Rhodes Scholaring: Grammar and Power in Decolonial Speech",
+      "description": "An analysis of how language shapes authority and identity in academic settings (written for the university writing class at Columbia).",
+      "category": "essays",
+      "date": "2025-11",
+      "featured": true,
+      "tags": ["language", "power", "decolonization"]
+    },
+    {
+      "id": "luiselli-ending",
+      "title": "What's In An Ending? Narrative Refusal in Tell Me How It Ends",
+      "description": "An exploration of how Valeria Luiselli refuses narrative closure in \"Tell Me How It Ends\" to resist the extraction and commodification of migrant children's trauma (written for the university writing class at Columbia).",
+      "category": "essays",
+      "date": "2025-11",
+      "featured": true,
+      "tags": ["literature", "narrative", "immigration"]
+    },
+    {
+      "id": "stem-newsletter",
+      "title": "Why I Started a STEM Newsletter",
+      "description": "Reflections on science communication and making STEM accessible through student publishing.",
+      "category": "blog",
+      "date": "2024-09",
+      "featured": true,
+      "tags": ["education", "communication", "stem"]
+    }
+  ],
+  "projects": [
+    {
+      "id": "ai-sentience",
+      "title": "AI Sentience Testing Frameworks",
+      "description": "Working on new ways to think about AI sentience beyond the Turing Test. Trying to build frameworks that actually make sense from a cognitive science perspective.",
+      "date": "2024-Present",
+      "organization": "Non-Trivial Fellowship",
+      "featured": true,
+      "tags": ["AI", "Philosophy", "Research"],
+      "link": "projects/ai-sentience.html"
+    },
+    {
+      "id": "fusion-reactor",
+      "title": "Fusion Reactor Neutronics Optimization",
+      "description": "Used Monte Carlo simulations in Python with OpenMC to analyze neutron behavior in fusion reactors. Found that octalithium plumbate could be a good breeding blanket material—which was pretty cool to discover.",
+      "date": "2023-2024",
+      "organization": "Polygence Research Program",
+      "featured": true,
+      "tags": ["Nuclear Physics", "Python", "Simulation"],
+      "link": "projects/fusion-reactor.html"
+    },
+    {
+      "id": "student-attrition",
+      "title": "Student Attrition Prediction Model",
+      "description": "Looked at what factors influence student dropout rates using linear regression. Got published in the July issue (pages 509-519).",
+      "date": "2024",
+      "organization": "Published in Curieux Academic Journal",
+      "featured": true,
+      "tags": ["Machine Learning", "Education"],
+      "link": "projects/student-attrition.html"
+    },
+    {
+      "id": "space-settlement",
+      "title": "Space Settlement Design Competition",
+      "description": "Founded my school's first INSSDC team and somehow made it to national runners-up. Coordinated 20 people and wrote a 60-page proposal for an orbital space settlement.",
+      "date": "2023",
+      "organization": "National Runners-Up",
+      "featured": false,
+      "tags": ["Engineering", "Leadership"],
+      "link": "projects/space-settlement.html"
+    },
+    {
+      "id": "math-visualization",
+      "title": "Mathematical Visualization Tools",
+      "description": "Making interactive visualizations for abstract math using Python and Manim. Focusing on linear transformations, group theory, and topology.",
+      "date": "2024",
+      "organization": "Personal Project",
+      "featured": false,
+      "tags": ["Mathematics", "Python", "Manim"],
+      "link": "projects/math-visualization.html"
+    },
+    {
+      "id": "cern-beamline",
+      "title": "CERN Beamline for Schools",
+      "description": "Proposed an experiment to measure muon lifetime. Got feedback from actual CERN physicists which was honestly surreal.",
+      "date": "2023",
+      "organization": "",
+      "featured": false,
+      "tags": ["Particle Physics", "Experimental Design"],
+      "link": "projects/cern-beamline.html"
+    }
+  ],
+  "experiments": [
+    {
+      "id": "wikispeed",
+      "title": "Wikipedia Speed Run!",
+      "description": "Navigate from obscure Wikipedia articles to complex topics using only internal links. Race against the clock!",
+      "link": "experiments/wikispeed.html",
+      "image": "images/wiki.png"
+    },
+    {
+      "id": "frequency",
+      "title": "Frequency",
+      "description": "Decrypt messages using frequency analysis. A cryptography puzzle game with 10 levels of increasing difficulty.",
+      "link": "experiments/frequency.html"
+    }
+  ]
+}
