@@ -813,7 +813,10 @@
         gameState.active = false;
         clearInterval(gameState.timerInterval);
 
-        const finalTime = gameState.elapsedSeconds;
+        // Ensure we have a valid final time
+        const finalTime = Math.floor((Date.now() - gameState.startTime) / 1000);
+        gameState.elapsedSeconds = finalTime;
+
         const timeVal = `${Math.floor(finalTime / 60)}:${(finalTime % 60)
           .toString()
           .padStart(2, "0")}`;
@@ -834,8 +837,8 @@
         );
         history.push({
           date: new Date().toLocaleDateString(),
-          clicks: clicks,
-          time: timeInSeconds,
+          clicks: parseInt(clicks),
+          time: parseInt(timeInSeconds),
           route: `${gameState.startPage.replace(
             /_/g,
             " "
@@ -851,24 +854,46 @@
         );
         if (history.length === 0) return;
 
-        const bestClicks = [...history].sort((a, b) => a.clicks - b.clicks)[0];
-        const bestTime = [...history].sort((a, b) => a.time - b.time)[0];
+        // Filter valid entries and convert to numbers
+        const validHistory = history
+          .filter(
+            (h) =>
+              h &&
+              typeof h.clicks !== "undefined" &&
+              typeof h.time !== "undefined" &&
+              !isNaN(parseInt(h.clicks)) &&
+              !isNaN(parseInt(h.time))
+          )
+          .map((h) => ({
+            ...h,
+            clicks: parseInt(h.clicks),
+            time: parseInt(h.time),
+          }));
 
-        document.getElementById("localStats").innerHTML = `
-          <div style="text-align: left; max-width: 400px; margin: 0 auto;">
-            <strong>Best by Clicks:</strong> ${
-              bestClicks.clicks
-            } clicks in ${Math.floor(bestClicks.time / 60)}:${(
+        if (validHistory.length === 0) return;
+
+        const bestClicks = [...validHistory].sort(
+          (a, b) => a.clicks - b.clicks
+        )[0];
+        const bestTime = [...validHistory].sort((a, b) => a.time - b.time)[0];
+
+        const bestClicksTime = `${Math.floor(bestClicks.time / 60)}:${(
           bestClicks.time % 60
         )
           .toString()
-          .padStart(2, "0")}<br>
-            <small>(${bestClicks.route})</small><br><br>
-            <strong>Best by Time:</strong> ${Math.floor(bestTime.time / 60)}:${(
+          .padStart(2, "0")}`;
+        const bestTimeClicks = bestTime.clicks;
+        const bestTimeFormatted = `${Math.floor(bestTime.time / 60)}:${(
           bestTime.time % 60
         )
           .toString()
-          .padStart(2, "0")} in ${bestTime.clicks} clicks<br>
+          .padStart(2, "0")}`;
+
+        document.getElementById("localStats").innerHTML = `
+          <div style="text-align: left; max-width: 400px; margin: 0 auto;">
+            <strong>Best by Clicks:</strong> ${bestClicks.clicks} clicks in ${bestClicksTime}<br>
+            <small>(${bestClicks.route})</small><br><br>
+            <strong>Best by Time:</strong> ${bestTimeFormatted} in ${bestTimeClicks} clicks<br>
             <small>(${bestTime.route})</small>
           </div>
         `;
