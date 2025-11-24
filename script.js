@@ -10,13 +10,29 @@ const INITIAL_ITEMS = {
 async function loadContent() {
   try {
     const response = await fetch("content.json");
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
     const data = await response.json();
+
+    console.log("Content loaded:", data); // Debug log
 
     renderExperiments(data.experiments);
     renderArticles(data.articles);
     renderProjects(data.projects);
   } catch (error) {
     console.error("Error loading content:", error);
+    // Fallback: show error message
+    document
+      .querySelectorAll(
+        ".experiments-grid, .articles-container, .projects-container"
+      )
+      .forEach((el) => {
+        if (el && el.children.length === 0) {
+          el.innerHTML =
+            '<p style="color: red;">Error loading content. Please check console.</p>';
+        }
+      });
   }
 }
 
