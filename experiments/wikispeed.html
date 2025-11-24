@@ -161,6 +161,10 @@
           sans-serif;
         font-size: 1.1rem;
         overflow-x: hidden;
+        user-select: text;
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
       }
 
       .wiki-content h1 {
@@ -720,22 +724,30 @@
       }
 
       async function loadPage(title) {
+        // Show loading immediately but don't block
         els.content.innerHTML = `<div class="loading-spinner">Traveling to ${title.replace(
           /_/g,
           " "
         )}...</div>`;
 
         try {
-          const data = await fetchWikiContent(title);
+          // Fetch data without blocking UI
+          const dataPromise = fetchWikiContent(title);
+          const data = await dataPromise;
 
+          // Quick state updates
           gameState.currentPage = data.title;
           gameState.path.push(data.title);
 
-          updateBreadcrumbs();
+          // Render content immediately
           els.content.innerHTML = data.html;
-          window.scrollTo(0, 0);
+          updateBreadcrumbs();
 
-          processLinks();
+          // Process links asynchronously after render
+          requestAnimationFrame(() => {
+            processLinks();
+            window.scrollTo(0, 0);
+          });
 
           const cleanCurrent = data.title
             .toLowerCase()
@@ -759,10 +771,13 @@
 
       function processLinks() {
         const links = els.content.querySelectorAll("a");
+        const fragment = document.createDocumentFragment();
+
         links.forEach((link) => {
           const href = link.getAttribute("href");
 
           if (href && href.startsWith("/wiki/") && !href.includes(":")) {
+            link.style.cursor = "pointer";
             link.onclick = (e) => {
               e.preventDefault();
               if (!gameState.active) return;
@@ -914,11 +929,25 @@
         ) {
           try {
             const res = await fetchWithTimeout(
-              `${APPS_SCRIPT_URL}?action=getScores`
+              `${APPS_SCRIPT_URL}?action=getScores`,
+              {},
+              5000
             );
             const data = await res.json();
 
             let scores = data.records || [];
+
+            // Filter out invalid scores
+            scores = scores.filter(
+              (s) =>
+                s &&
+                typeof s.clicks === "number" &&
+                typeof s.time === "number" &&
+                !isNaN(s.clicks) &&
+                !isNaN(s.time) &&
+                s.clicks > 0 &&
+                s.time > 0
+            );
 
             if (currentLeaderboardSort === "clicks") {
               scores = scores.sort((a, b) => {
@@ -941,7 +970,7 @@
                 .map(
                   (s, i) => `
                 <div class="lb-row">
-                  <span>#${i + 1} ${s.playerName}</span>
+                  <span>#${i + 1} ${s.playerName || "Anonymous"}</span>
                   <span>${s.clicks} clicks • ${Math.floor(s.time / 60)}:${(
                     s.time % 60
                   )
@@ -953,6 +982,7 @@
                 .join("");
             }
           } catch (e) {
+            console.error("Leaderboard error:", e);
             list.innerHTML = "<small>Leaderboard unavailable</small>";
           }
         } else {
@@ -986,6 +1016,18 @@
           loadGlobalLeaderboard();
         });
       });
+
+      // Prevent Ctrl+F from being blocked
+      document.addEventListener(
+        "keydown",
+        function (e) {
+          // Allow browser search (Ctrl+F / Cmd+F)
+          if ((e.ctrlKey || e.metaKey) && e.key === "f") {
+            return true;
+          }
+        },
+        true
+      );
 
       // Initialize
       renderLocalStats();
