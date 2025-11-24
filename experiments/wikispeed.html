@@ -7,7 +7,8 @@
     <style>
       :root {
         --bg-color: #f4f4f0;
-        --accent: #ff4757;
+        --accent: #2c3e50;
+        --highlight: #e74c3c;
         --text: #2f3542;
         --border: 3px solid #2f3542;
         --shadow: 4px 4px 0px #2f3542;
@@ -33,6 +34,7 @@
         padding: 1rem;
       }
 
+      /* --- Header --- */
       header {
         text-align: center;
         margin-bottom: 2rem;
@@ -50,6 +52,7 @@
         margin-bottom: 0.5rem;
       }
 
+      /* --- Layout --- */
       .game-layout {
         display: grid;
         grid-template-columns: 300px 1fr;
@@ -57,6 +60,13 @@
         align-items: start;
       }
 
+      @media (max-width: 900px) {
+        .game-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* --- Sidebar --- */
       .sidebar {
         background: white;
         border: var(--border);
@@ -67,10 +77,11 @@
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
+        z-index: 10;
       }
 
       .target-box {
-        background: var(--accent);
+        background: var(--highlight);
         color: white;
         padding: 1rem;
         border: var(--border);
@@ -91,14 +102,6 @@
         margin-top: 0.5rem;
       }
 
-      .target-desc {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        font-size: 0.85rem;
-        margin-top: 0.5rem;
-        opacity: 0.9;
-        font-style: italic;
-      }
-
       .stats-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -107,9 +110,12 @@
 
       .stat-item {
         text-align: center;
+        background: #eee;
+        padding: 0.5rem;
+        border: 2px solid #ddd;
       }
       .stat-val {
-        font-size: 2rem;
+        font-size: 1.8rem;
         font-weight: 900;
       }
       .stat-lbl {
@@ -119,6 +125,7 @@
         color: #777;
       }
 
+      /* --- Game Board --- */
       .game-board {
         background: white;
         border: var(--border);
@@ -126,6 +133,7 @@
         min-height: 80vh;
         display: flex;
         flex-direction: column;
+        position: relative;
       }
 
       .breadcrumbs {
@@ -143,7 +151,7 @@
         color: #666;
       }
       .crumb:last-child {
-        color: var(--accent);
+        color: var(--highlight);
         font-weight: bold;
       }
       .crumb::after {
@@ -155,47 +163,55 @@
         display: none;
       }
 
+      /* --- Wiki Content Styling --- */
       .wiki-content {
         padding: 2rem;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           sans-serif;
         font-size: 1.1rem;
         overflow-x: hidden;
-        transition: opacity 0.15s ease;
+        position: relative;
       }
 
-      .wiki-content h1 {
+      .wiki-content.loading {
+        opacity: 0.5;
+        pointer-events: none;
+        user-select: none;
+      }
+
+      /* Loading Overlay */
+      .loader-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+        backdrop-filter: blur(2px);
+      }
+      .loader-text {
+        font-family: "Courier New", monospace;
+        font-weight: 900;
         font-size: 2rem;
-        margin-bottom: 1rem;
-        border-bottom: 2px solid #eee;
-        padding-bottom: 0.5rem;
+        color: var(--highlight);
+        background: white;
+        padding: 1rem 2rem;
+        border: var(--border);
+        box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
+        animation: pulse 0.8s infinite alternate;
       }
-      .wiki-content h2 {
-        font-size: 1.5rem;
-        margin-top: 2rem;
-        margin-bottom: 1rem;
-        font-weight: bold;
-        border-bottom: 1px solid #eee;
+      @keyframes pulse {
+        from {
+          transform: scale(1);
+        }
+        to {
+          transform: scale(1.05);
+        }
       }
-      .wiki-content p {
-        margin-bottom: 1rem;
-      }
-      .wiki-content ul {
-        padding-left: 2rem;
-        margin-bottom: 1rem;
-      }
-      .wiki-content a {
-        color: #2980b9;
-        text-decoration: none;
-        font-weight: 500;
-      }
-      .wiki-content a:hover {
-        text-decoration: underline;
-        background: #e8f4fc;
-      }
-      .wiki-content .mw-empty-elt {
-        display: none;
-      }
+
+      /* Cleanup Wiki garbage */
+      .wiki-content .mw-empty-elt,
       .wiki-content .infobox,
       .wiki-content .sidebar,
       .wiki-content .thumb,
@@ -203,10 +219,56 @@
       .wiki-content .hatnote,
       .wiki-content .ambox,
       .wiki-content .reflist,
-      .wiki-content table {
+      .wiki-content table,
+      .wiki-content .mw-editsection {
         display: none !important;
       }
 
+      .wiki-content h1 {
+        font-size: 2.2rem;
+        margin-bottom: 1rem;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 0.5rem;
+      }
+      .wiki-content h2 {
+        font-size: 1.8rem;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #eee;
+      }
+      .wiki-content p {
+        margin-bottom: 1rem;
+        line-height: 1.6;
+      }
+      .wiki-content ul {
+        padding-left: 2rem;
+        margin-bottom: 1rem;
+      }
+
+      /* Links */
+      .wiki-content a {
+        color: #2980b9;
+        text-decoration: none;
+        font-weight: 500;
+        cursor: pointer;
+        padding: 0 2px;
+        border-radius: 2px;
+        transition: background 0.1s;
+      }
+      .wiki-content a:hover {
+        text-decoration: underline;
+        background: #e8f4fc;
+        color: #1a5276;
+      }
+      /* Dead links */
+      .wiki-content a.disabled-link {
+        color: #bbb;
+        pointer-events: none;
+        cursor: default;
+        text-decoration: none;
+      }
+
+      /* --- Buttons --- */
       button {
         background: var(--text);
         color: white;
@@ -234,8 +296,62 @@
       button:disabled {
         opacity: 0.5;
         cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
       }
 
+      /* --- Leaderboard --- */
+      .leaderboard-section {
+        margin-top: 2rem;
+        border-top: 2px solid #eee;
+        padding-top: 2rem;
+      }
+      .lb-tabs {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        margin-bottom: 1rem;
+      }
+      .lb-tab {
+        padding: 0.5rem 1rem;
+        background: #eee;
+        border: 2px solid #ddd;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.2s;
+      }
+      .lb-tab.active {
+        background: var(--highlight);
+        color: white;
+        border-color: var(--highlight);
+      }
+      .lb-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.8rem;
+        border-bottom: 1px solid #eee;
+        font-family: -apple-system, sans-serif;
+        font-size: 0.95rem;
+      }
+      .lb-row:nth-child(odd) {
+        background: #fafafa;
+      }
+      .lb-rank {
+        font-weight: bold;
+        width: 30px;
+        color: #888;
+      }
+      .lb-name {
+        font-weight: 600;
+        flex-grow: 1;
+        text-align: left;
+      }
+      .lb-stat {
+        font-family: "Courier New", monospace;
+        color: var(--text);
+      }
+
+      /* --- Modal --- */
       .modal-overlay {
         display: none;
         position: fixed;
@@ -254,82 +370,8 @@
         box-shadow: 10px 10px 0px rgba(255, 255, 255, 0.2);
         text-align: center;
       }
-      .modal h2 {
-        color: var(--accent);
-        font-size: 3rem;
-        margin-bottom: 1rem;
-      }
-
-      .leaderboard-section {
-        margin-top: 2rem;
-        border-top: 2px solid #eee;
-        padding-top: 2rem;
-      }
-
-      .lb-tabs {
-        display: flex;
-        gap: 0.5rem;
-        justify-content: center;
-        margin-bottom: 1rem;
-      }
-
-      .lb-tab {
-        padding: 0.5rem 1rem;
-        background: #eee;
-        border: 2px solid #ddd;
-        cursor: pointer;
-        font-weight: bold;
-        transition: all 0.2s;
-      }
-
-      .lb-tab.active {
-        background: var(--accent);
-        color: white;
-        border-color: var(--accent);
-      }
-
-      .lb-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 0.5rem;
-        border-bottom: 1px solid #eee;
-        font-family: -apple-system, sans-serif;
-      }
-      .lb-row.header {
-        font-weight: bold;
-        text-transform: uppercase;
-        color: #888;
-        font-size: 0.8rem;
-      }
-
       .hidden {
         display: none !important;
-      }
-      .loading-spinner {
-        font-size: 1.5rem;
-        color: #888;
-        text-align: center;
-        padding: 3rem;
-        animation: pulse 1s infinite;
-      }
-      @keyframes pulse {
-        0%,
-        100% {
-          opacity: 0.5;
-        }
-        50% {
-          opacity: 1;
-        }
-      }
-
-      @media (max-width: 900px) {
-        .game-layout {
-          grid-template-columns: 1fr;
-        }
-        .sidebar {
-          position: static;
-          margin-bottom: 1rem;
-        }
       }
     </style>
   </head>
@@ -338,7 +380,8 @@
       <header id="menuScreen">
         <h1>Wiki Speed Run</h1>
         <p style="margin-bottom: 2rem; color: #666">
-          Navigate from A to B using only internal links.
+          Navigate from A to B using only internal links. <br />
+          <small>Timer pauses while pages load.</small>
         </p>
 
         <div class="controls">
@@ -349,7 +392,12 @@
           <h3>Your Personal Bests (Local)</h3>
           <div
             id="localStats"
-            style="margin-top: 1rem; font-style: italic; color: #888"
+            style="
+              margin-top: 1rem;
+              font-style: italic;
+              color: #888;
+              font-size: 0.9rem;
+            "
           >
             No games played yet.
           </div>
@@ -361,7 +409,12 @@
             <div class="lb-tab active" data-sort="clicks">By Clicks</div>
             <div class="lb-tab" data-sort="time">By Time</div>
           </div>
-          <div id="leaderboardList" style="margin-top: 1rem">Loading...</div>
+          <div
+            id="leaderboardList"
+            style="margin-top: 1rem; max-height: 400px; overflow-y: auto"
+          >
+            Loading...
+          </div>
         </div>
       </header>
 
@@ -370,9 +423,7 @@
           <div class="target-box">
             <div class="target-label">Target Page</div>
             <div class="target-title" id="targetDisplay">?</div>
-            <div class="target-desc" id="targetDesc">
-              Loading description...
-            </div>
+            <div class="target-desc" id="targetDesc">...</div>
           </div>
 
           <div class="stats-grid">
@@ -391,6 +442,9 @@
 
         <main class="game-board">
           <div class="breadcrumbs" id="breadcrumbs"></div>
+          <div id="wikiLoader" class="loader-overlay hidden">
+            <div class="loader-text">TRAVELING...</div>
+          </div>
           <div class="wiki-content" id="wikiContent"></div>
         </main>
       </div>
@@ -398,7 +452,11 @@
 
     <div class="modal-overlay" id="winModal">
       <div class="modal">
-        <h2>VICTORY!</h2>
+        <h2
+          style="color: var(--highlight); font-size: 3rem; margin-bottom: 1rem"
+        >
+          VICTORY!
+        </h2>
         <p>
           You reached <strong><span id="winTargetName"></span></strong>
         </p>
@@ -424,6 +482,7 @@
             width: 100%;
             margin-bottom: 1rem;
             font-size: 1.1rem;
+            text-align: center;
           "
         />
         <button id="submitScoreBtn">Submit Score</button>
@@ -434,10 +493,11 @@
     </div>
 
     <script>
+      // --- CONFIG ---
       const APPS_SCRIPT_URL =
         "https://script.google.com/macros/s/AKfycbxJLd1l2RWakcrO0Txnjo65Cp4Bqp2RKe84R7bAwESuTvDTeDrMxF4mNXveKBUc108G/exec";
 
-      // Extremely specific, obscure starting points - very few direct connections
+      // --- DATA LISTS ---
       const startingPoints = [
         "Vuvuzela",
         "Kazoo",
@@ -489,7 +549,6 @@
         "Orienteering",
         "Canyoning",
         "Spelunking",
-        "Didgeridoo",
         "Sitar",
         "Koto",
         "Balalaika",
@@ -520,8 +579,6 @@
         "Sepak_takraw",
         "Petanque",
       ];
-
-      // Highly specific, technical, or niche target topics - require many hops
       const targetTopics = [
         "Heisenberg_uncertainty_principle",
         "Schrödinger's_cat",
@@ -601,24 +658,31 @@
         "Endurantism",
       ];
 
+      // --- STATE MANAGEMENT ---
       let gameState = {
         active: false,
+        isLoading: false,
         startPage: "",
         targetPage: "",
         currentPage: "",
         clicks: 0,
         startTime: 0,
-        elapsedSeconds: 0,
-        timerInterval: null,
+        totalPausedTime: 0,
+        pauseStart: 0,
         path: [],
+        timerInterval: null,
       };
 
+      // Cache leaderboard to fix "smoothness" issue
+      let globalScoresCache = [];
       let currentLeaderboardSort = "clicks";
 
+      // --- DOM ELEMENTS ---
       const els = {
         menu: document.getElementById("menuScreen"),
         game: document.getElementById("gameScreen"),
         content: document.getElementById("wikiContent"),
+        loader: document.getElementById("wikiLoader"),
         breadcrumbs: document.getElementById("breadcrumbs"),
         targetDisplay: document.getElementById("targetDisplay"),
         targetDesc: document.getElementById("targetDesc"),
@@ -626,223 +690,266 @@
         timer: document.getElementById("timerDisplay"),
         winModal: document.getElementById("winModal"),
         startBtn: document.getElementById("startBtn"),
-        giveUpBtn: document.getElementById("giveUpBtn"),
-        submitBtn: document.getElementById("submitScoreBtn"),
-        playAgainBtn: document.getElementById("playAgainBtn"),
+        leaderboardList: document.getElementById("leaderboardList"),
       };
 
-      // Fetch with timeout to prevent infinite loading
-      async function fetchWithTimeout(url, options = {}, timeout = 10000) {
-        const controller = new AbortController();
-        const id = setTimeout(() => controller.abort(), timeout);
+      // --- UTILS ---
+      const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, "0")}`;
+      };
 
-        try {
-          const response = await fetch(url, {
-            ...options,
-            signal: controller.signal,
-          });
-          clearTimeout(id);
-          return response;
-        } catch (error) {
-          clearTimeout(id);
-          throw error;
-        }
-      }
+      const normalizeTitle = (t) => t.replace(/_/g, " ").trim();
 
-      async function fetchWikiContent(title) {
-        const endpoint = `https://en.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(
-          title
-        )}&prop=text&format=json&origin=*&redirects=1&disabletoc=1`;
+      // --- LEADERBOARD LOGIC ---
+      async function fetchGlobalLeaderboard() {
         try {
-          const response = await fetchWithTimeout(endpoint, {}, 8000);
-          const data = await response.json();
-          if (data.error) throw new Error(data.error.info);
-          return {
-            title: data.parse.title,
-            html: data.parse.text["*"],
-          };
+          // Fetch once
+          const res = await fetch(`${APPS_SCRIPT_URL}?action=getScores`);
+          const data = await res.json();
+
+          if (data.records) {
+            globalScoresCache = data.records.filter(
+              (s) =>
+                s && typeof s.clicks === "number" && typeof s.time === "number"
+            );
+          }
+          renderLeaderboard();
         } catch (e) {
-          console.error("Wiki Fetch Error", e);
-          throw e;
+          console.error("Leaderboard fetch failed", e);
+          els.leaderboardList.innerHTML =
+            "<small>Could not load leaderboard.</small>";
         }
       }
 
-      async function fetchWikiSummary(title) {
-        const endpoint = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
-          title
-        )}`;
-        try {
-          const response = await fetchWithTimeout(endpoint);
-          return await response.json();
-        } catch (e) {
-          return { description: "Target Page" };
+      function renderLeaderboard() {
+        if (!globalScoresCache.length) {
+          els.leaderboardList.innerHTML = "<small>No scores yet.</small>";
+          return;
         }
+
+        // Sort locally - Smooth switching
+        const sorted = [...globalScoresCache].sort((a, b) => {
+          if (currentLeaderboardSort === "clicks") {
+            if (a.clicks !== b.clicks) return a.clicks - b.clicks;
+            return a.time - b.time;
+          } else {
+            if (a.time !== b.time) return a.time - b.time;
+            return a.clicks - b.clicks;
+          }
+        });
+
+        const top10 = sorted.slice(0, 10);
+
+        els.leaderboardList.innerHTML = top10
+          .map(
+            (s, i) => `
+          <div class="lb-row">
+            <span class="lb-rank">#${i + 1}</span>
+            <span class="lb-name">${s.playerName || "Anonymous"}</span>
+            <span class="lb-stat">${s.clicks} clicks • ${formatTime(
+              s.time
+            )}</span>
+          </div>
+        `
+          )
+          .join("");
       }
 
+      // --- GAMEPLAY LOGIC ---
       async function startGame() {
-        gameState.clicks = 0;
-        gameState.elapsedSeconds = 0;
-        gameState.path = [];
-        gameState.active = true;
+        gameState = {
+          active: true,
+          isLoading: false,
+          startPage:
+            startingPoints[Math.floor(Math.random() * startingPoints.length)],
+          targetPage:
+            targetTopics[Math.floor(Math.random() * targetTopics.length)],
+          currentPage: "",
+          clicks: 0,
+          startTime: Date.now(),
+          totalPausedTime: 0,
+          pauseStart: 0,
+          path: [],
+          timerInterval: null,
+        };
 
-        gameState.startPage =
-          startingPoints[Math.floor(Math.random() * startingPoints.length)];
-        gameState.targetPage =
-          targetTopics[Math.floor(Math.random() * targetTopics.length)];
-
-        // Ensure start and target are different
-        while (gameState.startPage === gameState.targetPage) {
-          gameState.targetPage =
-            targetTopics[Math.floor(Math.random() * targetTopics.length)];
-        }
-
+        // UI Reset
         els.menu.classList.add("hidden");
         els.game.classList.remove("hidden");
         els.winModal.style.display = "none";
         els.clicks.textContent = "0";
         els.timer.textContent = "0:00";
+        els.content.innerHTML = "";
 
-        els.targetDisplay.textContent = gameState.targetPage.replace(/_/g, " ");
-        fetchWikiSummary(gameState.targetPage).then((data) => {
-          els.targetDesc.textContent =
-            data.description || data.extract || "A Wikipedia Article";
-        });
+        // Setup Target
+        els.targetDisplay.textContent = normalizeTitle(gameState.targetPage);
+        els.targetDesc.textContent = "Loading info...";
 
-        gameState.startTime = Date.now();
+        // Start Timer Loop
         if (gameState.timerInterval) clearInterval(gameState.timerInterval);
-        gameState.timerInterval = setInterval(() => {
-          gameState.elapsedSeconds = Math.floor(
-            (Date.now() - gameState.startTime) / 1000
-          );
-          updateTimer();
-        }, 100);
+        gameState.timerInterval = setInterval(updateTimer, 100);
 
+        // Fetch Target Summary (background)
+        fetch(
+          `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
+            gameState.targetPage
+          )}`
+        )
+          .then((r) => r.json())
+          .then(
+            (d) =>
+              (els.targetDesc.textContent =
+                d.description || d.extract || "Target Page")
+          )
+          .catch(() => (els.targetDesc.textContent = "Wiki Article"));
+
+        // Load First Page
         await loadPage(gameState.startPage);
       }
 
+      function updateTimer() {
+        if (!gameState.active || gameState.isLoading) return;
+
+        // Calculate effective time: (Now - Start) - (Total Time Spent Loading)
+        const currentDiff =
+          Date.now() - gameState.startTime - gameState.totalPausedTime;
+        const seconds = Math.floor(currentDiff / 1000);
+        els.timer.textContent = formatTime(seconds);
+      }
+
       async function loadPage(title) {
-        // Instant visual feedback
-        els.content.style.opacity = "0.3";
+        // PAUSE TIMER START
+        gameState.isLoading = true;
+        gameState.pauseStart = Date.now();
+        els.loader.classList.remove("hidden");
+        els.content.classList.add("loading");
 
         try {
-          const data = await fetchWikiContent(title);
+          const endpoint = `https://en.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(
+            title
+          )}&prop=text&format=json&origin=*&redirects=1&disabletoc=1`;
 
-          gameState.currentPage = data.title;
-          gameState.path.push(data.title);
+          const response = await fetch(endpoint);
+          const data = await response.json();
 
-          // Update everything at once
-          els.content.innerHTML = data.html;
-          els.content.style.opacity = "1";
+          if (data.error) throw new Error("Page not found");
+
+          const html = data.parse.text["*"];
+          const realTitle = data.parse.title;
+
+          // Update State
+          gameState.currentPage = realTitle;
+          gameState.path.push(realTitle);
+
+          // Render
+          els.content.innerHTML = html;
           updateBreadcrumbs();
-          processLinks();
-          window.scrollTo({ top: 0, behavior: "instant" });
+          window.scrollTo(0, 0);
 
-          const cleanCurrent = data.title
-            .toLowerCase()
-            .replace(/_/g, " ")
-            .trim();
-          const cleanTarget = gameState.targetPage
-            .toLowerCase()
-            .replace(/_/g, " ")
-            .trim();
+          // Check Win Condition
+          const cleanCurrent = normalizeTitle(realTitle).toLowerCase();
+          const cleanTarget = normalizeTitle(
+            gameState.targetPage
+          ).toLowerCase();
 
           if (cleanCurrent === cleanTarget) {
             handleWin();
+            // Don't unpause if win
+            return;
           }
-        } catch (error) {
-          els.content.style.opacity = "1";
-          els.content.innerHTML = `<div style="padding: 2rem; text-align: center;">
-            <p style="color: #e74c3c; margin-bottom: 1rem;">Failed to load page: ${error.message}</p>
-            <button onclick="loadPage('${title}')">Try Again</button>
-          </div>`;
+        } catch (e) {
+          console.error(e);
+          alert("Error loading page. Try clicking again.");
+        } finally {
+          // PAUSE TIMER END
+          if (gameState.active) {
+            const pauseDuration = Date.now() - gameState.pauseStart;
+            gameState.totalPausedTime += pauseDuration;
+
+            gameState.isLoading = false;
+            els.loader.classList.add("hidden");
+            els.content.classList.remove("loading");
+          }
         }
       }
 
-      function processLinks() {
-        const links = els.content.querySelectorAll("a");
+      // High Performance Event Delegation (Fixes "smoothness" of clicks)
+      els.content.addEventListener("click", (e) => {
+        if (!gameState.active || gameState.isLoading) return;
 
-        links.forEach((link) => {
+        // Find closest anchor tag
+        const link = e.target.closest("a");
+        if (!link) return;
+
+        e.preventDefault();
+
+        const href = link.getAttribute("href");
+
+        // Check if it's a valid internal wiki link
+        if (href && href.startsWith("/wiki/") && !href.includes(":")) {
+          const nextTitle = decodeURIComponent(href.split("/wiki/")[1]);
+          gameState.clicks++;
+          els.clicks.textContent = gameState.clicks;
+          loadPage(nextTitle);
+        }
+      });
+
+      // Disable other links
+      els.content.addEventListener("mouseover", (e) => {
+        const link = e.target.closest("a");
+        if (link) {
           const href = link.getAttribute("href");
-
-          if (href && href.startsWith("/wiki/") && !href.includes(":")) {
-            link.style.cursor = "pointer";
-            link.addEventListener(
-              "click",
-              (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (!gameState.active) return;
-
-                const nextTitle = decodeURIComponent(href.split("/wiki/")[1]);
-                gameState.clicks++;
-                els.clicks.textContent = gameState.clicks;
-                loadPage(nextTitle);
-              },
-              { once: false, passive: false }
-            );
-          } else {
-            link.removeAttribute("href");
-            link.style.color = "#999";
-            link.style.cursor = "default";
-            link.style.textDecoration = "none";
-            link.style.pointerEvents = "none";
+          if (!href || !href.startsWith("/wiki/") || href.includes(":")) {
+            link.classList.add("disabled-link");
           }
-        });
-      }
+        }
+      });
 
       function updateBreadcrumbs() {
-        const showPath =
+        const displayPath =
           gameState.path.length > 4
             ? ["...", ...gameState.path.slice(-4)]
             : gameState.path;
 
-        els.breadcrumbs.innerHTML = showPath
-          .map(
-            (item) => `<span class="crumb">${item.replace(/_/g, " ")}</span>`
-          )
+        els.breadcrumbs.innerHTML = displayPath
+          .map((t) => `<span class="crumb">${normalizeTitle(t)}</span>`)
           .join("");
-      }
-
-      function updateTimer() {
-        const mins = Math.floor(gameState.elapsedSeconds / 60);
-        const secs = gameState.elapsedSeconds % 60;
-        els.timer.textContent = `${mins}:${secs.toString().padStart(2, "0")}`;
       }
 
       function handleWin() {
         gameState.active = false;
         clearInterval(gameState.timerInterval);
 
-        // Ensure we have a valid final time
-        const finalTime = Math.floor((Date.now() - gameState.startTime) / 1000);
-        gameState.elapsedSeconds = finalTime;
+        // Final calculation
+        const finalSeconds = Math.floor(
+          (Date.now() - gameState.startTime - gameState.totalPausedTime) / 1000
+        );
 
-        const timeVal = `${Math.floor(finalTime / 60)}:${(finalTime % 60)
-          .toString()
-          .padStart(2, "0")}`;
-
-        document.getElementById("winTargetName").textContent =
-          gameState.targetPage.replace(/_/g, " ");
+        document.getElementById("winTargetName").textContent = normalizeTitle(
+          gameState.targetPage
+        );
         document.getElementById("winClicks").textContent = gameState.clicks;
-        document.getElementById("winTime").textContent = timeVal;
+        document.getElementById("winTime").textContent =
+          formatTime(finalSeconds);
 
         els.winModal.style.display = "flex";
 
-        saveLocalScore(gameState.clicks, finalTime);
+        // Save local history
+        saveLocalScore(gameState.clicks, finalSeconds);
       }
 
-      function saveLocalScore(clicks, timeInSeconds) {
+      // --- DATA STORAGE ---
+      function saveLocalScore(clicks, time) {
         const history = JSON.parse(
           localStorage.getItem("wikiSpeedRun_history") || "[]"
         );
         history.push({
-          date: new Date().toLocaleDateString(),
           clicks: parseInt(clicks),
-          time: parseInt(timeInSeconds),
-          route: `${gameState.startPage.replace(
-            /_/g,
-            " "
-          )} → ${gameState.targetPage.replace(/_/g, " ")}`,
+          time: parseInt(time),
+          route: `${gameState.startPage} -> ${gameState.targetPage}`,
+          date: new Date().toLocaleDateString(),
         });
         localStorage.setItem("wikiSpeedRun_history", JSON.stringify(history));
         renderLocalStats();
@@ -852,182 +959,79 @@
         const history = JSON.parse(
           localStorage.getItem("wikiSpeedRun_history") || "[]"
         );
-        if (history.length === 0) return;
+        if (!history.length) return;
 
-        // Filter valid entries and convert to numbers
-        const validHistory = history
-          .filter(
-            (h) =>
-              h &&
-              typeof h.clicks !== "undefined" &&
-              typeof h.time !== "undefined" &&
-              !isNaN(parseInt(h.clicks)) &&
-              !isNaN(parseInt(h.time))
-          )
-          .map((h) => ({
-            ...h,
-            clicks: parseInt(h.clicks),
-            time: parseInt(h.time),
-          }));
+        const valid = history.filter((h) => h.clicks > 0);
+        if (!valid.length) return;
 
-        if (validHistory.length === 0) return;
-
-        const bestClicks = [...validHistory].sort(
-          (a, b) => a.clicks - b.clicks
-        )[0];
-        const bestTime = [...validHistory].sort((a, b) => a.time - b.time)[0];
-
-        const bestClicksTime = `${Math.floor(bestClicks.time / 60)}:${(
-          bestClicks.time % 60
-        )
-          .toString()
-          .padStart(2, "0")}`;
-        const bestTimeClicks = bestTime.clicks;
-        const bestTimeFormatted = `${Math.floor(bestTime.time / 60)}:${(
-          bestTime.time % 60
-        )
-          .toString()
-          .padStart(2, "0")}`;
+        const bestClick = [...valid].sort((a, b) => a.clicks - b.clicks)[0];
+        const bestTime = [...valid].sort((a, b) => a.time - b.time)[0];
 
         document.getElementById("localStats").innerHTML = `
-          <div style="text-align: left; max-width: 400px; margin: 0 auto;">
-            <strong>Best by Clicks:</strong> ${bestClicks.clicks} clicks in ${bestClicksTime}<br>
-            <small>(${bestClicks.route})</small><br><br>
-            <strong>Best by Time:</strong> ${bestTimeFormatted} in ${bestTimeClicks} clicks<br>
-            <small>(${bestTime.route})</small>
-          </div>
+          <strong>Best Clicks:</strong> ${bestClick.clicks} (${formatTime(
+          bestClick.time
+        )})<br>
+          <strong>Best Time:</strong> ${formatTime(bestTime.time)} (${
+          bestTime.clicks
+        } clicks)
         `;
       }
 
-      async function submitGlobalScore() {
-        const name =
-          document.getElementById("playerName").value.trim() || "Anonymous";
-        const btn = document.getElementById("submitScoreBtn");
-
-        const originalText = btn.textContent;
-        btn.textContent = "Submitting...";
-        btn.disabled = true;
-        btn.style.opacity = "0.7";
-
-        try {
-          const payload = {
-            playerName: name,
-            clicks: parseInt(gameState.clicks),
-            time: parseInt(gameState.elapsedSeconds),
-            route: `${gameState.startPage.replace(
-              /_/g,
-              " "
-            )} → ${gameState.targetPage.replace(/_/g, " ")}`,
-            timestamp: Date.now(),
-          };
-
-          await fetch(APPS_SCRIPT_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
-          });
-
-          btn.textContent = "Score Saved!";
-          btn.style.backgroundColor = "#27ae60";
-          btn.style.borderColor = "#27ae60";
-          btn.style.opacity = "1";
-
-          setTimeout(() => loadGlobalLeaderboard(), 1500);
-        } catch (e) {
-          console.error("Submit error:", e);
-          btn.textContent = "Error (Saved Locally)";
-          btn.style.backgroundColor = "#e74c3c";
-        }
-      }
-
-      async function loadGlobalLeaderboard() {
-        const list = document.getElementById("leaderboardList");
-        if (
-          APPS_SCRIPT_URL.includes("script.google.com") &&
-          !APPS_SCRIPT_URL.includes("YOUR_URL")
-        ) {
-          try {
-            const res = await fetchWithTimeout(
-              `${APPS_SCRIPT_URL}?action=getScores`,
-              {},
-              5000
-            );
-            const data = await res.json();
-
-            let scores = data.records || [];
-
-            // Filter out invalid scores
-            scores = scores.filter(
-              (s) =>
-                s &&
-                typeof s.clicks === "number" &&
-                typeof s.time === "number" &&
-                !isNaN(s.clicks) &&
-                !isNaN(s.time) &&
-                s.clicks > 0 &&
-                s.time > 0
-            );
-
-            if (currentLeaderboardSort === "clicks") {
-              scores = scores.sort((a, b) => {
-                if (a.clicks !== b.clicks) return a.clicks - b.clicks;
-                return a.time - b.time;
-              });
-            } else {
-              scores = scores.sort((a, b) => {
-                if (a.time !== b.time) return a.time - b.time;
-                return a.clicks - b.clicks;
-              });
-            }
-
-            scores = scores.slice(0, 10);
-
-            if (scores.length === 0) {
-              list.innerHTML = "<small>No scores yet. Be the first!</small>";
-            } else {
-              list.innerHTML = scores
-                .map(
-                  (s, i) => `
-                <div class="lb-row">
-                  <span>#${i + 1} ${s.playerName || "Anonymous"}</span>
-                  <span>${s.clicks} clicks • ${Math.floor(s.time / 60)}:${(
-                    s.time % 60
-                  )
-                    .toString()
-                    .padStart(2, "0")}</span>
-                </div>
-              `
-                )
-                .join("");
-            }
-          } catch (e) {
-            console.error("Leaderboard error:", e);
-            list.innerHTML = "<small>Leaderboard unavailable</small>";
-          }
-        } else {
-          list.innerHTML = "<small>Leaderboard not configured.</small>";
-        }
-      }
-
-      // Event Listeners
+      // --- EVENT LISTENERS ---
       els.startBtn.addEventListener("click", startGame);
 
-      els.giveUpBtn.addEventListener("click", () => {
-        if (confirm("Are you sure you want to quit?")) {
-          location.reload();
-        }
+      document.getElementById("giveUpBtn").addEventListener("click", () => {
+        if (confirm("Give up?")) location.reload();
       });
 
-      els.playAgainBtn.addEventListener("click", () => {
-        location.reload();
-      });
+      document
+        .getElementById("playAgainBtn")
+        .addEventListener("click", () => location.reload());
 
-      els.submitBtn.addEventListener("click", submitGlobalScore);
+      document
+        .getElementById("submitScoreBtn")
+        .addEventListener("click", async function () {
+          const name = document.getElementById("playerName").value.trim();
+          if (!name) return alert("Please enter a name");
 
-      // Leaderboard tabs
+          this.textContent = "Sending...";
+          this.disabled = true;
+
+          const finalSeconds = Math.floor(
+            (Date.now() - gameState.startTime - gameState.totalPausedTime) /
+              1000
+          );
+
+          try {
+            await fetch(APPS_SCRIPT_URL, {
+              method: "POST",
+              mode: "no-cors",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                playerName: name,
+                clicks: gameState.clicks,
+                time: finalSeconds,
+                route: `${gameState.startPage} -> ${gameState.targetPage}`,
+                timestamp: Date.now(),
+              }),
+            });
+
+            this.textContent = "Saved!";
+            setTimeout(() => {
+              // Refresh leaderboard after submit
+              fetchGlobalLeaderboard().then(() => {
+                els.winModal.style.display = "none";
+                els.menu.classList.remove("hidden");
+                els.game.classList.add("hidden");
+              });
+            }, 1000);
+          } catch (e) {
+            alert("Error saving score (Network)");
+            this.disabled = false;
+          }
+        });
+
+      // Tab Switching
       document.querySelectorAll(".lb-tab").forEach((tab) => {
         tab.addEventListener("click", () => {
           document
@@ -1035,41 +1039,13 @@
             .forEach((t) => t.classList.remove("active"));
           tab.classList.add("active");
           currentLeaderboardSort = tab.dataset.sort;
-          loadGlobalLeaderboard();
+          renderLeaderboard(); // Pure client-side re-render
         });
-      });
-
-      // Disable Ctrl+F and Cmd+F during gameplay
-      document.addEventListener(
-        "keydown",
-        function (e) {
-          if (gameState.active && (e.ctrlKey || e.metaKey) && e.key === "f") {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-          }
-        },
-        true
-      );
-
-      // Disable right-click context menu during gameplay
-      document.addEventListener("contextmenu", function (e) {
-        if (gameState.active && e.target.closest(".wiki-content")) {
-          e.preventDefault();
-          return false;
-        }
-      });
-
-      // Disable text selection in wiki content during gameplay
-      els.content.addEventListener("mousedown", function (e) {
-        if (gameState.active && !e.target.matches("a")) {
-          e.preventDefault();
-        }
       });
 
       // Initialize
       renderLocalStats();
-      loadGlobalLeaderboard();
+      fetchGlobalLeaderboard();
     </script>
   </body>
 </html>
