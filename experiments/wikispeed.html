@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Wikipedia Speed Run Yay</title>
+    <title>Wikipedia Speed Run</title>
     <style>
       :root {
         --bg-color: #f4f4f0;
@@ -20,14 +20,13 @@
       }
 
       body {
-        font-family: "Courier New", Courier, monospace; /* Retro vibe */
+        font-family: "Courier New", Courier, monospace;
         background: var(--bg-color);
         color: var(--text);
         line-height: 1.6;
         padding-bottom: 2rem;
       }
 
-      /* --- Layout --- */
       .container {
         max-width: 1400px;
         margin: 0 auto;
@@ -58,7 +57,6 @@
         align-items: start;
       }
 
-      /* --- Sidebar --- */
       .sidebar {
         background: white;
         border: var(--border);
@@ -121,7 +119,6 @@
         color: #777;
       }
 
-      /* --- Content Area --- */
       .game-board {
         background: white;
         border: var(--border);
@@ -166,7 +163,6 @@
         overflow-x: hidden;
       }
 
-      /* Wikipedia Specific Overrides to make it readable/playable */
       .wiki-content h1 {
         font-size: 2rem;
         margin-bottom: 1rem;
@@ -199,7 +195,6 @@
       .wiki-content .mw-empty-elt {
         display: none;
       }
-      /* Hide clutter */
       .wiki-content .infobox,
       .wiki-content .sidebar,
       .wiki-content .thumb,
@@ -211,7 +206,6 @@
         display: none !important;
       }
 
-      /* --- Buttons --- */
       button {
         background: var(--text);
         color: white;
@@ -241,7 +235,6 @@
         cursor: not-allowed;
       }
 
-      /* --- Modal --- */
       .modal-overlay {
         display: none;
         position: fixed;
@@ -272,6 +265,28 @@
         padding-top: 2rem;
       }
 
+      .lb-tabs {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        margin-bottom: 1rem;
+      }
+
+      .lb-tab {
+        padding: 0.5rem 1rem;
+        background: #eee;
+        border: 2px solid #ddd;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.2s;
+      }
+
+      .lb-tab.active {
+        background: var(--accent);
+        color: white;
+        border-color: var(--accent);
+      }
+
       .lb-row {
         display: flex;
         justify-content: space-between;
@@ -286,7 +301,6 @@
         font-size: 0.8rem;
       }
 
-      /* Utility */
       .hidden {
         display: none !important;
       }
@@ -298,10 +312,11 @@
         animation: pulse 1s infinite;
       }
       @keyframes pulse {
-        0% {
+        0%,
+        100% {
           opacity: 0.5;
         }
-        100% {
+        50% {
           opacity: 1;
         }
       }
@@ -341,6 +356,10 @@
 
         <div class="leaderboard-section">
           <h3>Global Leaderboard</h3>
+          <div class="lb-tabs">
+            <div class="lb-tab active" data-sort="clicks">By Clicks</div>
+            <div class="lb-tab" data-sort="time">By Time</div>
+          </div>
           <div id="leaderboardList" style="margin-top: 1rem">Loading...</div>
         </div>
       </header>
@@ -414,692 +433,173 @@
     </div>
 
     <script>
-      // --- CONFIGURATION ---
-      // Replace this URL with your Google Apps Script Web App URL if you have one.
-      // If left as is, the game works perfectly but global leaderboard submission will fail gracefully.
       const APPS_SCRIPT_URL =
         "https://script.google.com/macros/s/AKfycbxJLd1l2RWakcrO0Txnjo65Cp4Bqp2RKe84R7bAwESuTvDTeDrMxF4mNXveKBUc108G/exec";
 
-      // --- DATA POOLS ---
+      // Extremely specific, obscure starting points - very few direct connections
       const startingPoints = [
-        "Acorn",
-        "Alarm_clock",
-        "Anchor",
-        "Anvil",
-        "Apple",
-        "Apron",
-        "Armchair",
-        "Arrow",
-        "Axe",
-        "Baby_bottle",
-        "Backpack",
-        "Balloon",
-        "Banana",
-        "Bandage",
-        "Banjo",
-        "Barbed_wire",
-        "Basket",
-        "Basketball",
-        "Bathtub",
-        "Battery_(electricity)",
-        "Bed",
-        "Bell",
-        "Belt_(clothing)",
-        "Bicycle",
-        "Binoculars",
-        "Birdcage",
-        "Biscuit",
-        "Blanket",
-        "Blender",
-        "Book",
-        "Boomerang",
-        "Boot",
-        "Bottle",
-        "Bow_tie",
-        "Bowl",
-        "Box",
-        "Bracelet",
-        "Bread",
-        "Brick",
-        "Briefcase",
-        "Broom",
-        "Bucket",
-        "Button",
-        "Calculator",
-        "Camera",
-        "Candle",
-        "Canoe",
-        "Cap",
-        "Car",
-        "Cardboard",
-        "Carpet",
-        "Carrot",
-        "Chair",
-        "Chalk",
-        "Cheese",
-        "Chess",
-        "Clock",
-        "Cloud",
-        "Coat",
-        "Coconut",
-        "Coffee",
-        "Comb",
-        "Compass",
-        "Computer_mouse",
-        "Cookie",
-        "Cork",
-        "Cotton",
-        "Crayon",
-        "Cup",
-        "Desk",
-        "Diamond",
-        "Dice",
-        "Dictionary",
-        "Dishwasher",
-        "Doll",
-        "Door_handle",
-        "Doorbell",
-        "Drums",
-        "Duck",
-        "Dustpan",
-        "Egg",
-        "Elastic_band",
-        "Electric_guitar",
-        "Elephant",
-        "Elevator",
-        "Envelope",
-        "Eraser",
-        "Eye_glasses",
-        "Fan_(machine)",
-        "Feather",
-        "Fence",
-        "Fire_extinguisher",
-        "Fireplace",
-        "Fish_hook",
-        "Flag",
-        "Flashlight",
-        "Flower_pot",
-        "Flute",
-        "Football",
-        "Fork",
-        "Fridge",
-        "Frog",
-        "Garden_hose",
-        "Garlic",
-        "Gate",
-        "Glove",
-        "Glue",
-        "Goggles",
-        "Goldfish",
-        "Golf_club",
-        "Grape",
-        "Guitar",
-        "Hammer",
-        "Hammock",
-        "Handkerchief",
-        "Hanger",
-        "Hat",
-        "Headphones",
-        "Helmet",
-        "Hinge",
-        "Honey",
-        "Hook",
-        "Horseshoe",
-        "Hourglass",
-        "Ice_cream",
-        "Ice_skate",
-        "Igloo",
-        "Ink",
-        "Iron_(appliance)",
-        "Jacket",
-        "Jar",
-        "Jeans",
-        "Jigsaw_puzzle",
-        "Juice",
-        "Kettle",
-        "Key",
-        "Keyboard_(computer)",
-        "Kite",
-        "Knife",
-        "Knot",
-        "Ladder",
-        "Lamp",
-        "Lantern",
-        "Laptop",
-        "Leaf",
-        "Lemon",
-        "Light_bulb",
-        "Lipstick",
-        "Lock",
-        "Log",
-        "Magnet",
-        "Magnifying_glass",
-        "Map",
-        "Marble_(toy)",
-        "Mask",
-        "Match",
-        "Mattress",
-        "Microphone",
-        "Microwave_oven",
-        "Milk",
-        "Mirror",
-        "Mitten",
-        "Money",
-        "Mop",
-        "Motorcycle",
-        "Mouse_trap",
-        "Mug",
-        "Mushroom",
-        "Nail_(fastener)",
-        "Necklace",
-        "Needle",
-        "Net",
-        "Newspaper",
-        "Notebook",
-        "Oar",
-        "Onion",
-        "Orange_(fruit)",
-        "Oven",
-        "Paint_brush",
-        "Pan",
-        "Paper",
-        "Paper_clip",
-        "Parachute",
-        "Passport",
-        "Peach",
-        "Peanut",
-        "Pear",
-        "Pen",
-        "Pencil",
-        "Perfume",
-        "Phone",
-        "Piano",
-        "Pickaxe",
-        "Picture_frame",
-        "Pie",
-        "Pillow",
-        "Pizza",
-        "Plate",
-        "Playing_card",
-        "Plug",
-        "Pocket_watch",
-        "Potato",
-        "Pottery",
-        "Purse",
-        "Radio",
-        "Raincoat",
-        "Rake",
-        "Razor",
-        "Refrigerator",
-        "Remote_control",
-        "Ring_(jewellery)",
-        "Robot",
-        "Rock",
-        "Rocket",
-        "Rope",
-        "Rubber_band",
-        "Rubber_duck",
-        "Rug",
-        "Ruler",
-        "Saddle",
-        "Safety_pin",
-        "Salt_shaker",
-        "Sandals",
-        "Sandwich",
-        "Saw",
-        "Scarf",
-        "Scissors",
-        "Screw",
-        "Seat_belt",
-        "Shampoo",
-        "Shield",
-        "Shirt",
-        "Shoe",
-        "Shoelace",
-        "Shovel",
-        "Shower",
-        "Sink",
-        "Skateboard",
-        "Ski",
-        "Skirt",
-        "Sled",
-        "Slipper",
-        "Smartphone",
-        "Soap",
-        "Sock",
-        "Sofa",
-        "Soup",
-        "Spade",
-        "Spatula",
-        "Spectacles",
-        "Sponge",
-        "Spoon",
-        "Stairs",
-        "Stamp",
-        "Stapler",
-        "Starfish",
-        "Steering_wheel",
-        "Stethoscope",
-        "Stool",
-        "Stopwatch",
-        "Stove",
-        "Straw",
-        "Strawberry",
-        "Street_light",
-        "Suitcase",
-        "Sun",
-        "Sunglasses",
-        "Sunscreen",
-        "Sweater",
-        "Swing",
-        "Sword",
-        "Table",
-        "Tablet_computer",
-        "Tape",
-        "Tea",
-        "Teapot",
-        "Teddy_bear",
-        "Telephone",
-        "Telescope",
-        "Television",
-        "Tennis_racket",
-        "Tent",
-        "Thermometer",
-        "Thimble",
-        "Ticket",
-        "Tie",
-        "Tiger",
-        "Tile",
-        "Toaster",
-        "Toilet",
-        "Toilet_paper",
-        "Tomato",
-        "Toothbrush",
-        "Toothpaste",
-        "Torch",
-        "Towel",
-        "Toy",
-        "Tractor",
-        "Traffic_light",
-        "Train",
-        "Trash_can",
-        "Tree",
-        "Triangle_(instrument)",
-        "Trousers",
-        "Truck",
-        "Trumpet",
-        "Typewriter",
-        "Tyre",
-        "Umbrella",
-        "Underwear",
-        "Uniform",
-        "Vacuum_cleaner",
-        "Van",
-        "Vase",
-        "Vegetable",
-        "Violin",
-        "Wagon",
-        "Wallet",
-        "Wall",
-        "Watch",
-        "Water_bottle",
-        "Watermelon",
-        "Wheel",
-        "Wheelbarrow",
-        "Whistle",
-        "Window",
-        "Wire",
-        "Wool",
-        "Wrench",
-        "Xylophone",
-        "Yacht",
-        "Yo-yo",
-        "Yogurt",
-        "Zebra",
-        "Zipper",
-        "Zoo",
-      ];
-
-      const targetTopics = [
-        "Abraham_Lincoln",
-        "Absolute_zero",
-        "Abstract_expressionism",
-        "Acid_rain",
-        "Acupuncture",
-        "Age_of_Enlightenment",
-        "Agriculture",
-        "Alchemy",
-        "Alexander_the_Great",
-        "Algebra",
-        "Amazon_rainforest",
-        "American_Civil_War",
-        "Anarchism",
-        "Ancient_Egypt",
-        "Ancient_Greece",
-        "Antibiotic",
-        "Apartheid",
-        "Apollo_11",
-        "Archaeology",
-        "Architecture",
-        "Artificial_intelligence",
-        "Asteroid_belt",
-        "Atlantis",
-        "Atmosphere_of_Earth",
-        "Atomic_bomb",
-        "Aztec_Empire",
-        "Bacteria",
-        "Baroque",
-        "Baseball",
-        "Basketball",
-        "Battle_of_Waterloo",
-        "Bees",
-        "Berlin_Wall",
-        "Big_Bang",
-        "Biodiversity",
-        "Bitcoin",
-        "Black_Death",
-        "Black_hole",
-        "Blood",
-        "Buddhism",
-        "Byzantine_Empire",
-        "Capitalism",
-        "Carbon_dioxide",
-        "Cathedral",
-        "Cell_(biology)",
-        "Charles_Darwin",
-        "Chernobyl_disaster",
-        "Chess",
-        "China",
-        "Chocolate",
-        "Christianity",
-        "Circulatory_system",
-        "Climate_change",
-        "Cold_War",
-        "Colosseum",
-        "Communism",
-        "Computer",
-        "Consciousness",
-        "Constitution_of_the_United_States",
-        "Coral_reef",
-        "Crusades",
-        "Cryptography",
-        "Cubism",
-        "D-Day",
-        "Da_Vinci_Code",
-        "Dark_matter",
-        "Declaration_of_Independence",
-        "Democracy",
-        "Dinosaur",
-        "DNA",
-        "Doppler_effect",
-        "Earth",
-        "Earthquake",
-        "Easter_Island",
-        "Economics",
-        "Albert_Einstein",
-        "Electricity",
-        "Electromagnetism",
-        "Elizabeth_I",
-        "Energy",
-        "English_language",
-        "Entropy",
-        "Environmentalism",
-        "Evolution",
-        "Existentialism",
-        "Fascism",
-        "Feminism",
-        "Feudalism",
-        "Fibonacci_number",
-        "Film_noir",
-        "First_Amendment_to_the_United_States_Constitution",
-        "Fission",
-        "Football",
-        "Fractal",
-        "French_Revolution",
-        "Sigmund_Freud",
-        "Fungi",
-        "Game_theory",
-        "Mahatma_Gandhi",
-        "Genetic_engineering",
-        "Genghis_Khan",
-        "Geography",
-        "Geology",
-        "Geometry",
-        "Global_warming",
-        "God",
-        "Gold",
-        "Golden_ratio",
-        "Gravity",
-        "Great_Barrier_Reef",
-        "Great_Depression",
-        "Great_Wall_of_China",
-        "Greek_mythology",
-        "Greenhouse_effect",
-        "Hamlet",
-        "Harry_Potter",
-        "Heart",
-        "Heliocentrism",
-        "Hieroglyph",
-        "Hinduism",
-        "Hiroshima",
-        "History_of_the_Internet",
-        "Adolf_Hitler",
-        "Holocaust",
-        "Holy_Roman_Empire",
-        "Human_brain",
-        "Human_rights",
-        "Hydrogen",
-        "Ice_Age",
-        "Immune_system",
-        "Impressionism",
-        "Inca_Empire",
-        "India",
-        "Industrial_Revolution",
-        "Influenza",
-        "Information_Age",
-        "Internet",
-        "Islam",
-        "Jazz",
-        "Jesus",
-        "Julius_Caesar",
-        "Jupiter",
-        "Kangchenjunga",
-        "Karl_Marx",
-        "Martin_Luther_King_Jr.",
-        "Knights_Templar",
-        "Language",
-        "Laser",
-        "Law",
-        "Leonardo_da_Vinci",
-        "Liberalism",
-        "Light",
-        "Literature",
-        "Logic",
-        "Louis_XIV",
-        "Machine_learning",
-        "Magna_Carta",
-        "Magnetism",
-        "Mammal",
-        "Mandela_Effect",
-        "Manhattan_Project",
-        "Mars",
-        "Mathematics",
-        "Maya_civilization",
-        "Medicine",
-        "Medieval_period",
-        "Meme",
-        "Mental_disorder",
-        "Mesopotamia",
-        "Metallurgy",
-        "Metaphysics",
-        "Meteorology",
-        "Microscope",
-        "Middle_Ages",
-        "Milky_Way",
-        "Mind",
-        "Mona_Lisa",
-        "Monarchy",
-        "Money",
-        "Moon_landing",
-        "Music",
-        "Mythology",
-        "Nanotechnology",
-        "Napoleon",
-        "Natural_selection",
-        "Nazi_Germany",
-        "Neanderthal",
-        "Nelson_Mandela",
-        "Neolithic_Revolution",
-        "Isaac_Newton",
-        "Nihilism",
-        "Ninja",
-        "Nobel_Prize",
-        "North_Korea",
-        "Nuclear_power",
-        "Nuclear_weapon",
-        "Ocean",
-        "Oil_spill",
-        "Olympics",
-        "Opera",
-        "Optics",
-        "Organic_chemistry",
+        "Vuvuzela",
+        "Kazoo",
+        "Didgeridoo",
+        "Theremin",
+        "Hurdy-gurdy",
+        "Ocarina",
+        "Pennywhistle",
+        "Concertina",
+        "Melodica",
+        "Mbira",
+        "Quokka",
+        "Axolotl",
+        "Pangolin",
+        "Okapi",
+        "Narwhal",
+        "Tapir",
+        "Dugong",
+        "Capybara",
+        "Numbat",
+        "Cassowary",
+        "Samosa",
+        "Pierogi",
+        "Empanada",
+        "Beignet",
+        "Churro",
+        "Baklava",
+        "Dim_sum",
+        "Mochi",
+        "Stroopwafel",
+        "Cannoli",
+        "Zoetrope",
+        "Astrolabe",
+        "Sextant",
+        "Orrery",
+        "Pantograph",
+        "Planisphere",
+        "Chronometer",
+        "Theodolite",
+        "Anemometer",
+        "Hygrometer",
+        "Zorbing",
+        "Parkour",
+        "Slacklining",
+        "Bouldering",
+        "Geocaching",
+        "Sandboarding",
+        "Kitesurfing",
+        "Orienteering",
+        "Canyoning",
+        "Spelunking",
+        "Didgeridoo",
+        "Sitar",
+        "Koto",
+        "Balalaika",
+        "Mandolin",
+        "Dulcimer",
+        "Bouzouki",
+        "Shamisen",
+        "Erhu",
+        "Gamelan",
         "Origami",
-        "Oxygen",
-        "Ozone_layer",
-        "Painting",
-        "Paleontology",
-        "Pandemic",
-        "Paper",
-        "Paradox",
-        "Paris",
-        "Particle_physics",
-        "Peace",
-        "Periodic_table",
-        "Philosophy",
-        "Photography",
-        "Photosynthesis",
-        "Physics",
-        "Pi",
-        "Pablo_Picasso",
-        "Piracy",
-        "Plato",
-        "Plate_tectonics",
-        "Poetry",
-        "Politics",
-        "Pollution",
-        "Pompeii",
-        "Pop_art",
-        "Postmodernism",
-        "Printing_press",
-        "Probability",
-        "Psychology",
-        "Pyramid",
-        "Quantum_mechanics",
-        "Queen_Victoria",
-        "Radar",
-        "Radio",
-        "Rail_transport",
-        "Rainbow",
-        "Religion",
-        "Renaissance",
-        "Renewable_energy",
-        "Reproduction",
-        "Republicanism",
-        "Roman_Empire",
-        "Romanticism",
-        "Rome",
-        "Rosetta_Stone",
-        "Russian_Revolution",
-        "Samurai",
-        "Satellite",
-        "Saturn",
-        "Science_fiction",
-        "Scientific_method",
-        "Sculpture",
-        "Second_Law_of_Thermodynamics",
-        "William_Shakespeare",
-        "Shark",
-        "Silk_Road",
-        "Slavery",
-        "Socialism",
-        "Sociology",
-        "Solar_System",
-        "Soul",
-        "Sound",
-        "Soviet_Union",
-        "Space_exploration",
-        "Space_Race",
-        "Special_relativity",
-        "Species",
-        "Speed_of_light",
-        "Star_Wars",
-        "Steam_engine",
-        "Stock_market",
-        "Stonehenge",
-        "Submarine",
-        "Sun",
-        "Supernova",
-        "Surrealism",
-        "Sustainability",
-        "Symphony_No._9_(Beethoven)",
-        "Taoism",
-        "Taxonomy_(biology)",
-        "Technology",
-        "Telecommunication",
-        "Television",
-        "Terrorism",
-        "The_Beatles",
-        "The_Great_Gatsby",
-        "The_Matrix",
-        "Theory_of_everything",
-        "Theory_of_relativity",
-        "Thermodynamics",
-        "Time",
-        "Time_travel",
-        "Titanic",
-        "Totalitarianism",
-        "Tourism",
-        "Trade",
-        "Tragedy",
-        "Transistor",
-        "Treaty_of_Versailles",
-        "Trigonometry",
-        "Tsunami",
-        "Alan_Turing",
-        "United_Nations",
-        "Universe",
-        "University",
-        "Urbanization",
-        "Utilitarianism",
-        "Vaccine",
-        "Vegetarianism",
-        "Venus",
-        "Video_game",
-        "Viking",
-        "Virus",
-        "Volcano",
-        "Voting",
-        "War",
-        "Water",
-        "Weather",
-        "Web_browser",
-        "Wheel",
-        "Wikipedia",
-        "Wind_power",
-        "Wine",
-        "World_War_I",
-        "World_War_II",
-        "World_Wide_Web",
-        "Writing",
-        "X-ray",
-        "Yoga",
-        "YouTube",
-        "Zero",
-        "Zombie",
-        "Zoology",
+        "Macramé",
+        "Decoupage",
+        "Pyrography",
+        "Marquetry",
+        "Scrimshaw",
+        "Batik",
+        "Cloisonné",
+        "Niello",
+        "Intarsia",
+        "Capoeira",
+        "Kabuki",
+        "Kathakali",
+        "Butoh",
+        "Taiko",
+        "Flamenco",
+        "Sumo",
+        "Kabaddi",
+        "Sepak_takraw",
+        "Petanque",
       ];
 
-      // --- STATE ---
+      // Highly specific, technical, or niche target topics - require many hops
+      const targetTopics = [
+        "Heisenberg_uncertainty_principle",
+        "Schrödinger's_cat",
+        "Fermi_paradox",
+        "Gödel's_incompleteness_theorems",
+        "P_versus_NP_problem",
+        "Riemann_hypothesis",
+        "Navier–Stokes_existence_and_smoothness",
+        "Twin_prime_conjecture",
+        "Collatz_conjecture",
+        "Goldbach's_conjecture",
+        "Traveling_salesman_problem",
+        "Banach–Tarski_paradox",
+        "Arrow's_impossibility_theorem",
+        "Prisoner's_dilemma",
+        "Ship_of_Theseus",
+        "Chinese_room",
+        "Mary's_room",
+        "Trolley_problem",
+        "Omnipotence_paradox",
+        "Zeno's_paradoxes",
+        "Sorites_paradox",
+        "Russell's_paradox",
+        "Barber_paradox",
+        "Liar_paradox",
+        "Theseus's_paradox",
+        "Grandfather_paradox",
+        "Bootstrap_paradox",
+        "Monty_Hall_problem",
+        "Birthday_problem",
+        "Sleeping_Beauty_problem",
+        "Two_envelopes_problem",
+        "Unexpected_hanging_paradox",
+        "Hilbert's_paradox_of_the_Grand_Hotel",
+        "Gabriel's_Horn",
+        "Koch_snowflake",
+        "Menger_sponge",
+        "Sierpiński_triangle",
+        "Barnsley_fern",
+        "Mandelbrot_set",
+        "Julia_set",
+        "Lorenz_attractor",
+        "Halting_problem",
+        "Byzantine_fault",
+        "CAP_theorem",
+        "Turing_completeness",
+        "Lambda_calculus",
+        "Church–Turing_thesis",
+        "NP-completeness",
+        "Chomsky_hierarchy",
+        "Rice's_theorem",
+        "Curry–Howard_correspondence",
+        "Y_combinator",
+        "Qualia",
+        "Philosophical_zombie",
+        "Hard_problem_of_consciousness",
+        "Cartesian_doubt",
+        "Cogito,_ergo_sum",
+        "Kantian_ethics",
+        "Categorical_imperative",
+        "Veil_of_ignorance",
+        "Original_position",
+        "Übermensch",
+        "Eternal_return",
+        "Will_to_power",
+        "Dasein",
+        "Being_and_Time",
+        "Phenomenology",
+        "Tabula_rasa",
+        "Social_contract",
+        "State_of_nature",
+        "Panpsychism",
+        "Neutral_monism",
+        "Eliminative_materialism",
+        "Mereological_nihilism",
+        "Four-dimensionalism",
+        "Endurantism",
+      ];
+
       let gameState = {
         active: false,
         startPage: "",
@@ -1107,11 +607,13 @@
         currentPage: "",
         clicks: 0,
         startTime: 0,
+        elapsedSeconds: 0,
         timerInterval: null,
         path: [],
       };
 
-      // --- DOM ELEMENTS ---
+      let currentLeaderboardSort = "clicks";
+
       const els = {
         menu: document.getElementById("menuScreen"),
         game: document.getElementById("gameScreen"),
@@ -1128,13 +630,30 @@
         playAgainBtn: document.getElementById("playAgainBtn"),
       };
 
-      // --- API HELPERS ---
+      // Fetch with timeout to prevent infinite loading
+      async function fetchWithTimeout(url, options = {}, timeout = 10000) {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeout);
 
-      // Fetch Wiki Content using MediaWiki API (CORS friendly)
-      async function fetchWikiContent(title) {
-        const endpoint = `https://en.wikipedia.org/w/api.php?action=parse&page=${title}&prop=text&format=json&origin=*&redirects=1`;
         try {
-          const response = await fetch(endpoint);
+          const response = await fetch(url, {
+            ...options,
+            signal: controller.signal,
+          });
+          clearTimeout(id);
+          return response;
+        } catch (error) {
+          clearTimeout(id);
+          throw error;
+        }
+      }
+
+      async function fetchWikiContent(title) {
+        const endpoint = `https://en.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(
+          title
+        )}&prop=text&format=json&origin=*&redirects=1`;
+        try {
+          const response = await fetchWithTimeout(endpoint);
           const data = await response.json();
           if (data.error) throw new Error(data.error.info);
           return {
@@ -1143,55 +662,60 @@
           };
         } catch (e) {
           console.error("Wiki Fetch Error", e);
-          return null;
+          throw e;
         }
       }
 
-      // Fetch Summary for Target Description
       async function fetchWikiSummary(title) {
-        const endpoint = `https://en.wikipedia.org/api/rest_v1/page/summary/${title}`;
+        const endpoint = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
+          title
+        )}`;
         try {
-          const response = await fetch(endpoint);
+          const response = await fetchWithTimeout(endpoint);
           return await response.json();
         } catch (e) {
           return { description: "Target Page" };
         }
       }
 
-      // --- GAME LOGIC ---
-
       async function startGame() {
-        // Reset State
         gameState.clicks = 0;
+        gameState.elapsedSeconds = 0;
         gameState.path = [];
         gameState.active = true;
 
-        // Pick Randoms
         gameState.startPage =
           startingPoints[Math.floor(Math.random() * startingPoints.length)];
         gameState.targetPage =
           targetTopics[Math.floor(Math.random() * targetTopics.length)];
 
-        // UI Setup
+        // Ensure start and target are different
+        while (gameState.startPage === gameState.targetPage) {
+          gameState.targetPage =
+            targetTopics[Math.floor(Math.random() * targetTopics.length)];
+        }
+
         els.menu.classList.add("hidden");
         els.game.classList.remove("hidden");
         els.winModal.style.display = "none";
         els.clicks.textContent = "0";
         els.timer.textContent = "0:00";
 
-        // Load Target Info
         els.targetDisplay.textContent = gameState.targetPage.replace(/_/g, " ");
         fetchWikiSummary(gameState.targetPage).then((data) => {
           els.targetDesc.textContent =
-            data.description || "A Wikipedia Article";
+            data.description || data.extract || "A Wikipedia Article";
         });
 
-        // Start Timer
         gameState.startTime = Date.now();
         if (gameState.timerInterval) clearInterval(gameState.timerInterval);
-        gameState.timerInterval = setInterval(updateTimer, 1000);
+        gameState.timerInterval = setInterval(() => {
+          gameState.elapsedSeconds = Math.floor(
+            (Date.now() - gameState.startTime) / 1000
+          );
+          updateTimer();
+        }, 100);
 
-        // Load First Page
         await loadPage(gameState.startPage);
       }
 
@@ -1201,35 +725,35 @@
           " "
         )}...</div>`;
 
-        const data = await fetchWikiContent(title);
+        try {
+          const data = await fetchWikiContent(title);
 
-        if (!data) {
-          els.content.innerHTML = `<div class="error">Failed to load page. <button onclick="loadPage('${title}')">Try Again</button></div>`;
-          return;
-        }
+          gameState.currentPage = data.title;
+          gameState.path.push(data.title);
 
-        // Update State
-        gameState.currentPage = data.title; // Use canonical title from API
-        gameState.path.push(data.title);
+          updateBreadcrumbs();
+          els.content.innerHTML = data.html;
+          window.scrollTo(0, 0);
 
-        // Update UI
-        updateBreadcrumbs();
-        els.content.innerHTML = data.html;
-        window.scrollTo(0, 0);
+          processLinks();
 
-        // Process Links
-        processLinks();
+          const cleanCurrent = data.title
+            .toLowerCase()
+            .replace(/_/g, " ")
+            .trim();
+          const cleanTarget = gameState.targetPage
+            .toLowerCase()
+            .replace(/_/g, " ")
+            .trim();
 
-        // Check Win Condition
-        // We compare simplified strings to avoid casing/underscore mismatch issues
-        const cleanCurrent = data.title.toLowerCase().trim();
-        const cleanTarget = gameState.targetPage
-          .replace(/_/g, " ")
-          .toLowerCase()
-          .trim();
-
-        if (cleanCurrent === cleanTarget) {
-          handleWin();
+          if (cleanCurrent === cleanTarget) {
+            handleWin();
+          }
+        } catch (error) {
+          els.content.innerHTML = `<div style="padding: 2rem; text-align: center;">
+            <p style="color: #e74c3c; margin-bottom: 1rem;">Failed to load page: ${error.message}</p>
+            <button onclick="loadPage('${title}')">Try Again</button>
+          </div>`;
         }
       }
 
@@ -1238,19 +762,17 @@
         links.forEach((link) => {
           const href = link.getAttribute("href");
 
-          // Logic: Must be internal Wiki link, not file, not special page
           if (href && href.startsWith("/wiki/") && !href.includes(":")) {
             link.onclick = (e) => {
               e.preventDefault();
               if (!gameState.active) return;
 
-              const nextTitle = href.split("/wiki/")[1];
+              const nextTitle = decodeURIComponent(href.split("/wiki/")[1]);
               gameState.clicks++;
               els.clicks.textContent = gameState.clicks;
               loadPage(nextTitle);
             };
           } else {
-            // Disable external links or files to keep user in "Game Mode"
             link.removeAttribute("href");
             link.style.color = "#999";
             link.style.cursor = "default";
@@ -1260,7 +782,6 @@
       }
 
       function updateBreadcrumbs() {
-        // Show last 4 items only if path is long
         const showPath =
           gameState.path.length > 4
             ? ["...", ...gameState.path.slice(-4)]
@@ -1274,9 +795,8 @@
       }
 
       function updateTimer() {
-        const delta = Math.floor((Date.now() - gameState.startTime) / 1000);
-        const mins = Math.floor(delta / 60);
-        const secs = delta % 60;
+        const mins = Math.floor(gameState.elapsedSeconds / 60);
+        const secs = gameState.elapsedSeconds % 60;
         els.timer.textContent = `${mins}:${secs.toString().padStart(2, "0")}`;
       }
 
@@ -1284,7 +804,10 @@
         gameState.active = false;
         clearInterval(gameState.timerInterval);
 
-        const timeVal = els.timer.textContent;
+        const finalTime = gameState.elapsedSeconds;
+        const timeVal = `${Math.floor(finalTime / 60)}:${(finalTime % 60)
+          .toString()
+          .padStart(2, "0")}`;
 
         document.getElementById("winTargetName").textContent =
           gameState.targetPage.replace(/_/g, " ");
@@ -1293,21 +816,21 @@
 
         els.winModal.style.display = "flex";
 
-        // Save Local Score
-        saveLocalScore(gameState.clicks, timeVal);
+        saveLocalScore(gameState.clicks, finalTime);
       }
 
-      // --- LEADERBOARD & DATA ---
-
-      function saveLocalScore(clicks, time) {
+      function saveLocalScore(clicks, timeInSeconds) {
         const history = JSON.parse(
           localStorage.getItem("wikiSpeedRun_history") || "[]"
         );
         history.push({
           date: new Date().toLocaleDateString(),
           clicks: clicks,
-          time: time,
-          route: `${gameState.startPage} → ${gameState.targetPage}`,
+          time: timeInSeconds,
+          route: `${gameState.startPage.replace(
+            /_/g,
+            " "
+          )} → ${gameState.targetPage.replace(/_/g, " ")}`,
         });
         localStorage.setItem("wikiSpeedRun_history", JSON.stringify(history));
         renderLocalStats();
@@ -1319,29 +842,40 @@
         );
         if (history.length === 0) return;
 
-        const best = history.sort((a, b) => a.clicks - b.clicks)[0]; // Sort by clicks
+        const bestClicks = [...history].sort((a, b) => a.clicks - b.clicks)[0];
+        const bestTime = [...history].sort((a, b) => a.time - b.time)[0];
+
         document.getElementById("localStats").innerHTML = `
-          <strong>Best Run:</strong> ${best.clicks} clicks in ${best.time} <br>
-          <small>(${best.route})</small>
+          <div style="text-align: left; max-width: 400px; margin: 0 auto;">
+            <strong>Best by Clicks:</strong> ${
+              bestClicks.clicks
+            } clicks in ${Math.floor(bestClicks.time / 60)}:${(
+          bestClicks.time % 60
+        )
+          .toString()
+          .padStart(2, "0")}<br>
+            <small>(${bestClicks.route})</small><br><br>
+            <strong>Best by Time:</strong> ${Math.floor(bestTime.time / 60)}:${(
+          bestTime.time % 60
+        )
+          .toString()
+          .padStart(2, "0")} in ${bestTime.clicks} clicks<br>
+            <small>(${bestTime.route})</small>
+          </div>
         `;
       }
 
       async function submitGlobalScore() {
-        const name = document.getElementById("playerName").value || "Anonymous";
+        const name =
+          document.getElementById("playerName").value.trim() || "Anonymous";
         const btn = document.getElementById("submitScoreBtn");
 
-        // 1. Change button state to loading
         const originalText = btn.textContent;
         btn.textContent = "Submitting...";
         btn.disabled = true;
         btn.style.opacity = "0.7";
 
         try {
-          const timeInSeconds = Math.floor(
-            (Date.now() - gameState.startTime) / 1000
-          );
-
-          // 2. Send data (using no-cors as before)
           await fetch(APPS_SCRIPT_URL, {
             method: "POST",
             mode: "no-cors",
@@ -1350,25 +884,25 @@
               action: "addScore",
               playerName: name,
               clicks: gameState.clicks,
-              time: timeInSeconds,
-              route: `${gameState.startPage} → ${gameState.targetPage}`,
+              time: gameState.elapsedSeconds,
+              route: `${gameState.startPage.replace(
+                /_/g,
+                " "
+              )} → ${gameState.targetPage.replace(/_/g, " ")}`,
               timestamp: Date.now(),
             }),
           });
 
-          // 3. SUCCESS ANIMATION (No Alert!)
           btn.textContent = "Score Saved!";
-          btn.style.backgroundColor = "#27ae60"; // Green color
+          btn.style.backgroundColor = "#27ae60";
           btn.style.borderColor = "#27ae60";
           btn.style.opacity = "1";
 
-          // Refresh the leaderboard in the background
-          loadGlobalLeaderboard();
+          setTimeout(() => loadGlobalLeaderboard(), 1000);
         } catch (e) {
           console.error(e);
-          // Error state
           btn.textContent = "Error (Saved Locally)";
-          btn.style.backgroundColor = "#e74c3c"; // Red color
+          btn.style.backgroundColor = "#e74c3c";
         }
       }
 
@@ -1379,31 +913,45 @@
           !APPS_SCRIPT_URL.includes("YOUR_URL")
         ) {
           try {
-            const res = await fetch(`${APPS_SCRIPT_URL}?action=getScores`);
+            const res = await fetchWithTimeout(
+              `${APPS_SCRIPT_URL}?action=getScores`
+            );
             const data = await res.json();
 
-            // Sort by clicks then time
-            const scores = data.records
-              .sort((a, b) => {
+            let scores = data.records || [];
+
+            if (currentLeaderboardSort === "clicks") {
+              scores = scores.sort((a, b) => {
                 if (a.clicks !== b.clicks) return a.clicks - b.clicks;
                 return a.time - b.time;
-              })
-              .slice(0, 5); // Top 5
+              });
+            } else {
+              scores = scores.sort((a, b) => {
+                if (a.time !== b.time) return a.time - b.time;
+                return a.clicks - b.clicks;
+              });
+            }
 
-            list.innerHTML = scores
-              .map(
-                (s, i) => `
-              <div class="lb-row">
-                <span>#${i + 1} ${s.playerName}</span>
-                <span>${s.clicks} clicks (${Math.floor(s.time / 60)}:${(
-                  s.time % 60
+            scores = scores.slice(0, 10);
+
+            if (scores.length === 0) {
+              list.innerHTML = "<small>No scores yet. Be the first!</small>";
+            } else {
+              list.innerHTML = scores
+                .map(
+                  (s, i) => `
+                <div class="lb-row">
+                  <span>#${i + 1} ${s.playerName}</span>
+                  <span>${s.clicks} clicks • ${Math.floor(s.time / 60)}:${(
+                    s.time % 60
+                  )
+                    .toString()
+                    .padStart(2, "0")}</span>
+                </div>
+              `
                 )
-                  .toString()
-                  .padStart(2, "0")})</span>
-              </div>
-            `
-              )
-              .join("");
+                .join("");
+            }
           } catch (e) {
             list.innerHTML = "<small>Leaderboard unavailable</small>";
           }
@@ -1412,7 +960,7 @@
         }
       }
 
-      // --- EVENTS ---
+      // Event Listeners
       els.startBtn.addEventListener("click", startGame);
 
       els.giveUpBtn.addEventListener("click", () => {
@@ -1427,7 +975,19 @@
 
       els.submitBtn.addEventListener("click", submitGlobalScore);
 
-      // --- INIT ---
+      // Leaderboard tabs
+      document.querySelectorAll(".lb-tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          document
+            .querySelectorAll(".lb-tab")
+            .forEach((t) => t.classList.remove("active"));
+          tab.classList.add("active");
+          currentLeaderboardSort = tab.dataset.sort;
+          loadGlobalLeaderboard();
+        });
+      });
+
+      // Initialize
       renderLocalStats();
       loadGlobalLeaderboard();
     </script>
