@@ -161,10 +161,7 @@
           sans-serif;
         font-size: 1.1rem;
         overflow-x: hidden;
-        user-select: text;
-        -webkit-user-select: text;
-        -moz-user-select: text;
-        -ms-user-select: text;
+        transition: opacity 0.15s ease;
       }
 
       .wiki-content h1 {
@@ -655,9 +652,9 @@
       async function fetchWikiContent(title) {
         const endpoint = `https://en.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(
           title
-        )}&prop=text&format=json&origin=*&redirects=1`;
+        )}&prop=text&format=json&origin=*&redirects=1&disabletoc=1`;
         try {
-          const response = await fetchWithTimeout(endpoint);
+          const response = await fetchWithTimeout(endpoint, {}, 8000);
           const data = await response.json();
           if (data.error) throw new Error(data.error.info);
           return {
@@ -724,30 +721,21 @@
       }
 
       async function loadPage(title) {
-        // Show loading immediately but don't block
-        els.content.innerHTML = `<div class="loading-spinner">Traveling to ${title.replace(
-          /_/g,
-          " "
-        )}...</div>`;
+        // Instant visual feedback
+        els.content.style.opacity = "0.3";
 
         try {
-          // Fetch data without blocking UI
-          const dataPromise = fetchWikiContent(title);
-          const data = await dataPromise;
+          const data = await fetchWikiContent(title);
 
-          // Quick state updates
           gameState.currentPage = data.title;
           gameState.path.push(data.title);
 
-          // Render content immediately
+          // Update everything at once
           els.content.innerHTML = data.html;
+          els.content.style.opacity = "1";
           updateBreadcrumbs();
-
-          // Process links asynchronously after render
-          requestAnimationFrame(() => {
-            processLinks();
-            window.scrollTo(0, 0);
-          });
+          processLinks();
+          window.scrollTo({ top: 0, behavior: "instant" });
 
           const cleanCurrent = data.title
             .toLowerCase()
@@ -762,6 +750,7 @@
             handleWin();
           }
         } catch (error) {
+          els.content.style.opacity = "1";
           els.content.innerHTML = `<div style="padding: 2rem; text-align: center;">
             <p style="color: #e74c3c; margin-bottom: 1rem;">Failed to load page: ${error.message}</p>
             <button onclick="loadPage('${title}')">Try Again</button>
@@ -771,27 +760,32 @@
 
       function processLinks() {
         const links = els.content.querySelectorAll("a");
-        const fragment = document.createDocumentFragment();
 
         links.forEach((link) => {
           const href = link.getAttribute("href");
 
           if (href && href.startsWith("/wiki/") && !href.includes(":")) {
             link.style.cursor = "pointer";
-            link.onclick = (e) => {
-              e.preventDefault();
-              if (!gameState.active) return;
+            link.addEventListener(
+              "click",
+              (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!gameState.active) return;
 
-              const nextTitle = decodeURIComponent(href.split("/wiki/")[1]);
-              gameState.clicks++;
-              els.clicks.textContent = gameState.clicks;
-              loadPage(nextTitle);
-            };
+                const nextTitle = decodeURIComponent(href.split("/wiki/")[1]);
+                gameState.clicks++;
+                els.clicks.textContent = gameState.clicks;
+                loadPage(nextTitle);
+              },
+              { once: false, passive: false }
+            );
           } else {
             link.removeAttribute("href");
             link.style.color = "#999";
             link.style.cursor = "default";
             link.style.textDecoration = "none";
+            link.style.pointerEvents = "none";
           }
         });
       }
@@ -891,21 +885,24 @@
         btn.style.opacity = "0.7";
 
         try {
+          const payload = {
+            playerName: name,
+            clicks: parseInt(gameState.clicks),
+            time: parseInt(gameState.elapsedSeconds),
+            route: `${gameState.startPage.replace(
+              /_/g,
+              " "
+            )} → ${gameState.targetPage.replace(/_/g, " ")}`,
+            timestamp: Date.now(),
+          };
+
           await fetch(APPS_SCRIPT_URL, {
             method: "POST",
             mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              action: "addScore",
-              playerName: name,
-              clicks: gameState.clicks,
-              time: gameState.elapsedSeconds,
-              route: `${gameState.startPage.replace(
-                /_/g,
-                " "
-              )} → ${gameState.targetPage.replace(/_/g, " ")}`,
-              timestamp: Date.now(),
-            }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
           });
 
           btn.textContent = "Score Saved!";
@@ -913,9 +910,9 @@
           btn.style.borderColor = "#27ae60";
           btn.style.opacity = "1";
 
-          setTimeout(() => loadGlobalLeaderboard(), 1000);
+          setTimeout(() => loadGlobalLeaderboard(), 1500);
         } catch (e) {
-          console.error(e);
+          console.error("Submit error:", e);
           btn.textContent = "Error (Saved Locally)";
           btn.style.backgroundColor = "#e74c3c";
         }
@@ -1017,17 +1014,33 @@
         });
       });
 
-      // Prevent Ctrl+F from being blocked
+      // Disable Ctrl+F and Cmd+F during gameplay
       document.addEventListener(
         "keydown",
         function (e) {
-          // Allow browser search (Ctrl+F / Cmd+F)
-          if ((e.ctrlKey || e.metaKey) && e.key === "f") {
-            return true;
+          if (gameState.active && (e.ctrlKey || e.metaKey) && e.key === "f") {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
           }
         },
         true
       );
+
+      // Disable right-click context menu during gameplay
+      document.addEventListener("contextmenu", function (e) {
+        if (gameState.active && e.target.closest(".wiki-content")) {
+          e.preventDefault();
+          return false;
+        }
+      });
+
+      // Disable text selection in wiki content during gameplay
+      els.content.addEventListener("mousedown", function (e) {
+        if (gameState.active && !e.target.matches("a")) {
+          e.preventDefault();
+        }
+      });
 
       // Initialize
       renderLocalStats();
