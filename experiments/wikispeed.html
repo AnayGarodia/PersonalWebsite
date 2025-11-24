@@ -673,7 +673,7 @@
         timerInterval: null,
       };
 
-      // Cache leaderboard to fix "smoothness" issue
+      // Cache leaderboard
       let globalScoresCache = [];
       let currentLeaderboardSort = "clicks";
 
@@ -695,6 +695,7 @@
 
       // --- UTILS ---
       const formatTime = (seconds) => {
+        if (isNaN(seconds) || seconds < 0) return "0:00";
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${mins}:${secs.toString().padStart(2, "0")}`;
@@ -812,10 +813,10 @@
       function updateTimer() {
         if (!gameState.active || gameState.isLoading) return;
 
-        // Calculate effective time: (Now - Start) - (Total Time Spent Loading)
+        // Calculate effective time
         const currentDiff =
           Date.now() - gameState.startTime - gameState.totalPausedTime;
-        const seconds = Math.floor(currentDiff / 1000);
+        const seconds = Math.floor(Math.max(0, currentDiff) / 1000); // Ensure no negatives
         els.timer.textContent = formatTime(seconds);
       }
 
@@ -875,11 +876,10 @@
         }
       }
 
-      // High Performance Event Delegation (Fixes "smoothness" of clicks)
+      // Event Delegation for clicks
       els.content.addEventListener("click", (e) => {
         if (!gameState.active || gameState.isLoading) return;
 
-        // Find closest anchor tag
         const link = e.target.closest("a");
         if (!link) return;
 
@@ -887,7 +887,7 @@
 
         const href = link.getAttribute("href");
 
-        // Check if it's a valid internal wiki link
+        // Check internal link
         if (href && href.startsWith("/wiki/") && !href.includes(":")) {
           const nextTitle = decodeURIComponent(href.split("/wiki/")[1]);
           gameState.clicks++;
@@ -923,9 +923,10 @@
         clearInterval(gameState.timerInterval);
 
         // Final calculation
-        const finalSeconds = Math.floor(
+        const rawSeconds = Math.floor(
           (Date.now() - gameState.startTime - gameState.totalPausedTime) / 1000
         );
+        const finalSeconds = Math.max(0, rawSeconds);
 
         document.getElementById("winTargetName").textContent = normalizeTitle(
           gameState.targetPage
@@ -940,14 +941,18 @@
         saveLocalScore(gameState.clicks, finalSeconds);
       }
 
-      // --- DATA STORAGE ---
+      // --- DATA STORAGE & STATS (FIXED) ---
       function saveLocalScore(clicks, time) {
+        // Validation before saving
+        const validClicks = parseInt(clicks) || 0;
+        const validTime = parseInt(time) || 0;
+
         const history = JSON.parse(
           localStorage.getItem("wikiSpeedRun_history") || "[]"
         );
         history.push({
-          clicks: parseInt(clicks),
-          time: parseInt(time),
+          clicks: validClicks,
+          time: validTime,
           route: `${gameState.startPage} -> ${gameState.targetPage}`,
           date: new Date().toLocaleDateString(),
         });
@@ -961,8 +966,21 @@
         );
         if (!history.length) return;
 
-        const valid = history.filter((h) => h.clicks > 0);
-        if (!valid.length) return;
+        // FIXED: Filter out NaN or corrupted data from previous versions
+        const valid = history.filter(
+          (h) =>
+            typeof h.clicks === "number" &&
+            !isNaN(h.clicks) &&
+            typeof h.time === "number" &&
+            !isNaN(h.time) &&
+            h.clicks > 0
+        );
+
+        if (!valid.length) {
+          document.getElementById("localStats").innerHTML =
+            "No valid games played yet.";
+          return;
+        }
 
         const bestClick = [...valid].sort((a, b) => a.clicks - b.clicks)[0];
         const bestTime = [...valid].sort((a, b) => a.time - b.time)[0];
@@ -997,9 +1015,12 @@
           this.textContent = "Sending...";
           this.disabled = true;
 
-          const finalSeconds = Math.floor(
-            (Date.now() - gameState.startTime - gameState.totalPausedTime) /
-              1000
+          const finalSeconds = Math.max(
+            0,
+            Math.floor(
+              (Date.now() - gameState.startTime - gameState.totalPausedTime) /
+                1000
+            )
           );
 
           try {
@@ -1039,8 +1060,23 @@
             .forEach((t) => t.classList.remove("active"));
           tab.classList.add("active");
           currentLeaderboardSort = tab.dataset.sort;
-          renderLeaderboard(); // Pure client-side re-render
+          renderLeaderboard();
         });
+      });
+
+      // --- ANTI-CHEAT (Ctrl+F Blocker) ---
+      document.addEventListener("keydown", function (e) {
+        // Block Ctrl+F, Cmd+F, Ctrl+G, Cmd+G (Find/Next)
+        if (
+          (e.ctrlKey || e.metaKey) &&
+          (e.key === "f" || e.key === "g" || e.key === "F")
+        ) {
+          e.preventDefault();
+        }
+        // Block F3 (Find Next)
+        if (e.key === "F3") {
+          e.preventDefault();
+        }
       });
 
       // Initialize
