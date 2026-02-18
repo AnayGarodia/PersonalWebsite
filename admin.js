@@ -352,59 +352,62 @@ async function editArticleBody(idx) {
   const article = state.content.articles[idx];
   if (!article) return;
 
-  // Load existing markdown source if available, else start empty
-  const existingMd = article.markdown_source || '';
-
-  openMarkdownEditor(article, idx, existingMd);
+  setStatus('Loading article…');
+  let existingContent = '';
+  const html = await fetchArticleHTML(article.id);
+  if (html) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const contentDiv = doc.querySelector('.article-content');
+    if (contentDiv) {
+      existingContent = contentDiv.innerHTML.trim();
+      if (existingContent === '<p>[Article content goes here]</p>') existingContent = '';
+    }
+  }
+  setStatus('');
+  openWysiwygEditor(article, idx, existingContent);
 }
 
-function openMarkdownEditor(article, idx, initialMd) {
+function openWysiwygEditor(article, idx, initialHTML) {
   const overlay = document.getElementById('modal-overlay');
   overlay.classList.add('editor-mode');
 
   openModal(`Write: ${article.title}`, `
     <div class="editor-toolbar">
-      <button class="toolbar-btn" onclick="insertMd('**','**')" title="Bold"><b>B</b></button>
-      <button class="toolbar-btn" onclick="insertMd('*','*')" title="Italic"><i>I</i></button>
-      <button class="toolbar-btn" onclick="insertMd('## ','',true)" title="Heading 2">H2</button>
-      <button class="toolbar-btn" onclick="insertMd('### ','',true)" title="Heading 3">H3</button>
-      <button class="toolbar-btn" onclick="insertMd('\`','\`')" title="Inline code">code</button>
-      <button class="toolbar-btn" onclick="insertMd('\`\`\`\\n','\\n\`\`\`',true)" title="Code block">block</button>
-      <button class="toolbar-btn" onclick="insertMd('> ','',true)" title="Blockquote">"</button>
-      <button class="toolbar-btn" onclick="insertMdLink()" title="Link">link</button>
+      <button class="toolbar-btn" onmousedown="event.preventDefault();document.execCommand('bold')" title="Bold"><b>B</b></button>
+      <button class="toolbar-btn" onmousedown="event.preventDefault();document.execCommand('italic')" title="Italic"><i>I</i></button>
       <span class="toolbar-sep"></span>
-      <span class="toolbar-hint">Markdown · live preview →</span>
+      <button class="toolbar-btn" onmousedown="event.preventDefault();document.execCommand('formatBlock',false,'h2')" title="Heading 2">H2</button>
+      <button class="toolbar-btn" onmousedown="event.preventDefault();document.execCommand('formatBlock',false,'h3')" title="Heading 3">H3</button>
+      <button class="toolbar-btn" onmousedown="event.preventDefault();document.execCommand('formatBlock',false,'p')" title="Paragraph">¶</button>
+      <span class="toolbar-sep"></span>
+      <button class="toolbar-btn" onmousedown="event.preventDefault();document.execCommand('insertUnorderedList')" title="Bullet list">• list</button>
+      <button class="toolbar-btn" onmousedown="event.preventDefault();document.execCommand('insertOrderedList')" title="Numbered list">1. list</button>
+      <span class="toolbar-sep"></span>
+      <button class="toolbar-btn" onmousedown="event.preventDefault();wysiInsertLink()" title="Link">link</button>
+      <button class="toolbar-btn" onmousedown="event.preventDefault();document.execCommand('unlink')" title="Remove link">unlink</button>
+      <button class="toolbar-btn" onmousedown="event.preventDefault();document.execCommand('insertHorizontalRule')" title="Divider">—</button>
     </div>
-    <div class="editor-split">
-      <textarea id="md-input" class="md-textarea" placeholder="Start writing in Markdown…&#10;&#10;# Heading&#10;**bold** *italic*&#10;&#10;Paragraphs are separated by blank lines.">${esc(initialMd)}</textarea>
-      <div id="md-preview" class="md-preview"></div>
-    </div>
+    <div id="wysi-editor" class="wysi-editor" contenteditable="true">${initialHTML || '<p></p>'}</div>
   `, async () => {
-    const md = document.getElementById('md-input').value;
-    const htmlBody = marked.parse(md);
-    const fullHTML = articleHTMLFromMarkdown(article, htmlBody);
+    const editor = document.getElementById('wysi-editor');
+    const htmlBody = editor.innerHTML;
+    const fullHTML = buildArticleHTML(article, htmlBody);
     try {
       const sha = state.articleFileSHAs[article.id] || null;
       const result = await ghPut(`articles/${article.id}.html`, fullHTML, sha, `Update article: ${article.title}`);
       state.articleFileSHAs[article.id] = result.content.sha;
-      // Persist markdown source in content.json
-      state.content.articles[idx].markdown_source = md;
+      if ('markdown_source' in (state.content.articles[idx] || {})) {
+        delete state.content.articles[idx].markdown_source;
+      }
       overlay.classList.remove('editor-mode');
       closeModal();
-      toast(`Saved — click "Save to GitHub" to sync content.json`, 'success');
+      toast('Article saved!', 'success');
     } catch (err) {
       toast(`Save failed: ${err.message}`, 'error');
     }
   });
 
-  // Wire up live preview
-  const input = document.getElementById('md-input');
-  const preview = document.getElementById('md-preview');
-  const update = () => { preview.innerHTML = marked.parse(input.value); };
-  input.addEventListener('input', update);
-  update();
-
-  // Override cancel to also remove editor-mode class
   document.getElementById('modal-cancel').onclick = () => {
     overlay.classList.remove('editor-mode');
     closeModal();
@@ -415,33 +418,12 @@ function openMarkdownEditor(article, idx, initialMd) {
   };
 }
 
-// Toolbar helper — inserts markdown around selection
-window.insertMd = function(before, after, lineStart = false) {
-  const ta = document.getElementById('md-input');
-  const start = ta.selectionStart;
-  const end   = ta.selectionEnd;
-  const sel   = ta.value.slice(start, end);
-  const insert = lineStart
-    ? '\n' + before + sel + after
-    : before + sel + after;
-  ta.value = ta.value.slice(0, start) + insert + ta.value.slice(end);
-  const cur = start + (lineStart ? before.length + 1 : before.length);
-  ta.setSelectionRange(cur, cur + sel.length);
-  ta.focus();
-  document.getElementById('md-preview').innerHTML = marked.parse(ta.value);
+window.wysiInsertLink = function() {
+  const url = prompt('Enter URL:');
+  if (url) document.execCommand('createLink', false, url);
 };
 
-window.insertMdLink = function() {
-  const ta = document.getElementById('md-input');
-  const start = ta.selectionStart;
-  const sel   = ta.value.slice(start, ta.selectionEnd) || 'link text';
-  const insert = `[${sel}](url)`;
-  ta.value = ta.value.slice(0, start) + insert + ta.value.slice(ta.selectionEnd);
-  ta.focus();
-  document.getElementById('md-preview').innerHTML = marked.parse(ta.value);
-};
-
-function articleHTMLFromMarkdown(article, htmlBody) {
+function buildArticleHTML(article, htmlBody) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
