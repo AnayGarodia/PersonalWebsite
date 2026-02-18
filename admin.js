@@ -30,6 +30,10 @@ function show(id) {
 }
 
 async function initAuth() {
+  // Apply saved theme before rendering anything
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+
   const storedHash = localStorage.getItem('adminHash');
   if (!storedHash) {
     show('setup-screen');
@@ -365,7 +369,7 @@ function openMarkdownEditor(article, idx, initialMd) {
       <button class="toolbar-btn" onclick="insertMd('## ','',true)" title="Heading 2">H2</button>
       <button class="toolbar-btn" onclick="insertMd('### ','',true)" title="Heading 3">H3</button>
       <button class="toolbar-btn" onclick="insertMd('\`','\`')" title="Inline code">code</button>
-      <button class="toolbar-btn" onclick="insertMd('\`\`\`\\n','\\n\`\`\`',true)" title="Code block">```</button>
+      <button class="toolbar-btn" onclick="insertMd('\`\`\`\\n','\\n\`\`\`',true)" title="Code block">block</button>
       <button class="toolbar-btn" onclick="insertMd('> ','',true)" title="Blockquote">"</button>
       <button class="toolbar-btn" onclick="insertMdLink()" title="Link">link</button>
       <span class="toolbar-sep"></span>
