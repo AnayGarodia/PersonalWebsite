@@ -29,18 +29,14 @@
       ]
     },
     {
-      "id": "stem-newsletter",
-      "title": "Why I Started a STEM Newsletter",
-      "description": "Reflections on science communication and making STEM accessible through student publishing.",
-      "category": "blog",
-      "date": "2024-09",
-      "featured": true,
-      "placeholder": true,
-      "tags": [
-        "education",
-        "communication",
-        "stem"
-      ]
+      "id": "exp",
+      "title": "exp",
+      "description": "",
+      "category": "essays",
+      "date": "",
+      "featured": false,
+      "placeholder": false,
+      "tags": []
     }
   ],
   "projects": [
