@@ -52,7 +52,7 @@
       "category": "blog",
       "date": "2026-02",
       "featured": false,
-      "placeholder": true,
+      "placeholder": false,
       "tags": []
     }
   ],
