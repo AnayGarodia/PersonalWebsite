@@ -27,16 +27,6 @@
         "narrative",
         "immigration"
       ]
-    },
-    {
-      "id": "exp",
-      "title": "exp",
-      "description": "",
-      "category": "essays",
-      "date": "",
-      "featured": false,
-      "placeholder": false,
-      "tags": []
     }
   ],
   "projects": [
