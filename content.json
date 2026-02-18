@@ -70,7 +70,7 @@
       "title": "Frequency",
       "description": "Decrypt messages using frequency analysis. A cryptography puzzle game with 10 levels of increasing difficulty.",
       "link": "experiments/frequency.html",
-      "image": "images/frequency.png"
+      "image": "../images/frequency.png"
     }
   ],
   "experiences": []
