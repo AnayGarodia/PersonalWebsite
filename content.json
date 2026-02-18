@@ -8,6 +8,14 @@
       "language": "Python",
       "stars": 1,
       "topics": []
+    },
+    {
+      "name": "KANs",
+      "description": "",
+      "url": "https://github.com/AnayGarodia/KANs",
+      "language": "Jupyter Notebook",
+      "stars": 0,
+      "topics": []
     }
   ],
   "articles": [
