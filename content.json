@@ -2,14 +2,6 @@
   "about": "I'm interested in a lot of things: math, physics, computing, writing, ideas I'm working through. This site is where I put stuff I'm thinking about: projects, experiments, essays, questions. Still figuring it all out as I go.",
   "github_repos": [
     {
-      "name": "KANs",
-      "description": "",
-      "url": "https://github.com/AnayGarodia/KANs",
-      "language": "Jupyter Notebook",
-      "stars": 0,
-      "topics": []
-    },
-    {
       "name": "Neutronics-Simulation",
       "description": "",
       "url": "https://github.com/AnayGarodia/Neutronics-Simulation",
