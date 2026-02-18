@@ -3,23 +3,17 @@
   "github_repos": [],
   "articles": [
     {
-      "id": "group-theory",
-      "title": "The Beauty of Group Theory",
-      "description": "What I learned about abstract algebra at Stanford SUMaC and why symmetry is everywhere in math.",
-      "category": "technical",
-      "date": "2024-10",
-      "featured": true,
-      "placeholder": true,
-      "tags": ["mathematics", "abstract-algebra", "group-theory"]
-    },
-    {
       "id": "rhodes-scholaring",
       "title": "Rhodes Scholaring: Grammar and Power in Decolonial Speech",
       "description": "An analysis of how language shapes authority and identity in academic settings (written for the university writing class at Columbia).",
       "category": "essays",
       "date": "2025-11",
       "featured": true,
-      "tags": ["language", "power", "decolonization"]
+      "tags": [
+        "language",
+        "power",
+        "decolonization"
+      ]
     },
     {
       "id": "luiselli-ending",
@@ -28,7 +22,11 @@
       "category": "essays",
       "date": "2025-11",
       "featured": true,
-      "tags": ["literature", "narrative", "immigration"]
+      "tags": [
+        "literature",
+        "narrative",
+        "immigration"
+      ]
     },
     {
       "id": "stem-newsletter",
@@ -38,7 +36,11 @@
       "date": "2024-09",
       "featured": true,
       "placeholder": true,
-      "tags": ["education", "communication", "stem"]
+      "tags": [
+        "education",
+        "communication",
+        "stem"
+      ]
     }
   ],
   "projects": [
@@ -49,7 +51,11 @@
       "date": "2024-Present",
       "organization": "Non-Trivial Fellowship",
       "featured": true,
-      "tags": ["AI", "Philosophy", "Research"],
+      "tags": [
+        "AI",
+        "Philosophy",
+        "Research"
+      ],
       "link": "projects/ai-sentience.html"
     },
     {
@@ -59,7 +65,11 @@
       "date": "2023-2024",
       "organization": "Polygence Research Program",
       "featured": true,
-      "tags": ["Nuclear Physics", "Python", "Simulation"],
+      "tags": [
+        "Nuclear Physics",
+        "Python",
+        "Simulation"
+      ],
       "link": "projects/fusion-reactor.html"
     },
     {
@@ -69,7 +79,10 @@
       "date": "2024",
       "organization": "Published in Curieux Academic Journal",
       "featured": true,
-      "tags": ["Machine Learning", "Education"],
+      "tags": [
+        "Machine Learning",
+        "Education"
+      ],
       "link": "projects/student-attrition.html"
     },
     {
@@ -79,7 +92,10 @@
       "date": "2023",
       "organization": "National Runners-Up",
       "featured": false,
-      "tags": ["Engineering", "Leadership"],
+      "tags": [
+        "Engineering",
+        "Leadership"
+      ],
       "link": "projects/space-settlement.html"
     },
     {
@@ -89,7 +105,11 @@
       "date": "2024",
       "organization": "Personal Project",
       "featured": false,
-      "tags": ["Mathematics", "Python", "Manim"],
+      "tags": [
+        "Mathematics",
+        "Python",
+        "Manim"
+      ],
       "link": "projects/math-visualization.html"
     },
     {
@@ -99,7 +119,10 @@
       "date": "2023",
       "organization": "",
       "featured": false,
-      "tags": ["Particle Physics", "Experimental Design"],
+      "tags": [
+        "Particle Physics",
+        "Experimental Design"
+      ],
       "link": "projects/cern-beamline.html"
     }
   ],
