@@ -8,6 +8,14 @@
       "language": "Jupyter Notebook",
       "stars": 0,
       "topics": []
+    },
+    {
+      "name": "Neutronics-Simulation",
+      "description": "",
+      "url": "https://github.com/AnayGarodia/Neutronics-Simulation",
+      "language": "Python",
+      "stars": 1,
+      "topics": []
     }
   ],
   "articles": [
