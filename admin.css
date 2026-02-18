@@ -2,6 +2,9 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* Force hidden attribute to always hide, regardless of display rules */
+[hidden] { display: none !important; }
+
 :root {
   --bg: #faf8f3;
   --surface: #f0ebe0;
