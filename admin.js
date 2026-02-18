@@ -221,7 +221,7 @@ function renderArticlesTab() {
       ${a.placeholder ? '<span class="item-card-badge">draft</span>' : ''}
       <div class="item-card-actions">
         <button class="btn-icon" onclick="editArticle(${i})">edit</button>
-        <button class="btn-icon" onclick="editArticleBody(${i})">body</button>
+        <button class="btn-icon" onclick="editArticleBody(${i})">write</button>
         <button class="btn-icon danger" onclick="deleteItem('articles',${i})">del</button>
       </div>
     </div>
@@ -301,7 +301,7 @@ function articleStubTemplate(a) {
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>${a.title} · Anay Garodia</title>
-  <link rel="stylesheet" href="../articles/articles-styles.css"/>
+  <link rel="stylesheet" href="articles-styles.css"/>
 </head>
 <body>
 <div class="article-wrapper">
@@ -348,26 +348,144 @@ async function editArticleBody(idx) {
   const article = state.content.articles[idx];
   if (!article) return;
 
-  toast(`Fetching ${article.id}.html…`);
-  const html = await fetchArticleHTML(article.id);
+  // Load existing markdown source if available, else start empty
+  const existingMd = article.markdown_source || '';
 
-  openModal(`Edit Body: ${article.title}`, `
-    <p style="font-size:0.75rem;color:var(--text-faint);margin-bottom:0.5rem;">
-      Editing articles/${article.id}.html — raw HTML
-    </p>
-    <textarea class="code-textarea" id="article-body-editor">${esc(html || articleStubTemplate(article))}</textarea>
+  openMarkdownEditor(article, idx, existingMd);
+}
+
+function openMarkdownEditor(article, idx, initialMd) {
+  const overlay = document.getElementById('modal-overlay');
+  overlay.classList.add('editor-mode');
+
+  openModal(`Write: ${article.title}`, `
+    <div class="editor-toolbar">
+      <button class="toolbar-btn" onclick="insertMd('**','**')" title="Bold"><b>B</b></button>
+      <button class="toolbar-btn" onclick="insertMd('*','*')" title="Italic"><i>I</i></button>
+      <button class="toolbar-btn" onclick="insertMd('## ','',true)" title="Heading 2">H2</button>
+      <button class="toolbar-btn" onclick="insertMd('### ','',true)" title="Heading 3">H3</button>
+      <button class="toolbar-btn" onclick="insertMd('\`','\`')" title="Inline code">code</button>
+      <button class="toolbar-btn" onclick="insertMd('\`\`\`\\n','\\n\`\`\`',true)" title="Code block">```</button>
+      <button class="toolbar-btn" onclick="insertMd('> ','',true)" title="Blockquote">"</button>
+      <button class="toolbar-btn" onclick="insertMdLink()" title="Link">link</button>
+      <span class="toolbar-sep"></span>
+      <span class="toolbar-hint">Markdown · live preview →</span>
+    </div>
+    <div class="editor-split">
+      <textarea id="md-input" class="md-textarea" placeholder="Start writing in Markdown…&#10;&#10;# Heading&#10;**bold** *italic*&#10;&#10;Paragraphs are separated by blank lines.">${esc(initialMd)}</textarea>
+      <div id="md-preview" class="md-preview"></div>
+    </div>
   `, async () => {
-    const newHTML = document.getElementById('article-body-editor').value;
+    const md = document.getElementById('md-input').value;
+    const htmlBody = marked.parse(md);
+    const fullHTML = articleHTMLFromMarkdown(article, htmlBody);
     try {
       const sha = state.articleFileSHAs[article.id] || null;
-      const result = await ghPut(`articles/${article.id}.html`, newHTML, sha, `Update article: ${article.title}`);
+      const result = await ghPut(`articles/${article.id}.html`, fullHTML, sha, `Update article: ${article.title}`);
       state.articleFileSHAs[article.id] = result.content.sha;
+      // Persist markdown source in content.json
+      state.content.articles[idx].markdown_source = md;
+      overlay.classList.remove('editor-mode');
       closeModal();
-      toast(`Saved articles/${article.id}.html`, 'success');
+      toast(`Saved — click "Save to GitHub" to sync content.json`, 'success');
     } catch (err) {
       toast(`Save failed: ${err.message}`, 'error');
     }
   });
+
+  // Wire up live preview
+  const input = document.getElementById('md-input');
+  const preview = document.getElementById('md-preview');
+  const update = () => { preview.innerHTML = marked.parse(input.value); };
+  input.addEventListener('input', update);
+  update();
+
+  // Override cancel to also remove editor-mode class
+  document.getElementById('modal-cancel').onclick = () => {
+    overlay.classList.remove('editor-mode');
+    closeModal();
+  };
+  document.getElementById('modal-close').onclick = () => {
+    overlay.classList.remove('editor-mode');
+    closeModal();
+  };
+}
+
+// Toolbar helper — inserts markdown around selection
+window.insertMd = function(before, after, lineStart = false) {
+  const ta = document.getElementById('md-input');
+  const start = ta.selectionStart;
+  const end   = ta.selectionEnd;
+  const sel   = ta.value.slice(start, end);
+  const insert = lineStart
+    ? '\n' + before + sel + after
+    : before + sel + after;
+  ta.value = ta.value.slice(0, start) + insert + ta.value.slice(end);
+  const cur = start + (lineStart ? before.length + 1 : before.length);
+  ta.setSelectionRange(cur, cur + sel.length);
+  ta.focus();
+  document.getElementById('md-preview').innerHTML = marked.parse(ta.value);
+};
+
+window.insertMdLink = function() {
+  const ta = document.getElementById('md-input');
+  const start = ta.selectionStart;
+  const sel   = ta.value.slice(start, ta.selectionEnd) || 'link text';
+  const insert = `[${sel}](url)`;
+  ta.value = ta.value.slice(0, start) + insert + ta.value.slice(ta.selectionEnd);
+  ta.focus();
+  document.getElementById('md-preview').innerHTML = marked.parse(ta.value);
+};
+
+function articleHTMLFromMarkdown(article, htmlBody) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>${article.title} · Anay Garodia</title>
+  <link rel="stylesheet" href="articles-styles.css"/>
+</head>
+<body>
+<div class="article-wrapper">
+  <nav class="article-nav">
+    <a href="../index.html" class="back-link">← back</a>
+    <button class="theme-toggle" aria-label="Toggle dark mode">
+      <span class="icon-wrap">
+        <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke-width="2">
+          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        </svg>
+        <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </span>
+    </button>
+  </nav>
+
+  <div class="article-container">
+    <header class="article-header">
+      <h1>${article.title}</h1>
+      <p class="article-meta">${article.date}</p>
+    </header>
+
+    <div class="article-content">
+      ${htmlBody}
+    </div>
+  </div>
+</div>
+<script>
+  const t = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', t);
+  document.querySelector('.theme-toggle').addEventListener('click', () => {
+    const n = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', n);
+    localStorage.setItem('theme', n);
+  });
+<\/script>
+</body>
+</html>`;
 }
 
 // ── PROJECTS TAB ─────────────────────────────────────────────

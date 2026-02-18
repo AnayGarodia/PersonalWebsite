@@ -56,7 +56,7 @@ body::after {
 }
 
 .article-wrapper {
-  max-width: 680px;
+  max-width: min(820px, 92vw);
   margin: 0 auto;
   padding: 3rem 2rem;
 }
