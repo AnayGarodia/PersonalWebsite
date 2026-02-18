@@ -7,167 +7,177 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="container">
-      <header>
-        <div class="header-top">
-          <div>
-            <h1>Anay Garodia</h1>
-            <p class="subtitle">
-              Freshman at Columbia University studying Mathematics & Computer
-              Science
-            </p>
+    <div class="page-wrapper">
+
+      <!-- ── SIDEBAR ─────────────────────────────────────── -->
+      <aside class="sidebar">
+        <div class="sidebar-inner">
+
+          <div class="sidebar-name">
+            <a href="#top">Anay Garodia</a>
+            <p class="sidebar-subtitle">Columbia '29<br>Math &amp; Computer Science</p>
           </div>
-          <button class="theme-toggle" aria-label="Toggle dark mode">
-            <svg
-              class="sun-icon"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <circle cx="12" cy="12" r="5" />
-              <line x1="12" y1="1" x2="12" y2="3" />
-              <line x1="12" y1="21" x2="12" y2="23" />
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-              <line x1="1" y1="12" x2="3" y2="12" />
-              <line x1="21" y1="12" x2="23" y2="12" />
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-            </svg>
-            <svg
-              class="moon-icon"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-            </svg>
-          </button>
-        </div>
-        <div class="contact-links">
-          <a href="mailto:ag5250@columbia.edu">Email</a>
-          <a
-            href="https://www.linkedin.com/in/anay-garodia-a863a6257/"
-            target="_blank"
-            >LinkedIn</a
-          >
-          <a href="#about">About</a>
-          <a href="#experiments">Experiments</a>
-          <a href="#writing">Writing</a>
-          <a href="#projects">Projects</a>
-        </div>
-      </header>
 
-      <section id="about">
-        <h2>About</h2>
-        <p style="margin-bottom: 1.5rem; font-size: 1.1rem">
-          I'm interested in math, physics, and computing, and I like working on
-          things that help me understand them better. Recently that's included
-          simulating fusion reactor behavior, reading about how we evaluate AI
-          systems, and studying abstract algebra. I don't have a fixed direction
-          yet, but I enjoy learning, asking questions, and taking on projects
-          that teach me something new.
-        </p>
-      </section>
+          <nav class="sidebar-nav">
+            <a href="#about"       class="nav-item">about</a>
+            <a href="#experiments" class="nav-item">experiments</a>
+            <a href="#writing"     class="nav-item">writing</a>
+            <a href="#github"      class="nav-item">github</a>
+            <a href="#projects"    class="nav-item">projects</a>
+            <a href="#experiences" class="nav-item">experiences</a>
+          </nav>
 
-      <section id="experiments">
-        <h2>Experiments & Interactive Projects</h2>
-        <div class="experiments-grid">
-          <!-- Content loaded dynamically from content.json -->
-        </div>
-      </section>
-
-      <section id="writing">
-        <h2>Writing</h2>
-
-        <!-- Technical Writing -->
-        <div class="writing-category">
-          <h3 class="category-title">Technical</h3>
-          <div class="articles-container" data-category="technical">
-            <!-- Content loaded dynamically from content.json -->
+          <div class="sidebar-bottom">
+            <div class="sidebar-links">
+              <a href="mailto:ag5250@columbia.edu">email</a>
+              <a href="https://github.com/AnayGarodia" target="_blank">github</a>
+              <a href="https://www.linkedin.com/in/anay-garodia-a863a6257/" target="_blank">linkedin</a>
+            </div>
+            <button class="theme-toggle" aria-label="Toggle dark mode">
+              <span class="icon-wrap">
+                <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke-width="2">
+                  <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/>
+                  <line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/>
+                  <line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+                <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke-width="2">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+              </span>
+              <span class="theme-label">dark</span>
+            </button>
           </div>
-          <button class="expand-btn" data-section="technical">
-            Show All Technical Articles →
-          </button>
-        </div>
 
-        <!-- Essays -->
-        <div class="writing-category">
-          <h3 class="category-title">Essays</h3>
-          <div class="articles-container" data-category="essays">
-            <!-- Content loaded dynamically from content.json -->
+        </div>
+      </aside>
+
+      <!-- ── MAIN CONTENT ──────────────────────────────────── -->
+      <main class="main-content" id="top">
+
+        <header class="page-header">
+          <div class="mobile-header-top">
+            <div>
+              <h1>Anay Garodia</h1>
+              <p class="subtitle">Freshman at Columbia University studying Mathematics &amp; Computer Science</p>
+            </div>
+            <button class="theme-toggle mobile-theme-toggle" aria-label="Toggle dark mode">
+              <span class="icon-wrap">
+                <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke-width="2">
+                  <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/>
+                  <line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/>
+                  <line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+                <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke-width="2">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+              </span>
+            </button>
           </div>
-          <button class="expand-btn" data-section="essays">
-            Show All Essays →
-          </button>
-        </div>
+          <nav class="mobile-nav">
+            <a href="#about">about</a>
+            <a href="#experiments">experiments</a>
+            <a href="#writing">writing</a>
+            <a href="#github">github</a>
+            <a href="#projects">projects</a>
+            <a href="#experiences">experiences</a>
+            <a href="mailto:ag5250@columbia.edu">email</a>
+            <a href="https://github.com/AnayGarodia" target="_blank">github ↗</a>
+            <a href="https://www.linkedin.com/in/anay-garodia-a863a6257/" target="_blank">linkedin ↗</a>
+          </nav>
+        </header>
 
-        <!-- Blog -->
-        <div class="writing-category">
-          <h3 class="category-title">Blog</h3>
-          <div class="articles-container" data-category="blog">
-            <!-- Content loaded dynamically from content.json -->
+        <!-- About -->
+        <section id="about">
+          <div class="section-header">
+            <span class="section-num">01</span>
+            <h2>About</h2>
           </div>
-          <button class="expand-btn" data-section="blog">
-            Show All Blog Posts →
-          </button>
-        </div>
-      </section>
-
-      <section id="projects">
-        <h2>Projects</h2>
-        <div class="projects-container">
-          <!-- Content loaded dynamically from content.json -->
-        </div>
-        <button class="expand-btn" data-section="projects">
-          Show All Projects →
-        </button>
-      </section>
-
-      <section id="experiences">
-        <h2>Experiences</h2>
-
-        <div class="timeline-item">
-          <h3>Columbia University</h3>
-          <div class="timeline-meta">
-            2025-2029 • Mathematics and Computer Science
+          <div id="about-content">
+            <!-- loaded from content.json -->
           </div>
-          <p>
-            Member of Quant Group, AI Alignment Club, Undergraduate Mathematics
-            Society, Journal of Undergraduate Math, and Physics Scholars
-            Program.
-          </p>
-        </div>
+        </section>
 
-        <div class="timeline-item">
-          <h3>Math Programs</h3>
-          <div class="timeline-meta">Summer 2024</div>
-          <p>
-            Stanford University Math Camp (SUMaC): Studied abstract algebra.
-            Euler Circle: Studied number theory, combinatorics, real analysis,
-            and cryptography.
-          </p>
-        </div>
+        <!-- Experiments -->
+        <section id="experiments">
+          <div class="section-header">
+            <span class="section-num">02</span>
+            <h2>Experiments</h2>
+          </div>
+          <div class="experiments-grid">
+            <!-- loaded from content.json -->
+          </div>
+        </section>
 
-        <div class="timeline-item">
-          <h3>Leadership & Initiatives</h3>
-          <div class="timeline-meta">2021-2025</div>
-          <p>
-            School Prefect, Founder of the Space Settlement Design Team and
-            Quanta (STEM newsletter), MUN Director, Founder's Medal Awardee
-            (2023). All India Rank 4 in ICSE and ISC exams.
-          </p>
-        </div>
-      </section>
+        <!-- Writing -->
+        <section id="writing">
+          <div class="section-header">
+            <span class="section-num">03</span>
+            <h2>Writing</h2>
+          </div>
+
+          <div class="writing-category">
+            <h3 class="category-title">Technical</h3>
+            <div class="articles-container" data-category="technical"></div>
+            <button class="expand-btn" data-section="technical">show all →</button>
+          </div>
+
+          <div class="writing-category">
+            <h3 class="category-title">Essays</h3>
+            <div class="articles-container" data-category="essays"></div>
+            <button class="expand-btn" data-section="essays">show all →</button>
+          </div>
+
+          <div class="writing-category">
+            <h3 class="category-title">Blog</h3>
+            <div class="articles-container" data-category="blog"></div>
+            <button class="expand-btn" data-section="blog">show all →</button>
+          </div>
+        </section>
+
+        <!-- GitHub Projects -->
+        <section id="github">
+          <div class="section-header">
+            <span class="section-num">04</span>
+            <h2>GitHub Projects</h2>
+          </div>
+          <div class="github-grid" id="github-grid">
+            <!-- loaded from content.json -->
+          </div>
+        </section>
+
+        <!-- Research & Projects -->
+        <section id="projects">
+          <div class="section-header">
+            <span class="section-num">05</span>
+            <h2>Research &amp; Projects</h2>
+          </div>
+          <div class="projects-container"></div>
+          <button class="expand-btn" data-section="projects">show all →</button>
+        </section>
+
+        <!-- Experiences -->
+        <section id="experiences">
+          <div class="section-header">
+            <span class="section-num">06</span>
+            <h2>Experiences</h2>
+          </div>
+          <div class="experiences-container">
+            <!-- loaded from content.json -->
+          </div>
+        </section>
+
+        <footer>
+          <span>Anay Garodia &middot; 2025</span>
+          <a href="admin.html">admin</a>
+        </footer>
+
+      </main>
     </div>
 
-    <script src="theme.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

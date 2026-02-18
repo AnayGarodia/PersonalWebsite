@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin · Anay Garodia</title>
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+  <body>
+
+    <!-- ── LOGIN SCREEN ──────────────────────────── -->
+    <div id="login-screen" class="screen">
+      <div class="auth-box">
+        <p class="auth-site">anay garodia · admin</p>
+        <h1>Sign in</h1>
+        <div class="field">
+          <label for="password-input">Password</label>
+          <input type="password" id="password-input" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <button id="login-btn" class="btn-primary">Enter →</button>
+        <p id="login-error" class="error-msg" hidden>Incorrect password.</p>
+      </div>
+    </div>
+
+    <!-- ── SETUP SCREEN (first run) ──────────────── -->
+    <div id="setup-screen" class="screen" hidden>
+      <div class="auth-box">
+        <p class="auth-site">anay garodia · admin</p>
+        <h1>Create password</h1>
+        <p class="auth-hint">This is your first time. Set an admin password — it will be stored as a hash in your browser.</p>
+        <div class="field">
+          <label for="setup-password">New password</label>
+          <input type="password" id="setup-password" placeholder="••••••••" />
+        </div>
+        <div class="field">
+          <label for="setup-confirm">Confirm password</label>
+          <input type="password" id="setup-confirm" placeholder="••••••••" />
+        </div>
+        <button id="setup-btn" class="btn-primary">Set Password →</button>
+        <p id="setup-error" class="error-msg" hidden></p>
+      </div>
+    </div>
+
+    <!-- ── PAT SCREEN ────────────────────────────── -->
+    <div id="pat-screen" class="screen" hidden>
+      <div class="auth-box">
+        <p class="auth-site">anay garodia · admin</p>
+        <h1>GitHub access</h1>
+        <p class="auth-hint">Enter a GitHub Personal Access Token to enable saving changes. Needs <code>Contents: read &amp; write</code> permission on this repo.</p>
+        <div class="field">
+          <label for="pat-input">Personal Access Token</label>
+          <input type="password" id="pat-input" placeholder="github_pat_..." autocomplete="off" />
+        </div>
+        <div class="pat-actions">
+          <button id="pat-btn" class="btn-primary">Continue →</button>
+          <button id="pat-skip-btn" class="btn-ghost">Skip (read-only)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ADMIN PANEL ───────────────────────────── -->
+    <div id="admin-panel" hidden>
+
+      <aside class="admin-sidebar">
+        <div class="admin-logo">
+          <a href="index.html" class="back-to-site">← site</a>
+          <span class="admin-title">admin</span>
+        </div>
+
+        <nav class="admin-nav">
+          <button class="tab-btn active" data-tab="about">About</button>
+          <button class="tab-btn" data-tab="articles">Articles</button>
+          <button class="tab-btn" data-tab="projects">Projects</button>
+          <button class="tab-btn" data-tab="experiments">Experiments</button>
+          <button class="tab-btn" data-tab="github">GitHub Repos</button>
+          <button class="tab-btn" data-tab="experiences">Experiences</button>
+        </nav>
+
+        <div class="admin-sidebar-footer">
+          <div id="save-status" class="save-status"></div>
+          <button id="save-btn" class="btn-save">Save to GitHub</button>
+          <button id="logout-btn" class="btn-logout">Logout</button>
+        </div>
+      </aside>
+
+      <main class="admin-main">
+
+        <!-- About -->
+        <div class="tab-content active" id="tab-about">
+          <div class="tab-header">
+            <h2>About</h2>
+            <p class="tab-desc">The paragraph shown in the About section of the homepage.</p>
+          </div>
+          <textarea id="about-editor" class="big-textarea" placeholder="Write your about paragraph..."></textarea>
+        </div>
+
+        <!-- Articles -->
+        <div class="tab-content" id="tab-articles">
+          <div class="tab-header">
+            <h2>Articles</h2>
+            <button id="add-article-btn" class="btn-add">+ New Article</button>
+          </div>
+          <div id="articles-list" class="item-list"></div>
+        </div>
+
+        <!-- Projects -->
+        <div class="tab-content" id="tab-projects">
+          <div class="tab-header">
+            <h2>Projects</h2>
+            <button id="add-project-btn" class="btn-add">+ New Project</button>
+          </div>
+          <div id="projects-list" class="item-list"></div>
+        </div>
+
+        <!-- Experiments -->
+        <div class="tab-content" id="tab-experiments">
+          <div class="tab-header">
+            <h2>Experiments</h2>
+            <button id="add-experiment-btn" class="btn-add">+ New Experiment</button>
+          </div>
+          <div id="experiments-list" class="item-list"></div>
+        </div>
+
+        <!-- GitHub Repos -->
+        <div class="tab-content" id="tab-github">
+          <div class="tab-header">
+            <h2>GitHub Projects</h2>
+          </div>
+          <p class="tab-desc">Fetch your public repos and choose which to display on the site. Selected repos are saved to content.json — no live API calls on the main site.</p>
+
+          <div class="github-fetch-bar">
+            <input type="text" id="github-username" placeholder="GitHub username" value="AnayGarodia" />
+            <button id="fetch-repos-btn" class="btn-add">Fetch Repos</button>
+          </div>
+
+          <div id="repo-picker" class="repo-picker"></div>
+
+          <h3 class="subsection-title">Currently displayed</h3>
+          <div id="displayed-repos" class="item-list"></div>
+        </div>
+
+        <!-- Experiences -->
+        <div class="tab-content" id="tab-experiences">
+          <div class="tab-header">
+            <h2>Experiences</h2>
+            <button id="add-experience-btn" class="btn-add">+ New Experience</button>
+          </div>
+          <div id="experiences-list" class="item-list"></div>
+        </div>
+
+      </main>
+    </div>
+
+    <!-- ── MODAL ──────────────────────────────────── -->
+    <div id="modal-overlay" class="modal-overlay" hidden>
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="modal-title">Edit</h3>
+          <button id="modal-close" class="modal-close">✕</button>
+        </div>
+        <div id="modal-body" class="modal-body"></div>
+        <div class="modal-footer">
+          <button id="modal-cancel" class="btn-ghost">Cancel</button>
+          <button id="modal-save" class="btn-primary">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TOAST ──────────────────────────────────── -->
+    <div id="toast" class="toast" hidden></div>
+
+    <script src="admin.js"></script>
+  </body>
+</html>

@@ -1,4 +1,6 @@
 {
+  "about": "I'm interested in math, physics, and computing, and I like working on things that help me understand them better. Recently that's included simulating fusion reactor behavior, reading about how we evaluate AI systems, and studying abstract algebra. I don't have a fixed direction yet, but I enjoy learning, asking questions, and taking on projects that teach me something new.",
+  "github_repos": [],
   "articles": [
     {
       "id": "group-theory",
@@ -7,6 +9,7 @@
       "category": "technical",
       "date": "2024-10",
       "featured": true,
+      "placeholder": true,
       "tags": ["mathematics", "abstract-algebra", "group-theory"]
     },
     {
@@ -34,6 +37,7 @@
       "category": "blog",
       "date": "2024-09",
       "featured": true,
+      "placeholder": true,
       "tags": ["education", "communication", "stem"]
     }
   ],
@@ -112,6 +116,23 @@
       "title": "Frequency",
       "description": "Decrypt messages using frequency analysis. A cryptography puzzle game with 10 levels of increasing difficulty.",
       "link": "experiments/frequency.html"
+    }
+  ],
+  "experiences": [
+    {
+      "title": "Columbia University",
+      "meta": "2025–2029 · Mathematics and Computer Science",
+      "description": "Member of Quant Group, AI Alignment Club, Undergraduate Mathematics Society, Journal of Undergraduate Math, and Physics Scholars Program."
+    },
+    {
+      "title": "Math Programs",
+      "meta": "Summer 2024",
+      "description": "Stanford University Math Camp (SUMaC): Studied abstract algebra. Euler Circle: Studied number theory, combinatorics, real analysis, and cryptography."
+    },
+    {
+      "title": "Leadership & Initiatives",
+      "meta": "2021–2025",
+      "description": "School Prefect, Founder of the Space Settlement Design Team and Quanta (STEM newsletter), MUN Director, Founder's Medal Awardee (2023). All India Rank 4 in ICSE and ISC exams."
     }
   ]
 }
