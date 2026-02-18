@@ -372,31 +372,74 @@ function openWysiwygEditor(article, idx, initialHTML) {
   const overlay = document.getElementById('modal-overlay');
   overlay.classList.add('editor-mode');
 
-  openModal(`Write: ${article.title}`, `
-    <div class="editor-toolbar">
-      <button class="toolbar-btn" onmousedown="event.preventDefault();document.execCommand('bold')" title="Bold"><b>B</b></button>
-      <button class="toolbar-btn" onmousedown="event.preventDefault();document.execCommand('italic')" title="Italic"><i>I</i></button>
-      <span class="toolbar-sep"></span>
-      <button class="toolbar-btn" onmousedown="event.preventDefault();document.execCommand('formatBlock',false,'h2')" title="Heading 2">H2</button>
-      <button class="toolbar-btn" onmousedown="event.preventDefault();document.execCommand('formatBlock',false,'h3')" title="Heading 3">H3</button>
-      <button class="toolbar-btn" onmousedown="event.preventDefault();document.execCommand('formatBlock',false,'p')" title="Paragraph">¶</button>
-      <span class="toolbar-sep"></span>
-      <button class="toolbar-btn" onmousedown="event.preventDefault();document.execCommand('insertUnorderedList')" title="Bullet list">• list</button>
-      <button class="toolbar-btn" onmousedown="event.preventDefault();document.execCommand('insertOrderedList')" title="Numbered list">1. list</button>
-      <span class="toolbar-sep"></span>
-      <button class="toolbar-btn" onmousedown="event.preventDefault();wysiInsertLink()" title="Link">link</button>
-      <button class="toolbar-btn" onmousedown="event.preventDefault();document.execCommand('unlink')" title="Remove link">unlink</button>
-      <button class="toolbar-btn" onmousedown="event.preventDefault();document.execCommand('insertHorizontalRule')" title="Divider">—</button>
-    </div>
-    <div id="wysi-editor" class="wysi-editor" contenteditable="true">${initialHTML || '<p></p>'}</div>
-  `, async () => {
-    const editor = document.getElementById('wysi-editor');
-    const htmlBody = editor.innerHTML;
+  // Render modal with a bare container — Quill will own it
+  openModal(`Write: ${article.title}`, `<div id="wysi-editor"></div>`, null);
+
+  // Disable backdrop-click-to-close while editor is open
+  overlay.onclick = null;
+
+  // Check for autosave
+  const AUTOSAVE_KEY = `autosave_${article.id}`;
+  let startHTML = initialHTML || '';
+  try {
+    const raw = localStorage.getItem(AUTOSAVE_KEY);
+    if (raw) {
+      const { html, ts } = JSON.parse(raw);
+      const mins = Math.round((Date.now() - new Date(ts)) / 60000);
+      const label = mins < 1 ? 'just now' : `${mins} min ago`;
+      if (confirm(`You have an autosaved draft from ${label}. Restore it?`)) {
+        startHTML = html;
+      }
+    }
+  } catch {}
+
+  // Init Quill
+  const quill = new Quill('#wysi-editor', {
+    theme: 'snow',
+    placeholder: 'Start writing…',
+    modules: {
+      toolbar: [
+        [{ header: [2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['blockquote', 'link'],
+        [{ indent: '-1' }, { indent: '+1' }],
+        ['clean'],
+      ],
+    },
+  });
+
+  if (startHTML) {
+    quill.root.innerHTML = startHTML;
+    quill.history.clear();
+  }
+  quill.focus();
+
+  // Autosave with 2s debounce
+  const statusEl = document.getElementById('autosave-status');
+  let autoTimer = null;
+  quill.on('text-change', () => {
+    if (statusEl) { statusEl.textContent = 'unsaved'; statusEl.className = 'autosave-status'; }
+    clearTimeout(autoTimer);
+    autoTimer = setTimeout(() => {
+      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({
+        html: quill.root.innerHTML,
+        ts: new Date().toISOString(),
+      }));
+      if (statusEl) { statusEl.textContent = 'autosaved ✓'; statusEl.className = 'autosave-status saved'; }
+    }, 2000);
+  });
+
+  // Save to GitHub
+  document.getElementById('modal-save').onclick = async () => {
+    const htmlBody = quill.root.innerHTML;
     const fullHTML = buildArticleHTML(article, htmlBody);
+    if (statusEl) { statusEl.textContent = 'saving…'; statusEl.className = 'autosave-status'; }
     try {
       const sha = state.articleFileSHAs[article.id] || null;
       const result = await ghPut(`articles/${article.id}.html`, fullHTML, sha, `Update article: ${article.title}`);
       state.articleFileSHAs[article.id] = result.content.sha;
+      localStorage.removeItem(AUTOSAVE_KEY);
       if ('markdown_source' in (state.content.articles[idx] || {})) {
         delete state.content.articles[idx].markdown_source;
       }
@@ -404,24 +447,20 @@ function openWysiwygEditor(article, idx, initialHTML) {
       closeModal();
       toast('Article saved!', 'success');
     } catch (err) {
+      if (statusEl) { statusEl.textContent = 'save failed'; statusEl.className = 'autosave-status error'; }
       toast(`Save failed: ${err.message}`, 'error');
     }
-  });
+  };
 
-  document.getElementById('modal-cancel').onclick = () => {
+  const closeEditor = () => {
+    clearTimeout(autoTimer);
+    if (statusEl) { statusEl.textContent = ''; }
     overlay.classList.remove('editor-mode');
     closeModal();
   };
-  document.getElementById('modal-close').onclick = () => {
-    overlay.classList.remove('editor-mode');
-    closeModal();
-  };
+  document.getElementById('modal-cancel').onclick = closeEditor;
+  document.getElementById('modal-close').onclick = closeEditor;
 }
-
-window.wysiInsertLink = function() {
-  const url = prompt('Enter URL:');
-  if (url) document.execCommand('createLink', false, url);
-};
 
 function buildArticleHTML(article, htmlBody) {
   return `<!DOCTYPE html>

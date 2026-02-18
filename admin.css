@@ -684,69 +684,86 @@ input[type="password"]:focus {
   gap: 0;
 }
 
-.editor-toolbar {
+
+/* ── QUILL OVERRIDES ─────────────────────────────── */
+
+/* Quill container fills modal body */
+#wysi-editor {
+  flex: 1;
   display: flex;
-  align-items: center;
-  gap: 0.2rem;
-  padding: 0.5rem 1rem;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.ql-toolbar.ql-snow {
+  border: none;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
-  flex-shrink: 0;
-  flex-wrap: wrap;
-}
-
-.toolbar-btn {
-  background: none;
-  border: 1px solid transparent;
-  color: var(--text-muted);
-  padding: 0.25rem 0.55rem;
   font-family: var(--mono);
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: all 0.15s;
-  border-radius: 2px;
+  flex-shrink: 0;
 }
 
-.toolbar-btn:hover {
-  background: var(--surface2);
-  border-color: var(--border);
-  color: var(--text);
-}
-
-.toolbar-sep {
-  width: 1px;
-  height: 16px;
-  background: var(--border);
-  margin: 0 0.3rem;
-}
-
-.wysi-editor {
+.ql-container.ql-snow {
+  border: none;
   flex: 1;
   overflow-y: auto;
-  padding: 2rem 3rem;
+  font-family: 'Source Serif 4', Georgia, serif;
+}
+
+.ql-editor {
   font-family: 'Source Serif 4', Georgia, serif;
   font-size: 1.05rem;
   line-height: 1.85;
   color: var(--text);
   background: var(--bg);
-  outline: none;
-  min-height: 0;
+  padding: 2rem 3rem;
+  min-height: 100%;
 }
 
-.wysi-editor:empty::before {
-  content: 'Start writing…';
+.ql-editor.ql-blank::before {
   color: var(--text-faint);
-  pointer-events: none;
+  font-style: italic;
+  font-family: 'Source Serif 4', Georgia, serif;
 }
 
-.wysi-editor h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.5rem; font-weight: 700; margin: 2.5rem 0 1rem; letter-spacing: -0.01em; }
-.wysi-editor h3 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.2rem; font-weight: 600; margin: 2rem 0 0.8rem; }
-.wysi-editor p  { margin-bottom: 1.5rem; }
-.wysi-editor ul, .wysi-editor ol { margin: 0 0 1.5rem 1.5rem; }
-.wysi-editor li { margin-bottom: 0.4rem; }
-.wysi-editor blockquote { border-left: 3px solid var(--accent); padding-left: 1.2rem; color: var(--text-muted); margin: 1.5rem 0; font-style: italic; }
-.wysi-editor a { color: var(--accent); }
-.wysi-editor hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+.ql-editor h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.5rem; font-weight: 700; margin: 2.5rem 0 1rem; letter-spacing: -0.01em; }
+.ql-editor h3 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.2rem; font-weight: 600; margin: 2rem 0 0.8rem; }
+.ql-editor p  { margin-bottom: 1.5rem; }
+.ql-editor blockquote { border-left: 3px solid var(--accent) !important; padding-left: 1.2rem; color: var(--text-muted); margin: 1.5rem 0; font-style: italic; }
+.ql-editor a  { color: var(--accent); }
+
+/* Quill toolbar icons — adapt to theme */
+.ql-snow .ql-stroke { stroke: var(--text-muted); }
+.ql-snow .ql-fill   { fill:   var(--text-muted); }
+.ql-snow .ql-picker  { color: var(--text-muted); }
+.ql-snow .ql-picker-options { background: var(--surface); border-color: var(--border); color: var(--text); }
+.ql-snow .ql-picker-item:hover { color: var(--accent); }
+
+.ql-snow.ql-toolbar button:hover .ql-stroke,
+.ql-snow .ql-toolbar button:hover .ql-stroke { stroke: var(--accent); }
+.ql-snow.ql-toolbar button:hover .ql-fill,
+.ql-snow .ql-toolbar button:hover .ql-fill   { fill: var(--accent); }
+.ql-snow.ql-toolbar button:hover             { color: var(--accent); }
+.ql-snow.ql-toolbar button.ql-active .ql-stroke { stroke: var(--accent); }
+.ql-snow.ql-toolbar button.ql-active .ql-fill   { fill: var(--accent); }
+.ql-snow.ql-toolbar button.ql-active            { color: var(--accent); }
+.ql-snow .ql-picker-label:hover,
+.ql-snow .ql-picker.ql-expanded .ql-picker-label { color: var(--accent); }
+.ql-snow .ql-picker-label:hover .ql-stroke,
+.ql-snow .ql-picker.ql-expanded .ql-picker-label .ql-stroke { stroke: var(--accent); }
+
+/* Autosave status */
+.autosave-status {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+  margin-right: auto;
+  align-self: center;
+}
+.autosave-status.saved { color: var(--accent); }
+.autosave-status.error { color: var(--accent2); }
 
 /* ── TOAST ──────────────────────────────────────────── */
 .toast {
