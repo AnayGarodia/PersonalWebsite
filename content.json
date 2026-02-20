@@ -54,6 +54,16 @@
       "featured": false,
       "placeholder": false,
       "tags": []
+    },
+    {
+      "id": "career-thoughts-1",
+      "title": "Career Thoughts - Part 1",
+      "description": "",
+      "category": "blog",
+      "date": "2026-02",
+      "featured": false,
+      "placeholder": false,
+      "tags": []
     }
   ],
   "projects": [],
