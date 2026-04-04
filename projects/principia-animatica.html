@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Principia Animatica — Anay Garodia</title>
+    <link rel="stylesheet" href="../articles/articles-styles.css" />
+    <script>
+      (function() {
+        const t = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      })();
+    </script>
+    <style>
+      .project-links {
+        display: flex;
+        gap: 0.8rem;
+        flex-wrap: wrap;
+        margin-top: 1.2rem;
+      }
+      .project-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        letter-spacing: 0.06em;
+        color: var(--text-faint);
+        text-decoration: none;
+        border: 1px solid var(--border-color);
+        padding: 0.3rem 0.7rem;
+        transition: all 0.2s;
+      }
+      .project-link:hover { color: var(--accent); border-color: var(--accent); }
+
+      .lorenz-container {
+        margin: 2.5rem 0;
+        border: 1px solid var(--border-color);
+        background: #0f0e0d;
+        position: relative;
+      }
+      .lorenz-header {
+        padding: 0.6rem 1rem;
+        border-bottom: 1px solid #2a2720;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .lorenz-header-label {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        color: #605848;
+        text-transform: uppercase;
+      }
+      .lorenz-controls {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
+      .lorenz-btn {
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        letter-spacing: 0.05em;
+        padding: 0.22rem 0.6rem;
+        border: 1px solid #3a3530;
+        background: none;
+        color: #605848;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .lorenz-btn:hover {
+        border-color: #5a9b52;
+        color: #5a9b52;
+      }
+      .lorenz-btn.active {
+        border-color: #5a9b52;
+        color: #5a9b52;
+      }
+      #lorenz-canvas {
+        display: block;
+        width: 100%;
+      }
+      .lorenz-stats {
+        position: absolute;
+        bottom: 2.5rem;
+        left: 1rem;
+        font-family: var(--mono);
+        font-size: 0.62rem;
+        color: #3a3530;
+        line-height: 1.7;
+        pointer-events: none;
+      }
+      .lorenz-legend {
+        position: absolute;
+        top: 3rem;
+        right: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        pointer-events: none;
+      }
+      .legend-traj {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-family: var(--mono);
+        font-size: 0.6rem;
+        color: #4a4540;
+      }
+      .legend-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+
+      .animation-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin: 2rem 0;
+      }
+      @media (max-width: 540px) {
+        .animation-grid { grid-template-columns: 1fr; }
+      }
+      .anim-card {
+        padding: 1rem 1.2rem;
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+      }
+      .anim-card-title {
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        font-weight: 500;
+        color: var(--accent);
+        margin-bottom: 0.4rem;
+      }
+      .anim-card-file {
+        font-family: var(--mono);
+        font-size: 0.62rem;
+        color: var(--text-faint);
+        margin-bottom: 0.6rem;
+        letter-spacing: 0.05em;
+      }
+      .anim-card-desc {
+        font-size: 0.84rem;
+        color: var(--text-muted);
+        line-height: 1.55;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="article-wrapper">
+      <div class="article-nav">
+        <a href="../index.html#projects" class="back-link">← Back to Home</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode">
+          <span class="icon-wrap">
+            <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </span>
+        </button>
+      </div>
+
+      <article class="article-container">
+        <header class="article-header">
+          <h1>Principia Animatica</h1>
+          <div class="article-meta">2025 · Python · Manim</div>
+          <div class="article-context">Mathematical animations as a medium for understanding</div>
+          <div class="project-links">
+            <a href="https://github.com/AnayGarodia/Principia-Animatica" class="project-link" target="_blank" rel="noopener">
+              ↗ GitHub
+            </a>
+          </div>
+        </header>
+
+        <div class="article-content">
+          <p>
+            Mathematical objects are easy to write down and hard to see. A differential equation is a sentence about how things change, but you can stare at it for a long time without understanding what it's actually saying about the world. Animation bridges that gap — it makes the mathematics move.
+          </p>
+
+          <p>
+            Principia Animatica is a collection of mathematical animations built with <a href="https://www.manim.community/" target="_blank" rel="noopener">Manim</a>, the Python library Grant Sanderson built for 3Blue1Brown. Each animation is a short film: a mathematical concept rendered visually, with deliberate pacing.
+          </p>
+
+          <h2>Lorenz attractor</h2>
+
+          <p>
+            The Lorenz system is a set of three coupled ordinary differential equations, originally derived by Edward Lorenz in 1963 as a simplified model of atmospheric convection:
+          </p>
+
+          <p style="font-family: var(--mono); font-size: 0.9rem; line-height: 2.2; padding: 0.5rem 1rem; border-left: 2px solid var(--border-color); color: var(--text-muted);">
+            dx/dt = σ(y − x)<br>
+            dy/dt = x(ρ − z) − y<br>
+            dz/dt = xy − βz
+          </p>
+
+          <p>
+            With standard parameters (σ = 10, ρ = 28, β = 8/3), the system exhibits chaos: trajectories that start infinitesimally close together diverge exponentially. The attractor they trace has become one of the most recognizable shapes in mathematics — a double-lobed butterfly that never repeats.
+          </p>
+
+          <p>
+            The live animation below runs the system in your browser with two trajectories starting at (0.1, 0, 0) and (0.10001, 0, 0) — a difference of 0.00001 in the initial condition. Watch them diverge.
+          </p>
+
+          <div class="lorenz-container">
+            <div class="lorenz-header">
+              <span class="lorenz-header-label">Lorenz attractor · live simulation</span>
+              <div class="lorenz-controls">
+                <span style="font-family:var(--mono);font-size:0.62rem;color:#3a3530">σ=10, ρ=28, β=8/3</span>
+                <button class="lorenz-btn active" id="play-btn" onclick="togglePlay()">⏸ pause</button>
+                <button class="lorenz-btn" onclick="resetSim()">↺ reset</button>
+              </div>
+            </div>
+            <canvas id="lorenz-canvas" height="380"></canvas>
+            <div class="lorenz-legend">
+              <div class="legend-traj">
+                <span class="legend-dot" style="background:#5a9b52"></span>
+                x₀ = 0.1
+              </div>
+              <div class="legend-traj">
+                <span class="legend-dot" style="background:#c06888"></span>
+                x₀ = 0.10001
+              </div>
+            </div>
+            <div class="lorenz-stats" id="lorenz-stats">
+              t = 0.000
+            </div>
+          </div>
+
+          <h2>Animations</h2>
+
+          <div class="animation-grid">
+            <div class="anim-card">
+              <div class="anim-card-title">Lorenz Attractor</div>
+              <div class="anim-card-file">CODE/lorenz.py</div>
+              <div class="anim-card-desc">
+                Three trajectories from slightly different initial conditions, visualized in 3D with a rotating camera. Shows sensitivity to initial conditions and the characteristic butterfly-shaped attractor. Uses SciPy's solve_ivp for integration.
+              </div>
+            </div>
+            <div class="anim-card">
+              <div class="anim-card-title">Infinity & the Product Rule</div>
+              <div class="anim-card-file">CODE/infinity.py</div>
+              <div class="anim-card-desc">
+                Animated derivation of the product rule for derivatives, with Hilbert's quote on infinity as a framing device. Dark theme with gold and indigo accents.
+              </div>
+            </div>
+            <div class="anim-card">
+              <div class="anim-card-title">Animatica Suite</div>
+              <div class="anim-card-file">CODE/animatica.py</div>
+              <div class="anim-card-desc">
+                Primary animation module. A collection of shorter pieces exploring geometric series, limits, and the relationship between discrete and continuous mathematics.
+              </div>
+            </div>
+            <div class="anim-card">
+              <div class="anim-card-title">More in progress</div>
+              <div class="anim-card-file">ongoing</div>
+              <div class="anim-card-desc">
+                The repository is actively growing. Planned animations include topological transformations, Fourier series decomposition, and Euler's identity visualized geometrically.
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <div class="article-footer-nav">
+        <a href="../index.html#projects" class="back-link">← Back to Projects</a>
+      </div>
+    </div>
+
+    <footer>
+      <p>Anay Garodia · 2025</p>
+    </footer>
+
+    <script>
+      document.querySelector('.theme-toggle').addEventListener('click', function() {
+        const cur = document.documentElement.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+      });
+
+      // ── Lorenz Attractor Simulation ────────────────────────────
+      const canvas = document.getElementById('lorenz-canvas');
+      const ctx = canvas.getContext('2d');
+
+      const sigma = 10, rho = 28, beta = 8/3;
+      const dt = 0.006;
+      const TRAIL = 1800;
+      const STEPS_PER_FRAME = 4;
+
+      const trajs = [
+        { x: 0.1,      y: 0, z: 0, trail: [], color: '#5a9b52' },
+        { x: 0.10001,  y: 0, z: 0, trail: [], color: '#c06888' },
+      ];
+
+      let angle = 0;
+      let simTime = 0;
+      let running = true;
+      let rafId = null;
+
+      function lorenzStep(t) {
+        const dx = sigma * (t.y - t.x);
+        const dy = t.x * (rho - t.z) - t.y;
+        const dz = t.x * t.y - beta * t.z;
+        t.x += dx * dt;
+        t.y += dy * dt;
+        t.z += dz * dt;
+        t.trail.push([t.x, t.y, t.z]);
+        if (t.trail.length > TRAIL) t.trail.shift();
+      }
+
+      function project(x, y, z) {
+        const cosA = Math.cos(angle), sinA = Math.sin(angle);
+        const px = x * cosA - z * sinA;
+        const py = y;
+        const W = canvas.width, H = canvas.height;
+        const scale = W * 0.028;
+        return [W / 2 + px * scale, H / 2 - (py - 25) * scale];
+      }
+
+      function draw() {
+        const W = canvas.width, H = canvas.height;
+        ctx.fillStyle = 'rgba(15, 14, 13, 0.18)';
+        ctx.fillRect(0, 0, W, H);
+
+        trajs.forEach(t => {
+          if (t.trail.length < 2) return;
+          const len = t.trail.length;
+          for (let i = 1; i < len; i++) {
+            const alpha = i / len;
+            ctx.beginPath();
+            const [x0, y0] = project(...t.trail[i - 1]);
+            const [x1, y1] = project(...t.trail[i]);
+            ctx.moveTo(x0, y0);
+            ctx.lineTo(x1, y1);
+            ctx.strokeStyle = t.color;
+            ctx.globalAlpha = alpha * 0.85;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+          }
+          ctx.globalAlpha = 1;
+          // Current position dot
+          const last = t.trail[t.trail.length - 1];
+          const [px, py] = project(...last);
+          ctx.beginPath();
+          ctx.arc(px, py, 2.8, 0, Math.PI * 2);
+          ctx.fillStyle = t.color;
+          ctx.fill();
+        });
+      }
+
+      function animate() {
+        if (!running) return;
+        for (let i = 0; i < STEPS_PER_FRAME; i++) {
+          trajs.forEach(t => lorenzStep(t));
+          simTime += dt;
+        }
+        angle += 0.004;
+        draw();
+        document.getElementById('lorenz-stats').textContent = `t = ${simTime.toFixed(2)}`;
+        rafId = requestAnimationFrame(animate);
+      }
+
+      function resizeCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        const w = canvas.parentElement.clientWidth;
+        canvas.width = w * dpr;
+        canvas.height = 380 * dpr;
+        canvas.style.width = w + 'px';
+        canvas.style.height = '380px';
+        ctx.scale(dpr, dpr);
+      }
+
+      function togglePlay() {
+        running = !running;
+        const btn = document.getElementById('play-btn');
+        if (running) {
+          btn.textContent = '⏸ pause';
+          btn.classList.add('active');
+          animate();
+        } else {
+          btn.textContent = '▶ play';
+          btn.classList.remove('active');
+          cancelAnimationFrame(rafId);
+        }
+      }
+
+      function resetSim() {
+        cancelAnimationFrame(rafId);
+        trajs[0].x = 0.1;     trajs[0].y = 0; trajs[0].z = 0; trajs[0].trail = [];
+        trajs[1].x = 0.10001; trajs[1].y = 0; trajs[1].z = 0; trajs[1].trail = [];
+        angle = 0; simTime = 0;
+        const W = canvas.width, H = canvas.height;
+        ctx.clearRect(0, 0, W, H);
+        if (running) animate();
+      }
+
+      window.addEventListener('resize', () => {
+        const dpr = window.devicePixelRatio || 1;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        resizeCanvas();
+      });
+
+      resizeCanvas();
+      animate();
+    </script>
+  </body>
+</html>

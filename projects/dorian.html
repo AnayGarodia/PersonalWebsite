@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dorian — Anay Garodia</title>
+    <link rel="stylesheet" href="../articles/articles-styles.css" />
+    <script>
+      (function() {
+        const t = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      })();
+    </script>
+    <style>
+      .project-links {
+        display: flex;
+        gap: 0.8rem;
+        flex-wrap: wrap;
+        margin-top: 1.2rem;
+      }
+      .project-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        letter-spacing: 0.06em;
+        color: var(--text-faint);
+        text-decoration: none;
+        border: 1px solid var(--border-color);
+        padding: 0.3rem 0.7rem;
+        transition: all 0.2s;
+      }
+      .project-link:hover { color: var(--accent); border-color: var(--accent); }
+
+      /* ── Canvas Demo ── */
+      .canvas-container {
+        margin: 2.5rem 0;
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+        overflow: hidden;
+      }
+      .canvas-header {
+        padding: 0.6rem 1rem;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--bg-alt);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .canvas-header-label {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        color: var(--text-faint);
+        text-transform: uppercase;
+      }
+      .canvas-hint {
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        color: var(--text-faint);
+      }
+      #workflow-canvas {
+        display: block;
+        width: 100%;
+        height: 360px;
+        cursor: default;
+      }
+      .node-detail {
+        padding: 0.75rem 1rem;
+        border-top: 1px solid var(--border-color);
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        min-height: 3rem;
+        line-height: 1.55;
+      }
+      .node-detail strong {
+        color: var(--accent);
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="article-wrapper">
+      <div class="article-nav">
+        <a href="../index.html#projects" class="back-link">← Back to Home</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode">
+          <span class="icon-wrap">
+            <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </span>
+        </button>
+      </div>
+
+      <article class="article-container">
+        <header class="article-header">
+          <h1>Dorian</h1>
+          <div class="article-meta">2025 – Present · React + Node.js · Visual AI Agent Builder</div>
+          <div class="project-links">
+            <a href="https://github.com/AnayGarodia/dorian" class="project-link" target="_blank" rel="noopener">
+              ↗ GitHub
+            </a>
+          </div>
+        </header>
+
+        <div class="article-content">
+          <p>
+            Most AI agent frameworks are code-first: you write Python, import a library, wire functions together. Dorian is canvas-first: you drag nodes onto a board, connect them with edges, and the agent emerges from the graph. The goal is to make agent design legible — something you can reason about visually before you reason about it in code.
+          </p>
+
+          <p>
+            The name is a reference to Dorian Gray's portrait: the visible surface of a thing that contains its hidden logic.
+          </p>
+
+          <h2>How it works</h2>
+
+          <p>
+            The frontend is a React application built around a node-edge canvas. Each node represents a component in the agent pipeline: a trigger (user input or scheduled event), an LLM call, a tool invocation, a memory read/write, a condition branch, or an output. Edges represent data flow. You connect them by dragging from output ports to input ports.
+          </p>
+
+          <p>
+            The backend is a Node.js server that receives the serialized graph from the frontend and executes it. Execution is a topological traversal of the DAG: nodes with no incoming edges run first, then their downstream nodes, until the graph is exhausted or a termination condition is reached. Each node type has a handler registered on the backend that defines how it runs.
+          </p>
+
+          <h2>Interactive example</h2>
+          <p>Hover nodes in the canvas below to see what each component does in a sample "research assistant" agent.</p>
+
+          <div class="canvas-container">
+            <div class="canvas-header">
+              <span class="canvas-header-label">example workflow: research assistant agent</span>
+              <span class="canvas-hint">hover to inspect nodes</span>
+            </div>
+            <canvas id="workflow-canvas"></canvas>
+            <div class="node-detail" id="node-detail">
+              Hover a node to see its role in the workflow.
+            </div>
+          </div>
+
+          <h2>Design decisions</h2>
+
+          <p>
+            The canvas uses a custom renderer rather than a library like React Flow. This was intentional: the rendering needs to be tightly coupled to the execution model, and third-party graph libraries come with opinions about what graphs are that don't always align with what agent workflows need. The custom renderer is about 800 lines of React + canvas code.
+          </p>
+
+          <p>
+            Service integrations are implemented as node types on the backend. Adding a new integration means registering a handler: a function that takes the node's configuration and input data and returns output data. Current integrations include OpenAI/Anthropic API calls, web search, code execution in a sandboxed environment, and a basic vector memory store. The integration surface is intentionally narrow — Dorian is not trying to be a universal connector, just a way to compose agents.
+          </p>
+
+          <p>
+            The project is ongoing. The next piece is a debugger: a way to step through graph execution, inspect intermediate values at each node, and understand why an agent produced a particular output.
+          </p>
+        </div>
+      </article>
+
+      <div class="article-footer-nav">
+        <a href="../index.html#projects" class="back-link">← Back to Projects</a>
+      </div>
+    </div>
+
+    <footer>
+      <p>Anay Garodia · 2025</p>
+    </footer>
+
+    <script>
+      document.querySelector('.theme-toggle').addEventListener('click', function() {
+        const cur = document.documentElement.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        drawGraph();
+      });
+
+      const nodes = [
+        { id: 'trigger', x: 0.12, y: 0.22, label: 'User Input', type: 'trigger',
+          detail: '<strong>Trigger — User Input</strong> · Entry point for the workflow. Accepts a natural language query from the user and passes it downstream.' },
+        { id: 'memory_read', x: 0.12, y: 0.62, label: 'Memory Read', type: 'memory',
+          detail: '<strong>Memory Read</strong> · Queries the vector store for context relevant to the current input. Returns top-k chunks as additional context for the LLM.' },
+        { id: 'llm', x: 0.38, y: 0.40, label: 'LLM (Claude)', type: 'llm',
+          detail: '<strong>LLM — Claude</strong> · Core reasoning node. Receives user input + memory context, decides whether to call a tool or produce a final answer.' },
+        { id: 'search', x: 0.64, y: 0.20, label: 'Web Search', type: 'tool',
+          detail: '<strong>Tool — Web Search</strong> · Executes a web search when the LLM determines it needs current information not available in memory. Returns top results as text.' },
+        { id: 'code', x: 0.64, y: 0.58, label: 'Code Runner', type: 'tool',
+          detail: '<strong>Tool — Code Runner</strong> · Executes Python in a sandboxed environment when the LLM needs to perform calculations or data manipulation.' },
+        { id: 'memory_write', x: 0.88, y: 0.38, label: 'Memory Write', type: 'memory',
+          detail: '<strong>Memory Write</strong> · Stores the result and reasoning in the vector store so future queries can benefit from this session.' },
+        { id: 'output', x: 0.88, y: 0.72, label: 'Output', type: 'output',
+          detail: '<strong>Output</strong> · Final node. Formats and returns the response to the user.' },
+      ];
+
+      const edges = [
+        ['trigger', 'llm'],
+        ['memory_read', 'llm'],
+        ['llm', 'search'],
+        ['llm', 'code'],
+        ['search', 'memory_write'],
+        ['code', 'memory_write'],
+        ['memory_write', 'output'],
+        ['llm', 'output'],
+      ];
+
+      const NODE_COLORS = {
+        trigger: '#3a6b35',
+        llm:     '#5b8dd9',
+        tool:    '#8b2252',
+        memory:  '#b8862a',
+        output:  '#3a6b35',
+      };
+
+      const canvas = document.getElementById('workflow-canvas');
+      const ctx = canvas.getContext('2d');
+      let hoveredNode = null;
+      let dpr = window.devicePixelRatio || 1;
+
+      function getThemeColors() {
+        const s = getComputedStyle(document.documentElement);
+        return {
+          bg:     s.getPropertyValue('--card-bg').trim(),
+          border: s.getPropertyValue('--border-color').trim(),
+          text:   s.getPropertyValue('--text').trim(),
+          muted:  s.getPropertyValue('--text-faint').trim(),
+        };
+      }
+
+      function resizeCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = 360 * dpr;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = '360px';
+        ctx.scale(dpr, dpr);
+      }
+
+      function nodeRect(n) {
+        const w = canvas.width / dpr, h = canvas.height / dpr;
+        const nw = 110, nh = 42;
+        return {
+          x: n.x * w - nw / 2,
+          y: n.y * h - nh / 2,
+          w: nw,
+          h: nh,
+        };
+      }
+
+      function drawGraph() {
+        const w = canvas.width / dpr, h = canvas.height / dpr;
+        const c = getThemeColors();
+
+        ctx.clearRect(0, 0, w, h);
+
+        // Draw edges
+        edges.forEach(([fromId, toId]) => {
+          const fn = nodes.find(n => n.id === fromId);
+          const tn = nodes.find(n => n.id === toId);
+          const fr = nodeRect(fn), tr = nodeRect(tn);
+          const x1 = fr.x + fr.w, y1 = fr.y + fr.h / 2;
+          const x2 = tr.x, y2 = tr.y + tr.h / 2;
+          const mx = (x1 + x2) / 2;
+
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.bezierCurveTo(mx, y1, mx, y2, x2, y2);
+          ctx.strokeStyle = c.border;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          // Arrow
+          const angle = Math.atan2(y2 - y1, x2 - x1) * 0 + 0;
+          ctx.beginPath();
+          ctx.moveTo(x2, y2);
+          ctx.lineTo(x2 - 6, y2 - 3);
+          ctx.lineTo(x2 - 6, y2 + 3);
+          ctx.closePath();
+          ctx.fillStyle = c.border;
+          ctx.fill();
+        });
+
+        // Draw nodes
+        nodes.forEach(n => {
+          const r = nodeRect(n);
+          const isHovered = hoveredNode === n.id;
+          const color = NODE_COLORS[n.type] || '#666';
+
+          ctx.fillStyle = c.bg;
+          ctx.strokeStyle = isHovered ? color : c.border;
+          ctx.lineWidth = isHovered ? 1.5 : 1;
+          ctx.fillRect(r.x, r.y, r.w, r.h);
+          ctx.strokeRect(r.x, r.y, r.w, r.h);
+
+          // Left accent bar
+          ctx.fillStyle = color;
+          ctx.fillRect(r.x, r.y, 3, r.h);
+
+          // Label
+          ctx.font = `500 11px "IBM Plex Mono", monospace`;
+          ctx.fillStyle = isHovered ? color : c.text;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(n.label, r.x + r.w / 2 + 1, r.y + r.h / 2);
+        });
+      }
+
+      canvas.addEventListener('mousemove', function(e) {
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+
+        let found = null;
+        nodes.forEach(n => {
+          const r = nodeRect(n);
+          if (mx >= r.x && mx <= r.x + r.w && my >= r.y && my <= r.y + r.h) {
+            found = n.id;
+          }
+        });
+
+        if (found !== hoveredNode) {
+          hoveredNode = found;
+          drawGraph();
+          const detail = document.getElementById('node-detail');
+          if (found) {
+            const node = nodes.find(n => n.id === found);
+            detail.innerHTML = node.detail;
+            canvas.style.cursor = 'pointer';
+          } else {
+            detail.textContent = 'Hover a node to see its role in the workflow.';
+            canvas.style.cursor = 'default';
+          }
+        }
+      });
+
+      canvas.addEventListener('mouseleave', function() {
+        hoveredNode = null;
+        drawGraph();
+        document.getElementById('node-detail').textContent = 'Hover a node to see its role in the workflow.';
+      });
+
+      window.addEventListener('resize', () => {
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        resizeCanvas();
+        drawGraph();
+      });
+
+      resizeCanvas();
+      drawGraph();
+    </script>
+  </body>
+</html>

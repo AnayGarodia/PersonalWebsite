@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mcpaudit — Anay Garodia</title>
+    <link rel="stylesheet" href="../articles/articles-styles.css" />
+    <script>
+      (function() {
+        const t = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      })();
+    </script>
+    <style>
+      .project-links {
+        display: flex;
+        gap: 0.8rem;
+        flex-wrap: wrap;
+        margin-top: 1.2rem;
+      }
+      .project-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        letter-spacing: 0.06em;
+        color: var(--text-faint);
+        text-decoration: none;
+        border: 1px solid var(--border-color);
+        padding: 0.3rem 0.7rem;
+        transition: all 0.2s;
+      }
+      .project-link:hover {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
+      .demo-section {
+        margin: 2.5rem 0;
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+      }
+      .demo-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.6rem 1rem;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--bg-alt);
+      }
+      .demo-header-label {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        color: var(--text-faint);
+      }
+      .demo-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        min-height: 320px;
+      }
+      @media (max-width: 640px) {
+        .demo-body { grid-template-columns: 1fr; }
+      }
+      .demo-pane {
+        position: relative;
+      }
+      .demo-pane + .demo-pane {
+        border-left: 1px solid var(--border-color);
+      }
+      .demo-pane-header {
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        letter-spacing: 0.1em;
+        color: var(--text-faint);
+        padding: 0.5rem 1rem 0.4rem;
+        border-bottom: 1px solid var(--border-color);
+        text-transform: uppercase;
+      }
+      .code-display {
+        padding: 1rem;
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        line-height: 1.7;
+        overflow-x: auto;
+        white-space: pre;
+        color: var(--text);
+        counter-reset: line;
+      }
+      .code-line {
+        display: block;
+        position: relative;
+        padding-left: 2.5em;
+      }
+      .code-line::before {
+        content: attr(data-line);
+        position: absolute;
+        left: 0;
+        width: 2em;
+        text-align: right;
+        color: var(--text-faint);
+        opacity: 0.5;
+        user-select: none;
+      }
+      .code-line.vuln { background: rgba(139, 34, 82, 0.08); }
+      .kw  { color: var(--accent); }
+      .str { color: #b8862a; }
+      [data-theme="dark"] .str { color: #c9a84c; }
+      .cmt { color: var(--text-faint); }
+      .dec { color: var(--accent2); }
+      .fn  { color: var(--text); font-weight: 500; }
+      .num { color: #5b8dd9; }
+      .scan-output {
+        padding: 1rem;
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        line-height: 1.6;
+        min-height: 260px;
+      }
+      .scan-idle {
+        color: var(--text-faint);
+        font-style: italic;
+      }
+      .scan-finding {
+        margin-bottom: 1rem;
+        opacity: 0;
+        transform: translateY(4px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+      }
+      .scan-finding.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .finding-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.2rem;
+      }
+      .sev-high {
+        background: rgba(185, 28, 28, 0.12);
+        color: #b91c1c;
+        border: 1px solid rgba(185, 28, 28, 0.25);
+        font-size: 0.6rem;
+        padding: 0.05rem 0.35rem;
+        letter-spacing: 0.08em;
+      }
+      [data-theme="dark"] .sev-high {
+        background: rgba(239, 68, 68, 0.12);
+        color: #ef4444;
+        border-color: rgba(239, 68, 68, 0.25);
+      }
+      .sev-medium {
+        background: rgba(180, 83, 9, 0.12);
+        color: #b45309;
+        border: 1px solid rgba(180, 83, 9, 0.25);
+        font-size: 0.6rem;
+        padding: 0.05rem 0.35rem;
+        letter-spacing: 0.08em;
+      }
+      [data-theme="dark"] .sev-medium {
+        background: rgba(251, 146, 60, 0.12);
+        color: #fb923c;
+        border-color: rgba(251, 146, 60, 0.25);
+      }
+      .finding-type { color: var(--accent); font-weight: 500; }
+      .finding-loc { color: var(--text-faint); }
+      .finding-desc { color: var(--text-muted); font-size: 0.71rem; }
+      .finding-cwe { color: var(--text-faint); font-size: 0.65rem; opacity: 0.7; }
+      .scan-summary {
+        margin-top: 1rem;
+        padding-top: 0.8rem;
+        border-top: 1px solid var(--border-color);
+        color: var(--text-faint);
+        font-size: 0.7rem;
+        opacity: 0;
+        transition: opacity 0.4s;
+      }
+      .scan-summary.visible { opacity: 1; }
+      .run-btn {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        color: var(--accent);
+        background: none;
+        border: 1px solid var(--accent);
+        padding: 0.28rem 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .run-btn:hover {
+        background: var(--accent);
+        color: var(--bg);
+      }
+      .run-btn:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .vuln-marker {
+        position: absolute;
+        right: 0.6rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent2);
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .vuln-marker.show { opacity: 1; }
+    </style>
+  </head>
+  <body>
+    <div class="article-wrapper">
+      <div class="article-nav">
+        <a href="../index.html#projects" class="back-link">← Back to Home</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode">
+          <span class="icon-wrap">
+            <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </span>
+        </button>
+      </div>
+
+      <article class="article-container">
+        <header class="article-header">
+          <h1>mcpaudit</h1>
+          <div class="article-meta">2025 – Present · Python · Published on PyPI</div>
+          <div class="article-context">Static analysis tool for MCP server security</div>
+          <div class="project-links">
+            <a href="https://github.com/AnayGarodia/mcpaudit" class="project-link" target="_blank" rel="noopener">
+              ↗ GitHub
+            </a>
+            <a href="https://pypi.org/project/mcp-vulnscan/" class="project-link" target="_blank" rel="noopener">
+              ↗ PyPI: mcp-vulnscan
+            </a>
+          </div>
+        </header>
+
+        <div class="article-content">
+          <p>
+            The Model Context Protocol has become the standard way to give language models access to tools — databases, filesystems, APIs, shell commands. But MCP servers are code, and code has bugs. Security bugs. The same tool that lets Claude query a database can be turned into an injection vector if the server developer isn't careful.
+          </p>
+
+          <p>
+            mcpaudit is a static analysis tool that scans MCP server source code for vulnerabilities before they reach production. It uses Python's <code>ast</code> module to parse source files and perform data flow analysis — no execution required, no network calls. You point it at a directory and it tells you what's wrong.
+          </p>
+
+          <h2>What it catches</h2>
+
+          <p>
+            The scanner detects 12 vulnerability categories organized around three threat models: code injection (shell, SQL, template, XML, LDAP, code), data handling issues (path traversal, SSRF, unsafe deserialization), and LLM-specific risks (prompt injection, log injection). It also catches hardcoded secrets — API keys, passwords, tokens embedded in source code.
+          </p>
+
+          <p>
+            Severity is context-sensitive. A <code>subprocess.run(cmd, shell=True)</code> call in a utility function gets classified <strong>medium</strong>. The same call inside a function decorated with <code>@mcp.tool()</code> — where the argument comes from user input via the LLM — gets classified <strong>high</strong>. The scanner tracks import aliases (<code>import subprocess as sp</code>) and detects patterns through function scope boundaries.
+          </p>
+
+          <h2>How it works</h2>
+
+          <p>
+            The core analysis walks the Python AST looking for patterns that match known vulnerability signatures. Each checker implements a visitor that looks for specific node types — <code>Call</code> nodes for function calls, <code>Assign</code> nodes for secret patterns, <code>JoinedStr</code> for f-string injection. The tool context classifier identifies which functions are reachable from MCP tool handlers.
+          </p>
+
+          <p>
+            Findings include the vulnerability type, CWE identifier, file path and line number, and a human-readable description. Output formats include plain text, JSON, and SARIF — the last of which integrates directly with GitHub Code Scanning for automated CI/CD pipelines. A baseline mode lets you establish a security snapshot and only alert on new findings.
+          </p>
+
+          <h2>Usage</h2>
+          <p>
+            Install from PyPI and point it at a directory:
+          </p>
+
+          <!-- Interactive Demo -->
+          <div class="demo-section">
+            <div class="demo-header">
+              <span class="demo-header-label">interactive demo</span>
+              <button class="run-btn" id="run-btn" onclick="runScan()">▶ Run mcp-vulnscan</button>
+            </div>
+            <div class="demo-body">
+              <div class="demo-pane">
+                <div class="demo-pane-header">server.py</div>
+                <div class="code-display" id="code-display">
+<span class="code-line" data-line="1"><span class="kw">from</span> mcp <span class="kw">import</span> tool</span>
+<span class="code-line" data-line="2"><span class="kw">import</span> subprocess</span>
+<span class="code-line" data-line="3"><span class="kw">import</span> os</span>
+<span class="code-line" data-line="4"></span>
+<span class="code-line vuln" data-line="5" id="vline-5">API_KEY = <span class="str">"sk-proj-XxXxXxXxXxXxXxXx"</span>  <span class="cmt"># hardcoded</span><span class="vuln-marker" id="vm-5"></span></span>
+<span class="code-line" data-line="6"></span>
+<span class="code-line" data-line="7"><span class="dec">@tool()</span></span>
+<span class="code-line" data-line="8"><span class="kw">def</span> <span class="fn">run_command</span>(cmd: str) -> str:</span>
+<span class="code-line" data-line="9">    <span class="str">"""Execute a shell command"""</span></span>
+<span class="code-line vuln" data-line="10" id="vline-10">    result = subprocess.<span class="fn">run</span>(cmd, shell=<span class="kw">True</span>, capture_output=<span class="kw">True</span>)<span class="vuln-marker" id="vm-10"></span></span>
+<span class="code-line" data-line="11">    <span class="kw">return</span> result.stdout.<span class="fn">decode</span>()</span>
+<span class="code-line" data-line="12"></span>
+<span class="code-line" data-line="13"><span class="dec">@tool()</span></span>
+<span class="code-line" data-line="14"><span class="kw">def</span> <span class="fn">read_file</span>(path: str) -> str:</span>
+<span class="code-line" data-line="15">    <span class="str">"""Read a file"""</span></span>
+<span class="code-line vuln" data-line="16" id="vline-16">    <span class="kw">with</span> <span class="fn">open</span>(path, <span class="str">'r'</span>) <span class="kw">as</span> f:<span class="vuln-marker" id="vm-16"></span></span>
+<span class="code-line" data-line="17">        <span class="kw">return</span> f.<span class="fn">read</span>()</span>
+<span class="code-line" data-line="18"></span>
+<span class="code-line" data-line="19"><span class="dec">@tool()</span></span>
+<span class="code-line" data-line="20"><span class="kw">def</span> <span class="fn">ask_llm</span>(user_msg: str) -> str:</span>
+<span class="code-line" data-line="21">    <span class="str">"""Forward user message to LLM"""</span></span>
+<span class="code-line vuln" data-line="22" id="vline-22">    sys = <span class="str">f"You are helpful. User said: <span class="dec">{user_msg}</span>"</span><span class="vuln-marker" id="vm-22"></span></span>
+<span class="code-line" data-line="23">    <span class="kw">return</span> <span class="fn">call_llm</span>(sys)</span>
+                </div>
+              </div>
+              <div class="demo-pane">
+                <div class="demo-pane-header">scan output</div>
+                <div class="scan-output" id="scan-output">
+                  <span class="scan-idle">Click "Run mcp-vulnscan" to analyze server.py</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <h2>CI/CD integration</h2>
+
+          <p>
+            The SARIF output format uploads directly to GitHub's code scanning dashboard via the <code>github/codeql-action/upload-sarif</code> action. Baseline mode is designed for this: run once to establish a snapshot of existing findings, then gate PRs on new ones only. Developers can suppress specific findings with inline comments referencing CWE identifiers when a finding is a known false positive.
+          </p>
+
+          <p>
+            The tool has no external dependencies at analysis time — it's pure Python using only the standard library's <code>ast</code> module. This means it runs in any CI environment without network access.
+          </p>
+        </div>
+      </article>
+
+      <div class="article-footer-nav">
+        <a href="../index.html#projects" class="back-link">← Back to Projects</a>
+      </div>
+    </div>
+
+    <footer>
+      <p>Anay Garodia · 2025</p>
+    </footer>
+
+    <script>
+      // Theme toggle
+      document.querySelector('.theme-toggle').addEventListener('click', function() {
+        const cur = document.documentElement.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+      });
+
+      const findings = [
+        {
+          sev: 'HIGH',
+          type: 'HARDCODED_SECRET',
+          loc: 'server.py:5',
+          desc: 'API key pattern matched in assignment. Credentials should not be embedded in source code.',
+          cwe: 'CWE-798',
+          vline: 'vm-5'
+        },
+        {
+          sev: 'HIGH',
+          type: 'SHELL_INJECTION',
+          loc: 'server.py:10',
+          desc: 'subprocess.run() with shell=True called from @tool handler with unvalidated argument.',
+          cwe: 'CWE-78',
+          vline: 'vm-10'
+        },
+        {
+          sev: 'HIGH',
+          type: 'PATH_TRAVERSAL',
+          loc: 'server.py:16',
+          desc: 'open() called from @tool handler with unsanitized path argument. User can read arbitrary files.',
+          cwe: 'CWE-22',
+          vline: 'vm-16'
+        },
+        {
+          sev: 'MEDIUM',
+          type: 'PROMPT_INJECTION',
+          loc: 'server.py:22',
+          desc: 'User-controlled input directly interpolated into LLM system prompt via f-string.',
+          cwe: 'CWE-1392',
+          vline: 'vm-22'
+        }
+      ];
+
+      function makeFindingHTML(f) {
+        return `
+          <div class="scan-finding" id="finding-${f.vline}">
+            <div class="finding-header">
+              <span class="sev-${f.sev.toLowerCase()}">${f.sev}</span>
+              <span class="finding-type">${f.type}</span>
+              <span class="finding-loc">${f.loc}</span>
+            </div>
+            <div class="finding-desc">${f.desc}</div>
+            <div class="finding-cwe">${f.cwe}</div>
+          </div>
+        `;
+      }
+
+      function runScan() {
+        const btn = document.getElementById('run-btn');
+        const output = document.getElementById('scan-output');
+        btn.disabled = true;
+
+        output.innerHTML = `<span class="scan-idle">Scanning server.py…</span>`;
+
+        let allHTML = findings.map(f => makeFindingHTML(f)).join('') +
+          `<div class="scan-summary" id="scan-summary">
+            Found 3 HIGH, 1 MEDIUM — 4 findings in server.py
+          </div>`;
+
+        setTimeout(() => {
+          output.innerHTML = allHTML;
+
+          findings.forEach((f, i) => {
+            setTimeout(() => {
+              const el = document.getElementById(`finding-${f.vline}`);
+              if (el) el.classList.add('visible');
+              const vm = document.getElementById(f.vline);
+              if (vm) vm.classList.add('show');
+            }, i * 350);
+          });
+
+          setTimeout(() => {
+            const sum = document.getElementById('scan-summary');
+            if (sum) sum.classList.add('visible');
+            btn.disabled = false;
+            btn.textContent = '↺ Re-run Scanner';
+          }, findings.length * 350 + 300);
+        }, 700);
+      }
+    </script>
+  </body>
+</html>

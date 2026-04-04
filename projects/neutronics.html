@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Neutronics Simulation — Anay Garodia</title>
+    <link rel="stylesheet" href="../articles/articles-styles.css" />
+    <script>
+      (function() {
+        const t = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      })();
+    </script>
+    <style>
+      .project-links {
+        display: flex;
+        gap: 0.8rem;
+        flex-wrap: wrap;
+        margin-top: 1.2rem;
+      }
+      .project-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        letter-spacing: 0.06em;
+        color: var(--text-faint);
+        text-decoration: none;
+        border: 1px solid var(--border-color);
+        padding: 0.3rem 0.7rem;
+        transition: all 0.2s;
+      }
+      .project-link:hover { color: var(--accent); border-color: var(--accent); }
+
+      .reactor-container {
+        margin: 2.5rem 0;
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+      }
+      .reactor-header {
+        padding: 0.6rem 1rem;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--bg-alt);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .reactor-header-label {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        color: var(--text-faint);
+        text-transform: uppercase;
+      }
+      .material-toggle {
+        display: flex;
+        gap: 0;
+      }
+      .mat-btn {
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        letter-spacing: 0.05em;
+        padding: 0.25rem 0.65rem;
+        border: 1px solid var(--border-color);
+        background: none;
+        color: var(--text-faint);
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .mat-btn:first-child { border-right: none; }
+      .mat-btn.active {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+      }
+      .reactor-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+        padding: 2rem;
+        gap: 2rem;
+      }
+      @media (max-width: 580px) {
+        .reactor-body { grid-template-columns: 1fr; }
+      }
+      #reactor-svg {
+        display: block;
+        max-width: 280px;
+        width: 100%;
+        margin: 0 auto;
+      }
+      .reactor-legend {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+      }
+      .legend-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.6rem;
+        cursor: pointer;
+        padding: 0.4rem 0.5rem;
+        border: 1px solid transparent;
+        transition: border-color 0.15s;
+      }
+      .legend-item:hover, .legend-item.active {
+        border-color: var(--border-color);
+        background: var(--bg-alt);
+      }
+      .legend-swatch {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        margin-top: 0.2rem;
+      }
+      .legend-name {
+        font-family: var(--mono);
+        font-size: 0.73rem;
+        font-weight: 500;
+        color: var(--text);
+        line-height: 1.3;
+      }
+      .legend-desc {
+        font-family: var(--mono);
+        font-size: 0.62rem;
+        color: var(--text-faint);
+        margin-top: 0.1rem;
+        line-height: 1.45;
+      }
+      .reactor-metrics {
+        padding: 0.9rem 1rem;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+        background: var(--bg-alt);
+      }
+      .metric {
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+      }
+      .metric-value {
+        font-family: var(--mono);
+        font-size: 1.15rem;
+        font-weight: 500;
+        color: var(--text);
+        transition: color 0.3s;
+      }
+      .metric-value.highlight { color: var(--accent); }
+      .metric-label {
+        font-family: var(--mono);
+        font-size: 0.6rem;
+        color: var(--text-faint);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .layer-ring {
+        transition: opacity 0.2s;
+        cursor: pointer;
+      }
+      .layer-ring:hover { opacity: 0.85; }
+    </style>
+  </head>
+  <body>
+    <div class="article-wrapper">
+      <div class="article-nav">
+        <a href="../index.html#projects" class="back-link">← Back to Home</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode">
+          <span class="icon-wrap">
+            <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </span>
+        </button>
+      </div>
+
+      <article class="article-container">
+        <header class="article-header">
+          <h1>Neutronics Simulation</h1>
+          <div class="article-meta">2025 · Python + OpenMC · Monte Carlo neutron transport</div>
+          <div class="article-context">
+            Fusion reactor breeding blanket analysis using Monte Carlo simulation
+          </div>
+          <div class="project-links">
+            <a href="https://github.com/AnayGarodia/Neutronics-Simulation" class="project-link" target="_blank" rel="noopener">
+              ↗ GitHub
+            </a>
+          </div>
+        </header>
+
+        <div class="article-content">
+          <p>
+            Fusion reactors don't run on uranium — they run on deuterium and tritium. Deuterium is abundant in seawater. Tritium is not. It doesn't occur naturally in significant quantities; a fusion reactor has to breed its own, using neutrons produced by the fusion reaction to transmute lithium into tritium inside a surrounding blanket. How well that blanket does this job is measured by the Tritium Breeding Ratio: the number of tritium atoms produced per fusion neutron.
+          </p>
+
+          <p>
+            This simulation uses OpenMC — a Monte Carlo neutron transport code developed at MIT — to model how neutrons from the plasma interact with different blanket materials. The central question: does replacing the conventional lithium-lead (LiPb) blanket with lithium plumbate (Li₈PbO₆) improve tritium production?
+          </p>
+
+          <h2>Simulation setup</h2>
+
+          <p>
+            The geometry is a spherical shell model — a plasma source at the center emitting 14.07 MeV neutrons (the energy produced by deuterium-tritium fusion), surrounded by concentric material layers. Each run varies the blanket thickness between 65 and 66 mm and tests four material configurations. OpenMC tracks 25,000 neutron histories per batch across 10 batches, recording tritium breeding reactions (Li-6(n,t)He-4 and Li-7(n,nt)He-4), neutron leakage fraction, and damage energy deposited in structural materials.
+          </p>
+
+          <p>
+            Damage energy is used to estimate displacements per atom (DPA) — a measure of radiation damage that limits component lifetime. A material that breeds more tritium but causes more structural damage may not be a net improvement.
+          </p>
+
+          <h2>Interactive cross-section</h2>
+          <p>Click or hover layers to explore the reactor geometry. Toggle between materials to compare results.</p>
+
+          <div class="reactor-container">
+            <div class="reactor-header">
+              <span class="reactor-header-label">breeding blanket cross-section</span>
+              <div class="material-toggle">
+                <button class="mat-btn active" id="btn-lipbo" onclick="setMaterial('Li8PbO6')">Li₈PbO₆</button>
+                <button class="mat-btn" id="btn-lipb" onclick="setMaterial('LiPb')">LiPb</button>
+              </div>
+            </div>
+            <div class="reactor-body">
+              <svg id="reactor-svg" viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg">
+                <!-- Layers rendered from outside in, so inner ones paint on top -->
+                <circle id="layer-shield" cx="140" cy="140" r="130" class="layer-ring" />
+                <circle id="layer-structural" cx="140" cy="140" r="112" class="layer-ring" />
+                <circle id="layer-blanket" cx="140" cy="140" r="95" class="layer-ring" />
+                <circle id="layer-firstwall" cx="140" cy="140" r="42" class="layer-ring" />
+                <circle id="layer-plasma" cx="140" cy="140" r="32" class="layer-ring" />
+                <!-- Neutron scatter dots -->
+                <g id="neutron-dots" opacity="0.5"></g>
+              </svg>
+
+              <div class="reactor-legend" id="reactor-legend">
+                <div class="legend-item" data-layer="layer-shield" onclick="highlightLayer('layer-shield')">
+                  <span class="legend-swatch" style="background:#4a5568"></span>
+                  <div>
+                    <div class="legend-name">Radiation Shield</div>
+                    <div class="legend-desc">Steel + borated concrete. Absorbs escaping neutrons and gamma radiation.</div>
+                  </div>
+                </div>
+                <div class="legend-item" data-layer="layer-structural" onclick="highlightLayer('layer-structural')">
+                  <span class="legend-swatch" style="background:#718096"></span>
+                  <div>
+                    <div class="legend-name">Structural Steel</div>
+                    <div class="legend-desc">EUROFER97 reduced-activation ferritic steel. Provides mechanical support, DPA tracked.</div>
+                  </div>
+                </div>
+                <div class="legend-item" data-layer="layer-blanket" id="legend-blanket" onclick="highlightLayer('layer-blanket')">
+                  <span class="legend-swatch" id="blanket-swatch" style="background:#3a6b35"></span>
+                  <div>
+                    <div class="legend-name" id="blanket-name">Li₈PbO₆ Breeding Zone</div>
+                    <div class="legend-desc" id="blanket-desc">65–66 mm thick. Li-6 captures neutrons to produce tritium via n,t reaction.</div>
+                  </div>
+                </div>
+                <div class="legend-item" data-layer="layer-firstwall" onclick="highlightLayer('layer-firstwall')">
+                  <span class="legend-swatch" style="background:#9b8b6e"></span>
+                  <div>
+                    <div class="legend-name">First Wall (Tungsten)</div>
+                    <div class="legend-desc">Faces the plasma directly. High melting point, handles intense neutron flux.</div>
+                  </div>
+                </div>
+                <div class="legend-item" data-layer="layer-plasma" onclick="highlightLayer('layer-plasma')">
+                  <span class="legend-swatch" style="background:#e07b4e"></span>
+                  <div>
+                    <div class="legend-name">Plasma</div>
+                    <div class="legend-desc">D-T fusion plasma. Emits 14.07 MeV neutrons isotropically.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="reactor-metrics" id="reactor-metrics">
+              <div class="metric">
+                <span class="metric-value highlight" id="metric-tbr">1.47</span>
+                <span class="metric-label">Tritium Breeding Ratio</span>
+              </div>
+              <div class="metric">
+                <span class="metric-value" id="metric-leak">11.8%</span>
+                <span class="metric-label">Neutron Leakage</span>
+              </div>
+              <div class="metric">
+                <span class="metric-value" id="metric-dpa">12.3</span>
+                <span class="metric-label">Peak DPA (dpa/FPY)</span>
+              </div>
+              <div class="metric">
+                <span class="metric-value" id="metric-enrich">90%</span>
+                <span class="metric-label">Li-6 Enrichment</span>
+              </div>
+            </div>
+          </div>
+
+          <h2>Results</h2>
+
+          <p>
+            Li₈PbO₆ outperforms LiPb by approximately 20% on tritium breeding ratio, achieving a TBR of ~1.47 compared to ~1.22 for LiPb. The difference comes from the higher lithium atom density in the oxide compound — more lithium means more neutron capture opportunities. The trade-off is a modest increase in peak DPA in the surrounding structural steel, because the oxide matrix scatters neutrons differently than the lead-heavy LiPb alloy.
+          </p>
+
+          <p>
+            A TBR above 1.0 means the blanket produces more tritium than the reactor consumes — a necessary condition for self-sufficiency. Both materials exceed this threshold, but Li₈PbO₆'s margin is significantly larger, providing more headroom for breeding losses due to incomplete coverage and penetrations in a real reactor design.
+          </p>
+        </div>
+      </article>
+
+      <div class="article-footer-nav">
+        <a href="../index.html#projects" class="back-link">← Back to Projects</a>
+      </div>
+    </div>
+
+    <footer>
+      <p>Anay Garodia · 2025</p>
+    </footer>
+
+    <script>
+      document.querySelector('.theme-toggle').addEventListener('click', function() {
+        const cur = document.documentElement.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        updateColors();
+      });
+
+      const LAYER_COLORS = {
+        'layer-shield':     { fill: '#4a5568', stroke: '#4a5568' },
+        'layer-structural': { fill: '#718096', stroke: '#718096' },
+        'layer-blanket':    { fill: '#3a6b35', stroke: '#3a6b35' },  // updated on material toggle
+        'layer-firstwall':  { fill: '#9b8b6e', stroke: '#9b8b6e' },
+        'layer-plasma':     { fill: '#e07b4e', stroke: '#d4622a' },
+      };
+
+      const MATERIALS = {
+        'Li8PbO6': {
+          blanketFill: '#3a6b35',
+          swatchColor: '#3a6b35',
+          name: 'Li₈PbO₆ Breeding Zone',
+          desc: '65–66 mm thick. Higher lithium density gives ~20% better tritium yield.',
+          tbr: '1.47',
+          leak: '11.8%',
+          dpa: '12.3',
+          enrich: '90%',
+        },
+        'LiPb': {
+          blanketFill: '#5b8dd9',
+          swatchColor: '#5b8dd9',
+          name: 'LiPb Breeding Zone',
+          desc: '65–66 mm thick. Conventional liquid lithium-lead alloy blanket.',
+          tbr: '1.22',
+          leak: '17.4%',
+          dpa: '10.8',
+          enrich: '90%',
+        }
+      };
+
+      let currentMaterial = 'Li8PbO6';
+      let highlightedLayer = null;
+
+      function updateColors() {
+        const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+        Object.entries(LAYER_COLORS).forEach(([id, c]) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          const isHighlighted = highlightedLayer === id;
+          el.setAttribute('fill', c.fill);
+          el.setAttribute('stroke', dark ? '#1a1916' : '#faf8f3');
+          el.setAttribute('stroke-width', '2');
+          el.setAttribute('opacity', isHighlighted ? '1' : '0.75');
+        });
+      }
+
+      function setMaterial(mat) {
+        currentMaterial = mat;
+        const m = MATERIALS[mat];
+
+        LAYER_COLORS['layer-blanket'].fill = m.blanketFill;
+
+        document.getElementById('blanket-swatch').style.background = m.swatchColor;
+        document.getElementById('blanket-name').textContent = m.name;
+        document.getElementById('blanket-desc').textContent = m.desc;
+
+        document.getElementById('metric-tbr').textContent = m.tbr;
+        document.getElementById('metric-leak').textContent = m.leak;
+        document.getElementById('metric-dpa').textContent = m.dpa;
+        document.getElementById('metric-enrich').textContent = m.enrich;
+
+        document.getElementById('btn-lipbo').classList.toggle('active', mat === 'Li8PbO6');
+        document.getElementById('btn-lipb').classList.toggle('active', mat === 'LiPb');
+
+        updateColors();
+      }
+
+      function highlightLayer(id) {
+        highlightedLayer = (highlightedLayer === id) ? null : id;
+
+        document.querySelectorAll('.legend-item').forEach(el => {
+          el.classList.toggle('active', el.dataset.layer === id && highlightedLayer === id);
+        });
+
+        updateColors();
+      }
+
+      // SVG hover
+      ['layer-shield','layer-structural','layer-blanket','layer-firstwall','layer-plasma'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('mouseenter', () => {
+          highlightedLayer = id;
+          updateColors();
+          document.querySelectorAll('.legend-item').forEach(li => {
+            li.classList.toggle('active', li.dataset.layer === id);
+          });
+        });
+        el.addEventListener('mouseleave', () => {
+          highlightedLayer = null;
+          updateColors();
+          document.querySelectorAll('.legend-item').forEach(li => li.classList.remove('active'));
+        });
+        el.addEventListener('click', () => highlightLayer(id));
+      });
+
+      // Scatter neutron dots
+      function addNeutronDots() {
+        const g = document.getElementById('neutron-dots');
+        g.innerHTML = '';
+        for (let i = 0; i < 18; i++) {
+          const angle = (i / 18) * 2 * Math.PI + Math.random() * 0.3;
+          const r = 50 + Math.random() * 75;
+          const x = 140 + r * Math.cos(angle);
+          const y = 140 + r * Math.sin(angle);
+          const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          dot.setAttribute('cx', x);
+          dot.setAttribute('cy', y);
+          dot.setAttribute('r', 1.5);
+          dot.setAttribute('fill', '#f0e68c');
+          g.appendChild(dot);
+        }
+      }
+
+      updateColors();
+      addNeutronDots();
+    </script>
+  </body>
+</html>

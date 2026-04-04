@@ -1,11 +1,3 @@
-// How many items to show initially per section
-const INITIAL_ITEMS = {
-  projects: 3,
-  technical: 1,
-  essays: 2,
-  blog: 1,
-};
-
 // ── CONTENT LOADING ───────────────────────────────────────────
 async function loadContent() {
   try {
@@ -58,9 +50,14 @@ function renderArticles(articles) {
       .filter(a => a.category === category)
       .sort((a, b) => b.date.localeCompare(a.date));
 
-    const limit = INITIAL_ITEMS[category] || 1;
+    // Hide entire category block if empty
+    const categoryBlock = document.querySelector(`[data-writing-cat="${category}"]`);
+    if (items.length === 0) {
+      if (categoryBlock) categoryBlock.style.display = 'none';
+      return;
+    }
 
-    container.innerHTML = items.map((article, i) => {
+    container.innerHTML = items.map(article => {
       const placeholderBadge = article.placeholder
         ? '<span class="placeholder-badge">draft</span>'
         : '';
@@ -68,17 +65,13 @@ function renderArticles(articles) {
         ? article.date.replace('-', ' / ')
         : '';
       return `
-        <a href="articles/${article.id}.html" class="article-link ${i >= limit ? 'hidden' : ''}">
+        <a href="articles/${article.id}.html" class="article-link">
           <div class="article-meta">${dateLabel}</div>
           <h4>${article.title}${placeholderBadge}</h4>
           <p>${article.description}</p>
         </a>
       `;
     }).join('');
-
-    const hiddenCount = items.length - limit;
-    const btn = document.querySelector(`[data-section="${category}"]`);
-    if (btn && hiddenCount > 0) btn.classList.add('show');
   });
 }
 
@@ -88,7 +81,7 @@ function renderGithubProjects(repos) {
   if (!grid) return;
 
   if (!repos || repos.length === 0) {
-    grid.innerHTML = '<p class="github-empty">No GitHub projects added yet — use the admin panel to add some.</p>';
+    grid.innerHTML = '<p class="github-empty">No GitHub projects added yet.</p>';
     return;
   }
 
@@ -136,10 +129,8 @@ function renderProjects(projects) {
     return db.localeCompare(da);
   });
 
-  const limit = INITIAL_ITEMS.projects;
-
-  container.innerHTML = sorted.map((project, i) => `
-    <a href="${project.link}" class="timeline-item-link ${i >= limit ? 'hidden' : ''}">
+  container.innerHTML = sorted.map(project => `
+    <a href="${project.link}" class="timeline-item-link">
       <div class="timeline-item">
         <h3>${project.title}</h3>
         <div class="timeline-meta">
@@ -152,10 +143,6 @@ function renderProjects(projects) {
       </div>
     </a>
   `).join('');
-
-  const hiddenCount = sorted.length - limit;
-  const btn = document.querySelector('[data-section="projects"]');
-  if (btn && hiddenCount > 0) btn.classList.add('show');
 }
 
 // ── EXPERIENCES ───────────────────────────────────────────────
@@ -192,23 +179,6 @@ function initializeTheme() {
 function updateThemeLabel(theme) {
   document.querySelectorAll('.theme-label').forEach(el => {
     el.textContent = theme === 'light' ? 'dark' : 'light';
-  });
-}
-
-// ── EXPAND BUTTONS ────────────────────────────────────────────
-function setupExpandButtons() {
-  document.querySelectorAll('.expand-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-      const section = this.dataset.section;
-      const container = section === 'projects'
-        ? document.querySelector('.projects-container')
-        : document.querySelector(`.articles-container[data-category="${section}"]`);
-
-      if (container) {
-        container.querySelectorAll('.hidden').forEach(el => el.classList.remove('hidden'));
-      }
-      this.style.display = 'none';
-    });
   });
 }
 
@@ -250,7 +220,6 @@ function setupScrollSpy() {
 document.addEventListener('DOMContentLoaded', () => {
   initializeTheme();
   loadContent();
-  setupExpandButtons();
   setupSmoothScroll();
   setupScrollSpy();
 });
