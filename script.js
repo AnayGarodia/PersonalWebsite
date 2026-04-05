@@ -17,10 +17,22 @@ async function loadContent() {
 }
 
 // ── ABOUT ─────────────────────────────────────────────────────
-function renderAbout(text) {
+function renderAbout(about) {
   const el = document.getElementById('about-content');
-  if (!el || !text) return;
-  el.innerHTML = `<p>${text}</p>`;
+  if (!el || !about) return;
+
+  // Support both old string format and new object format
+  const text = typeof about === 'string' ? about : about.text;
+  const currently = typeof about === 'object' && about.currently ? about.currently : [];
+
+  const chipsHtml = currently.length > 0
+    ? `<div class="currently-row">
+        <span class="currently-label">currently</span>
+        ${currently.map(c => `<span class="currently-chip">${c}</span>`).join('')}
+      </div>`
+    : '';
+
+  el.innerHTML = `<p>${text}</p>${chipsHtml}`;
 }
 
 // ── EXPERIMENTS ───────────────────────────────────────────────
@@ -31,6 +43,7 @@ function renderExperiments(experiments) {
   grid.innerHTML = experiments.map(exp => `
     <a href="${exp.link}" class="experiment-card ${exp.image ? `card-${exp.id}` : ''}">
       <div class="card-content">
+        ${exp.category ? `<span class="experiment-tag">${exp.category}</span>` : ''}
         <h3>${exp.title}</h3>
       </div>
     </a>
@@ -89,6 +102,15 @@ function renderGithubProjects(repos) {
     <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
   </svg>`;
 
+  // Add "view all" footer after grid
+  let footer = document.querySelector('.github-section-footer');
+  if (!footer) {
+    footer = document.createElement('div');
+    footer.className = 'github-section-footer';
+    grid.parentNode.insertBefore(footer, grid.nextSibling);
+  }
+  footer.innerHTML = `<a href="https://github.com/AnayGarodia" target="_blank" rel="noopener">view all on github →</a>`;
+
   grid.innerHTML = repos.map(repo => {
     const langClass = repo.language ? `lang-${repo.language.replace(/[^a-zA-Z]/g, '')}` : '';
     const langDot = repo.language
@@ -124,25 +146,33 @@ function renderProjects(projects) {
   if (!container || !projects) return;
 
   const sorted = [...projects].sort((a, b) => {
+    // Featured first, then by date descending
+    if (a.featured && !b.featured) return -1;
+    if (!a.featured && b.featured) return 1;
     const da = a.date.includes('Present') ? '9999' : a.date;
     const db = b.date.includes('Present') ? '9999' : b.date;
     return db.localeCompare(da);
   });
 
-  container.innerHTML = sorted.map(project => `
-    <a href="${project.link}" class="timeline-item-link">
-      <div class="timeline-item">
-        <h3>${project.title}</h3>
-        <div class="timeline-meta">
-          ${project.date}${project.organization ? ' · ' + project.organization : ''}
+  container.innerHTML = sorted.map(project => {
+    const isFeatured = project.featured;
+    const featuredBadge = isFeatured ? `<div class="featured-badge">★ featured</div>` : '';
+    return `
+      <a href="${project.link}" class="timeline-item-link${isFeatured ? ' featured' : ''}">
+        <div class="timeline-item">
+          ${featuredBadge}
+          <h3>${project.title}</h3>
+          <div class="timeline-meta">
+            ${project.date}${project.organization ? ' · ' + project.organization : ''}
+          </div>
+          <p>${project.description}</p>
+          <div class="tags">
+            ${project.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+          </div>
         </div>
-        <p>${project.description}</p>
-        <div class="tags">
-          ${project.tags.map(t => `<span class="tag">${t}</span>`).join('')}
-        </div>
-      </div>
-    </a>
-  `).join('');
+      </a>
+    `;
+  }).join('');
 }
 
 // ── EXPERIENCES ───────────────────────────────────────────────
@@ -161,7 +191,7 @@ function renderExperiences(experiences) {
 
 // ── THEME ─────────────────────────────────────────────────────
 function initializeTheme() {
-  const currentTheme = localStorage.getItem('theme') || 'light';
+  const currentTheme = localStorage.getItem('theme') || 'dark';
   document.documentElement.setAttribute('data-theme', currentTheme);
   updateThemeLabel(currentTheme);
 
@@ -197,23 +227,37 @@ function setupSmoothScroll() {
   });
 }
 
-// ── SCROLL SPY ───────────────────────────────────────────────
+// ── SCROLL SPY + REVEAL ──────────────────────────────────────
 function setupScrollSpy() {
   const sections = document.querySelectorAll('section[id]');
   const navItems = document.querySelectorAll('.sidebar-nav .nav-item');
-  if (navItems.length === 0) return;
 
-  const observer = new IntersectionObserver(entries => {
+  // Scroll spy observer (active nav)
+  if (navItems.length > 0) {
+    const spyObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navItems.forEach(item => item.classList.remove('active'));
+          const active = document.querySelector(`.sidebar-nav a[href="#${entry.target.id}"]`);
+          if (active) active.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-20% 0px -60% 0px' });
+
+    sections.forEach(s => spyObserver.observe(s));
+  }
+
+  // Scroll reveal observer (fade-in sections)
+  const revealObserver = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        navItems.forEach(item => item.classList.remove('active'));
-        const active = document.querySelector(`.sidebar-nav a[href="#${entry.target.id}"]`);
-        if (active) active.classList.add('active');
+        entry.target.classList.add('visible');
+        revealObserver.unobserve(entry.target);
       }
     });
-  }, { rootMargin: '-20% 0px -60% 0px' });
+  }, { rootMargin: '0px 0px -8% 0px' });
 
-  sections.forEach(s => observer.observe(s));
+  sections.forEach(s => revealObserver.observe(s));
 }
 
 // ── INIT ──────────────────────────────────────────────────────

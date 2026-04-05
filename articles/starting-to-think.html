@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="articles-styles.css"/>
 </head>
 <body>
+<div id="reading-progress"></div>
 <div class="article-wrapper">
   <nav class="article-nav">
     <a href="../index.html" class="back-link">← back</a>
@@ -33,16 +34,12 @@
     <div class="article-content">
       <p>I am 18 right now, and like every 18 year old, I have decisions to make and stuff to figure out. I need to figure out what values I care about, what I want to hope to do with my life, why I have the beliefs that I carry, and most importantly, I need to figure out what I need to figure out. </p><p>The more I think about it, the more I realize that most of my decisions and beliefs have been a product of external circumstances and societal pressures rather than well reasoned, thought-out actions. I am writing to figure some of this out, and so that my future decisions are better thought out and more reasoned.</p>
     </div>
+      <nav class="article-footer-nav">
+        <a href="luiselli-ending.html" class="nav-prev">What's In An Ending?</a>
+        <a href="career-thoughts-1.html" class="nav-next">Career Thoughts, Part 1</a>
+      </nav>
   </div>
 </div>
-<script>
-  const t = localStorage.getItem('theme') || 'light';
-  document.documentElement.setAttribute('data-theme', t);
-  document.querySelector('.theme-toggle').addEventListener('click', () => {
-    const n = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', n);
-    localStorage.setItem('theme', n);
-  });
-</script>
+<script src="article-utils.js"></script>
 </body>
 </html>

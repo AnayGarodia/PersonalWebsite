@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="articles-styles.css" />
   </head>
   <body>
+    <div id="reading-progress"></div>
     <div class="article-wrapper">
       <div class="article-nav">
         <a href="../index.html#writing" class="back-link">← Back to Home</a>
@@ -166,35 +167,11 @@
         </div>
       </article>
 
-      <div class="article-footer-nav">
-        <a href="../index.html#writing" class="back-link"
-          >← Back to All Articles</a
-        >
-      </div>
+      <nav class="article-footer-nav">
+        <a href="../index.html#writing" class="nav-center">all writing</a>
+      </nav>
     </div>
 
-    <footer>
-      <p>© 2025 Anay Garodia • Built with curiosity and code</p>
-    </footer>
-
-    <script>
-      // Theme toggle for article page
-      function initializeTheme() {
-        const themeToggle = document.querySelector(".theme-toggle");
-        const currentTheme = localStorage.getItem("theme") || "light";
-
-        document.documentElement.setAttribute("data-theme", currentTheme);
-
-        themeToggle.addEventListener("click", () => {
-          const theme = document.documentElement.getAttribute("data-theme");
-          const newTheme = theme === "light" ? "dark" : "light";
-
-          document.documentElement.setAttribute("data-theme", newTheme);
-          localStorage.setItem("theme", newTheme);
-        });
-      }
-
-      document.addEventListener("DOMContentLoaded", initializeTheme);
-    </script>
+    <script src="article-utils.js"></script>
   </body>
 </html>

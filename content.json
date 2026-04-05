@@ -1,5 +1,12 @@
 {
-  "about": "I'm Anay Garodia — freshman at Columbia studying Mathematics and Computer Science, Class of 2029. From Kolkata. I do AI safety research at the ARiSE Lab and facilitate the CAIAC Intro Technical Fellowship. This summer I'm a Laidlaw Scholar working on AI safety research. Once a week I teach math to elementary school kids in Harlem.",
+  "about": {
+    "text": "I'm Anay Garodia — freshman at Columbia studying Mathematics and Computer Science, Class of 2029. From Kolkata. I do AI safety research at the ARiSE Lab and facilitate the CAIAC Intro Technical Fellowship. This summer I'm a Laidlaw Scholar working on AI safety research. Once a week I teach math to elementary school kids in Harlem.",
+    "currently": [
+      "Laidlaw Scholar",
+      "ARiSE Lab",
+      "CAIAC Fellowship"
+    ]
+  },
   "github_repos": [
     {
       "name": "mcpaudit",
@@ -62,6 +69,15 @@
       "tags": ["literature", "narrative", "immigration"]
     },
     {
+      "id": "group-theory",
+      "title": "Group Theory: An Illustrated Introduction",
+      "description": "Building intuition for groups, subgroups, and homomorphisms from scratch — with diagrams.",
+      "category": "technical",
+      "date": "2025-12",
+      "placeholder": true,
+      "tags": ["math", "algebra", "group-theory"]
+    },
+    {
       "id": "starting-to-think",
       "title": "Starting to Think",
       "description": "On figuring out what you actually believe, why you believe it, and whether any of it holds up.",
@@ -78,6 +94,24 @@
       "date": "2026-02",
       "featured": false,
       "tags": []
+    },
+    {
+      "id": "big-questions",
+      "title": "Some Big Questions",
+      "description": "On prestige as a trap, what a good life might look like, and trying to figure out what you actually need to figure out at 18.",
+      "category": "blog",
+      "date": "2026-02",
+      "featured": false,
+      "tags": []
+    },
+    {
+      "id": "some-thoughts",
+      "title": "Some Initial Thoughts",
+      "description": "A brief opener: on the strangeness of realizing your beliefs were never really chosen.",
+      "category": "blog",
+      "date": "2026-02",
+      "featured": false,
+      "tags": []
     }
   ],
   "projects": [
@@ -88,6 +122,7 @@
       "date": "2025-Present",
       "organization": "",
       "link": "projects/mcpaudit.html",
+      "featured": true,
       "tags": ["Python", "Security", "Static Analysis", "MCP"]
     },
     {
@@ -97,6 +132,7 @@
       "date": "2026",
       "organization": "YHack",
       "link": "projects/yhack-bridge.html",
+      "featured": true,
       "tags": ["Python", "MediaPipe", "Whisper", "Computer Vision"]
     },
     {
@@ -106,6 +142,7 @@
       "date": "2025-Present",
       "organization": "",
       "link": "projects/dorian.html",
+      "featured": false,
       "tags": ["React", "Node.js", "AI Agents", "JavaScript"]
     },
     {
@@ -115,6 +152,7 @@
       "date": "2025",
       "organization": "",
       "link": "projects/neutronics.html",
+      "featured": false,
       "tags": ["Python", "OpenMC", "Nuclear Physics", "Monte Carlo"]
     },
     {
@@ -124,6 +162,7 @@
       "date": "2025",
       "organization": "",
       "link": "projects/principia-animatica.html",
+      "featured": false,
       "tags": ["Python", "Manim", "Mathematics", "Animation"]
     }
   ],
@@ -133,14 +172,16 @@
       "title": "Wikipedia Speed Run!",
       "description": "Navigate from obscure Wikipedia articles to complex topics using only internal links. Race against the clock!",
       "link": "experiments/wikispeed.html",
-      "image": "images/wiki.png"
+      "image": "images/wiki.png",
+      "category": "game"
     },
     {
       "id": "frequency",
       "title": "Frequency",
       "description": "Decrypt messages using frequency analysis. A cryptography puzzle game with 10 levels of increasing difficulty.",
       "link": "experiments/frequency.html",
-      "image": "images/frequency.png"
+      "image": "images/frequency.png",
+      "category": "puzzle"
     }
   ],
   "experiences": [
