@@ -1,8 +1,7 @@
 {
   "about": {
-    "text": "I'm Anay Garodia — freshman at Columbia studying Mathematics and Computer Science, Class of 2029. From Kolkata. I do AI safety research at the ARiSE Lab and facilitate the CAIAC Intro Technical Fellowship. This summer I'm a Laidlaw Scholar working on AI safety research. Once a week I teach math to elementary school kids in Harlem.",
+    "text": "I'm Anay Garodia, a freshman at Columbia studying Math and Computer Science, from Kolkata. I work on AI safety research at the ARiSE Lab and help run the CAIAC technical fellowship. I teach math to elementary school kids in Harlem once a week.",
     "currently": [
-      "Laidlaw Scholar",
       "ARiSE Lab",
       "CAIAC Fellowship"
     ]
@@ -10,107 +9,85 @@
   "github_repos": [
     {
       "name": "mcpaudit",
-      "description": "Static analysis scanner for MCP server security. Detects shell injection, prompt injection, hardcoded secrets, path traversal, and 8 other vulnerability classes using Python's ast module. Published on PyPI as mcp-vulnscan.",
+      "description": "Static analysis scanner for MCP server security. Published on PyPI as mcp-vulnscan.",
       "url": "https://github.com/AnayGarodia/mcpaudit",
       "language": "Python",
       "stars": 0,
-      "topics": ["security", "mcp", "static-analysis", "ai-safety"]
+      "topics": ["security", "mcp"]
     },
     {
       "name": "yhack-bridge",
-      "description": "Real-time bidirectional ASL ↔ English translator. MediaPipe hand tracking, I3D sign recognition, Whisper ASR, ElevenLabs TTS, and a custom SVG avatar. Integrates as a Google Meet bot. Built at YHack 2026.",
+      "description": "Real-time ASL ↔ English translator. Hand tracking, sign recognition, speech, and a custom avatar.",
       "url": "https://github.com/AnayGarodia/yhack-bridge",
       "language": "Python",
       "stars": 0,
-      "topics": ["accessibility", "sign-language", "nlp", "computer-vision"]
-    },
-    {
-      "name": "dorian",
-      "description": "Visual workflow editor for building and deploying AI agents. Drag-and-drop node canvas with service integrations. React frontend, Node.js backend.",
-      "url": "https://github.com/AnayGarodia/dorian",
-      "language": "JavaScript",
-      "stars": 0,
-      "topics": ["ai-agents", "react", "workflow", "node"]
+      "topics": ["accessibility", "computer-vision"]
     },
     {
       "name": "Neutronics-Simulation",
-      "description": "OpenMC Monte Carlo simulation of fusion reactor breeding blankets. Compares Li₈PbO₆ vs LiPb on tritium breeding ratio, neutron leakage, and radiation damage. Li₈PbO₆ outperforms LiPb by ~20% on TBR.",
+      "description": "Monte Carlo simulation of fusion reactor breeding blankets using OpenMC.",
       "url": "https://github.com/AnayGarodia/Neutronics-Simulation",
       "language": "Python",
       "stars": 1,
-      "topics": ["fusion", "nuclear", "openmc", "simulation"]
-    },
-    {
-      "name": "Principia-Animatica",
-      "description": "Mathematical animations built with Manim. Lorenz attractor chaos visualization, animated product rule proofs, and more. Programmatic mathematical storytelling.",
-      "url": "https://github.com/AnayGarodia/Principia-Animatica",
-      "language": "Python",
-      "stars": 0,
-      "topics": ["manim", "mathematics", "animation", "chaos-theory"]
+      "topics": ["fusion", "openmc"]
     }
   ],
   "articles": [
     {
       "id": "rhodes-scholaring",
       "title": "Rhodes Scholaring: Grammar and Power in Decolonial Speech",
-      "description": "An analysis of how language shapes authority and identity in academic settings, written for the university writing class at Columbia.",
+      "description": "How language shapes authority and identity in academic settings.",
       "category": "essays",
       "date": "2025-11",
-      "featured": true,
-      "tags": ["language", "power", "decolonization"]
+      "tags": ["language", "power"]
     },
     {
       "id": "luiselli-ending",
       "title": "What's In An Ending? Narrative Refusal in Tell Me How It Ends",
-      "description": "How Valeria Luiselli refuses narrative closure to resist the extraction and commodification of migrant children's trauma.",
+      "description": "How Valeria Luiselli refuses narrative closure to resist commodifying migrant children's trauma.",
       "category": "essays",
       "date": "2025-11",
-      "featured": true,
-      "tags": ["literature", "narrative", "immigration"]
+      "tags": ["literature", "narrative"]
     },
     {
       "id": "group-theory",
       "title": "Group Theory: An Illustrated Introduction",
-      "description": "Building intuition for groups, subgroups, and homomorphisms from scratch — with diagrams.",
+      "description": "Building intuition for groups, subgroups, and homomorphisms from scratch.",
       "category": "technical",
       "date": "2025-12",
       "placeholder": true,
-      "tags": ["math", "algebra", "group-theory"]
+      "tags": ["math", "algebra"]
     },
     {
       "id": "starting-to-think",
       "title": "Starting to Think",
-      "description": "On figuring out what you actually believe, why you believe it, and whether any of it holds up.",
+      "description": "On figuring out what you actually believe and whether it holds up.",
       "category": "blog",
       "date": "2026-02",
-      "featured": false,
       "tags": []
     },
     {
       "id": "career-thoughts-1",
       "title": "Career Thoughts, Part 1",
-      "description": "On passion, money, prestige, and why all three make poor primary goals for a 130,000-hour question.",
+      "description": "On passion, money, prestige, and why none make a good primary goal.",
       "category": "blog",
       "date": "2026-02",
-      "featured": false,
       "tags": []
     },
     {
       "id": "big-questions",
       "title": "Some Big Questions",
-      "description": "On prestige as a trap, what a good life might look like, and trying to figure out what you actually need to figure out at 18.",
+      "description": "On prestige, what a good life might look like, and what's worth figuring out at 18.",
       "category": "blog",
       "date": "2026-02",
-      "featured": false,
       "tags": []
     },
     {
       "id": "some-thoughts",
       "title": "Some Initial Thoughts",
-      "description": "A brief opener: on the strangeness of realizing your beliefs were never really chosen.",
+      "description": "On realizing your beliefs were never really chosen.",
       "category": "blog",
       "date": "2026-02",
-      "featured": false,
       "tags": []
     }
   ],
@@ -118,52 +95,38 @@
     {
       "id": "mcpaudit",
       "title": "mcpaudit",
-      "description": "Static analysis tool for MCP server security. Detects 12 vulnerability classes using Python's ast module. Published on PyPI as mcp-vulnscan.",
+      "description": "Static analysis tool for MCP server security. Published on PyPI as mcp-vulnscan.",
       "date": "2025-Present",
       "organization": "",
       "link": "projects/mcpaudit.html",
-      "featured": true,
-      "tags": ["Python", "Security", "Static Analysis", "MCP"]
+      "tags": ["Python", "Security"]
     },
     {
       "id": "yhack-bridge",
       "title": "Bridge",
-      "description": "Real-time ASL ↔ English translator built at YHack 2026. Hand tracking, I3D sign recognition, Whisper ASR, ElevenLabs TTS, custom SVG avatar. First hackathon for both of us.",
+      "description": "Real-time ASL ↔ English translator built at YHack 2026.",
       "date": "2026",
       "organization": "YHack",
       "link": "projects/yhack-bridge.html",
-      "featured": true,
-      "tags": ["Python", "MediaPipe", "Whisper", "Computer Vision"]
+      "tags": ["Python", "Computer Vision"]
     },
     {
       "id": "dorian",
       "title": "Dorian",
-      "description": "Visual workflow editor for composing and deploying AI agents. Node-based canvas, service integrations, deploy-ready backend.",
+      "description": "Visual node-based editor for composing and deploying AI agents.",
       "date": "2025-Present",
       "organization": "",
       "link": "projects/dorian.html",
-      "featured": false,
-      "tags": ["React", "Node.js", "AI Agents", "JavaScript"]
+      "tags": ["React", "Node.js"]
     },
     {
       "id": "neutronics",
       "title": "Neutronics Simulation",
-      "description": "Monte Carlo simulation of fusion reactor breeding blankets using OpenMC. Li₈PbO₆ outperforms LiPb by ~20% on tritium breeding ratio.",
+      "description": "Monte Carlo simulation of fusion reactor breeding blankets using OpenMC.",
       "date": "2025",
       "organization": "",
       "link": "projects/neutronics.html",
-      "featured": false,
-      "tags": ["Python", "OpenMC", "Nuclear Physics", "Monte Carlo"]
-    },
-    {
-      "id": "principia-animatica",
-      "title": "Principia Animatica",
-      "description": "Mathematical animations built with Manim: Lorenz attractor chaos visualization, animated proofs, and more.",
-      "date": "2025",
-      "organization": "",
-      "link": "projects/principia-animatica.html",
-      "featured": false,
-      "tags": ["Python", "Manim", "Mathematics", "Animation"]
+      "tags": ["Python", "OpenMC"]
     }
   ],
   "experiments": [
@@ -188,32 +151,22 @@
     {
       "title": "Laidlaw Scholar",
       "meta": "Summer 2026",
-      "description": "Undergraduate research scholarship for AI safety research. Selected from Columbia for a funded independent research project."
+      "description": "Funded undergraduate research scholarship for AI safety research."
     },
     {
       "title": "Research Assistant, ARiSE Lab",
       "meta": "2025 – Present · Columbia University",
-      "description": "AI safety and reliability research at the Alignment Research Initiative for Safe and Ethical AI."
+      "description": "AI safety and reliability research."
     },
     {
       "title": "Intro Technical Fellowship Facilitator",
       "meta": "2025 – Present · CAIAC",
-      "description": "Facilitate the Columbia AI Alignment Community's introductory technical AI safety fellowship, guiding cohorts through interpretability and alignment fundamentals."
+      "description": "Facilitate the Columbia AI Alignment Community's introductory technical AI safety fellowship."
     },
     {
       "title": "Volunteer Math Teacher",
       "meta": "2025 – Present · Harlem, NYC",
-      "description": "Teach math to elementary school kids in Harlem once a week through a community tutoring program."
-    },
-    {
-      "title": "Peer Notetaker",
-      "meta": "Spring 2025 · CARDS Barnard",
-      "description": "Provided lecture notes for students with disabilities through the Barnard Center for Accessibility Resources and Disability Services."
-    },
-    {
-      "title": "Non-Trivial Fellow",
-      "meta": "2024 – 2025",
-      "description": "Selected for the Non-Trivial fellowship for students building at the intersection of technology and high-impact problems."
+      "description": "Teach math to elementary school kids once a week."
     }
   ]
 }
