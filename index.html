@@ -1,139 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Anay Garodia</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <div class="page-wrapper">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anay Garodia</title>
+  <style>
+    body {
+      max-width: 36em;
+      margin: 3em auto;
+      padding: 0 1em;
+      font: 1rem/1.6 Georgia, serif;
+      color: #222;
+      background: #fff;
+    }
+    h1 { font-size: 1.4rem; font-weight: normal; margin-bottom: 0.2em; }
+    a { color: #1a4d8f; }
+    ul { list-style: none; padding: 0; }
+    li { margin: 0.5em 0; }
+    .date { color: #888; font-size: 0.85rem; margin-right: 0.8em; }
+  </style>
+</head>
+<body>
+  <h1>Anay Garodia</h1>
 
-      <!-- ── SIDEBAR ─────────────────────────────────────── -->
-      <aside class="sidebar">
-        <div class="sidebar-inner">
+  <p>I'm a sophomore at Columbia studying math and computer science, from Kolkata.
+  I work on AI safety research at the ARiSE Lab and help run the CAIAC technical
+  fellowship.</p>
 
-          <div class="sidebar-name">
-            <a href="#top">Anay Garodia</a>
-            <p class="sidebar-subtitle">Columbia '29<br>Math &amp; Computer Science</p>
-          </div>
+  <p><a href="mailto:ag5250@columbia.edu">email</a> ·
+  <a href="https://github.com/AnayGarodia">github</a></p>
 
-          <nav class="sidebar-nav">
-            <a href="#about"       class="nav-item">about</a>
-            <a href="#writing"     class="nav-item">writing</a>
-            <a href="#projects"    class="nav-item">projects</a>
-          </nav>
-
-          <div class="sidebar-bottom">
-            <div class="sidebar-links">
-              <a href="mailto:ag5250@columbia.edu">email</a>
-              <a href="https://github.com/AnayGarodia" target="_blank">github</a>
-              <a href="https://www.linkedin.com/in/anay-garodia-a863a6257/" target="_blank">linkedin</a>
-            </div>
-            <button class="theme-toggle" aria-label="Toggle dark mode">
-              <span class="icon-wrap">
-                <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke-width="2">
-                  <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/>
-                  <line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/>
-                  <line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-                </svg>
-                <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke-width="2">
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                </svg>
-              </span>
-              <span class="theme-label">light</span>
-            </button>
-          </div>
-
-        </div>
-      </aside>
-
-      <!-- ── MAIN CONTENT ──────────────────────────────────── -->
-      <main class="main-content" id="top">
-
-        <header class="page-header">
-          <div class="mobile-header-top">
-            <div>
-              <h1>Anay Garodia</h1>
-              <p class="subtitle">Freshman at Columbia University studying Mathematics &amp; Computer Science</p>
-            </div>
-            <button class="theme-toggle mobile-theme-toggle" aria-label="Toggle dark mode">
-              <span class="icon-wrap">
-                <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke-width="2">
-                  <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/>
-                  <line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/>
-                  <line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-                </svg>
-                <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke-width="2">
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                </svg>
-              </span>
-            </button>
-          </div>
-          <nav class="mobile-nav">
-            <a href="#about">about</a>
-            <a href="#writing">writing</a>
-            <a href="#projects">projects</a>
-            <a href="mailto:ag5250@columbia.edu">email</a>
-            <a href="https://github.com/AnayGarodia" target="_blank">github ↗</a>
-            <a href="https://www.linkedin.com/in/anay-garodia-a863a6257/" target="_blank">linkedin ↗</a>
-          </nav>
-        </header>
-
-        <!-- About -->
-        <section id="about">
-          <div class="section-header">
-            <span class="section-num">01</span>
-            <h2>About</h2>
-          </div>
-          <div id="about-content">
-            <!-- loaded from content.json -->
-          </div>
-        </section>
-
-        <!-- Writing -->
-        <section id="writing">
-          <div class="section-header">
-            <span class="section-num">02</span>
-            <h2>Writing</h2>
-          </div>
-
-          <div class="writing-category" data-writing-cat="technical">
-            <h3 class="category-title">Explainers</h3>
-            <div class="articles-container" data-category="technical"></div>
-          </div>
-
-          <div class="writing-category" data-writing-cat="essays">
-            <h3 class="category-title">Essays</h3>
-            <div class="articles-container" data-category="essays"></div>
-          </div>
-
-          <div class="writing-category" data-writing-cat="blog">
-            <h3 class="category-title">Blog</h3>
-            <div class="articles-container" data-category="blog"></div>
-          </div>
-        </section>
-
-        <!-- Projects -->
-        <section id="projects">
-          <div class="section-header">
-            <span class="section-num">03</span>
-            <h2>Projects</h2>
-          </div>
-          <div class="projects-container"></div>
-        </section>
-
-        <footer>
-          <span>Anay Garodia &middot; 2026</span>
-        </footer>
-
-      </main>
-    </div>
-
-    <script src="script.js"></script>
-  </body>
+  <h2>Writing</h2>
+  <ul>
+    <li><span class="date">Feb 2026</span><a href="articles/big-questions.html">Some Big Questions</a></li>
+    <li><span class="date">Feb 2026</span><a href="articles/career-thoughts-1.html">Career Thoughts, Part 1</a></li>
+    <li><span class="date">Feb 2026</span><a href="articles/starting-to-think.html">Starting to Think</a></li>
+    <li><span class="date">Feb 2026</span><a href="articles/some-thoughts.html">Some Initial Thoughts</a></li>
+  </ul>
+</body>
 </html>
