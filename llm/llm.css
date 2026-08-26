@@ -1,4 +1,4 @@
-/* How to Train Your LLM — shared series styles.
+/* How to Train Your LLM shared series styles.
    Extends the anaygarodia.com look: warm paper, Charter, rust accent. */
 
 :root {
@@ -26,7 +26,7 @@ h1 { font-size: 1.6rem; font-weight: normal; line-height: 1.25; margin: 0 0 0.3e
 h2 { font-size: 1.05rem; font-weight: normal; color: var(--muted); margin-top: 2.5em; }
 .kicker { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.06em; }
 
-/* series mark: a tiny distribution — counting is the whole series */
+/* series mark: a tiny distribution counting is the whole series */
 .mark { display: inline-flex; gap: 3px; align-items: flex-end; height: 1em; margin-right: 0.55em; }
 .mark i { width: 4px; background: var(--bar); border-radius: 1px; }
 .mark i:nth-child(1) { height: 100%; background: var(--accent); }
@@ -45,26 +45,11 @@ h2 { font-size: 1.05rem; font-weight: normal; color: var(--muted); margin-top: 2
 .seq .soon { color: var(--muted); }
 .seq .soon::after { content: " · soon"; font-size: 0.8rem; }
 
-/* prose slot: a visible brief for Anay to replace with real writing */
-.slot {
-  background: var(--slot-bg); border-left: 3px solid var(--slot-edge);
-  border-radius: 0 4px 4px 0; padding: 0.8em 1em; margin: 1.4em 0;
-  font-size: 0.9rem; color: var(--muted); font-style: italic;
-}
-.slot::before { content: "you write this — "; color: var(--accent);
-                font-style: normal; font-variant: small-caps; }
-
 /* margin/history note */
 .note { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
         padding: 0.7em 0; margin: 1.6em 0; font-size: 0.9rem; color: var(--muted); }
 .note b { color: var(--text); font-weight: normal; }
 
-/* widget frame */
-.widget-slot { border: 1px dashed var(--slot-edge); border-radius: 6px;
-               padding: 1em; margin: 1.6em 0; font-size: 0.9rem;
-               color: var(--muted); }
-.widget-slot::before { content: "widget — "; color: var(--accent);
-                       font-variant: small-caps; }
 
 .pagenav { display: flex; justify-content: space-between; margin-top: 3.5em;
            padding-top: 1em; border-top: 1px solid var(--line);
