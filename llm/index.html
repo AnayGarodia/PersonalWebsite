@@ -11,19 +11,23 @@
   <p class="kicker"><span class="mark"><i></i><i></i><i></i><i></i><i></i></span>a series by <a href="https://www.anaygarodia.com">Anay Garodia</a></p>
   <h1>How to Train Your LLM</h1>
 
-  <p>Frontier language models like Fable 5 are trained on trillions of words,
-  over months, at a cost of billions of dollars. We talk to them every day,
-  and yet how they are made remains a mystery to almost everyone who uses
-  them.</p>
+  <p>The one-line story of language model training is well known: predict the
+  next token, update the weights, repeat over the internet. The story is
+  true, and it explains very little. It will not tell you why the loss curve
+  bends where it does, or what a data mixture decision costs, or what
+  alignment training takes out of a model.</p>
 
-  <p>A language model is not programmed. It begins as billions of random
-  numbers, and it is trained: show it some text, have it guess what comes
-  next, and nudge the numbers after every miss. Repeat this on enough text,
-  enough times, and the guessing gets so good that conversation comes out of
-  it. That procedure is the subject of this series.</p>
+  <p>That gap used to be a specialist's problem. It is not anymore. Whether a
+  model can be trusted with a task, where it will fail, and what it would
+  take to fix it are questions whose answers get set during training, and
+  nearly everyone now reasoning about those questions, including many people
+  building on these models, is reasoning from the outside.</p>
 
-  <p>Over the series you will train a model of your own, in this browser tab,
-  doing every step yourself. It starts with you playing the guessing game.</p>
+  <p>The way to get inside is to train one. That is what this series is: a
+  small model, built from scratch in this browser tab, through the same
+  stages as a frontier run. You assemble its data, train its tokenizer,
+  pretrain it, find its scaling law, and tune it into an assistant. It starts
+  with the job the model has to do.</p>
 
   <h2>The sequence</h2>
   <ol class="seq">
