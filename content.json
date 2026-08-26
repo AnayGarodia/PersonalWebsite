@@ -1,37 +1,7 @@
 {
   "about": {
-    "text": "I'm Anay Garodia, a freshman at Columbia studying Math and Computer Science, from Kolkata. I work on AI safety research at the ARiSE Lab and help run the CAIAC technical fellowship. I teach math to elementary school kids in Harlem once a week.",
-    "currently": [
-      "ARiSE Lab",
-      "CAIAC Fellowship"
-    ]
+    "text": "I'm Anay Garodia, a freshman at Columbia studying Math and Computer Science, from Kolkata. I work on AI safety research at the ARiSE Lab and help run the CAIAC technical fellowship."
   },
-  "github_repos": [
-    {
-      "name": "mcpaudit",
-      "description": "Static analysis scanner for MCP server security. Published on PyPI as mcp-vulnscan.",
-      "url": "https://github.com/AnayGarodia/mcpaudit",
-      "language": "Python",
-      "stars": 0,
-      "topics": ["security", "mcp"]
-    },
-    {
-      "name": "yhack-bridge",
-      "description": "Real-time ASL ↔ English translator. Hand tracking, sign recognition, speech, and a custom avatar.",
-      "url": "https://github.com/AnayGarodia/yhack-bridge",
-      "language": "Python",
-      "stars": 0,
-      "topics": ["accessibility", "computer-vision"]
-    },
-    {
-      "name": "Neutronics-Simulation",
-      "description": "Monte Carlo simulation of fusion reactor breeding blankets using OpenMC.",
-      "url": "https://github.com/AnayGarodia/Neutronics-Simulation",
-      "language": "Python",
-      "stars": 1,
-      "topics": ["fusion", "openmc"]
-    }
-  ],
   "articles": [
     {
       "id": "rhodes-scholaring",
@@ -127,46 +97,6 @@
       "organization": "",
       "link": "projects/neutronics.html",
       "tags": ["Python", "OpenMC"]
-    }
-  ],
-  "experiments": [
-    {
-      "id": "wikispeed",
-      "title": "Wikipedia Speed Run!",
-      "description": "Navigate from obscure Wikipedia articles to complex topics using only internal links. Race against the clock!",
-      "link": "experiments/wikispeed.html",
-      "image": "images/wiki.png",
-      "category": "game"
-    },
-    {
-      "id": "frequency",
-      "title": "Frequency",
-      "description": "Decrypt messages using frequency analysis. A cryptography puzzle game with 10 levels of increasing difficulty.",
-      "link": "experiments/frequency.html",
-      "image": "images/frequency.png",
-      "category": "puzzle"
-    }
-  ],
-  "experiences": [
-    {
-      "title": "Laidlaw Scholar",
-      "meta": "Summer 2026",
-      "description": "Funded undergraduate research scholarship for AI safety research."
-    },
-    {
-      "title": "Research Assistant, ARiSE Lab",
-      "meta": "2025 – Present · Columbia University",
-      "description": "AI safety and reliability research."
-    },
-    {
-      "title": "Intro Technical Fellowship Facilitator",
-      "meta": "2025 – Present · CAIAC",
-      "description": "Facilitate the Columbia AI Alignment Community's introductory technical AI safety fellowship."
-    },
-    {
-      "title": "Volunteer Math Teacher",
-      "meta": "2025 – Present · Harlem, NYC",
-      "description": "Teach math to elementary school kids once a week."
     }
   ]
 }
