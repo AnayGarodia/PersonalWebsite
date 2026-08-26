@@ -5,37 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Anay Garodia</title>
   <style>
-    body {
-      max-width: 36em;
-      margin: 3em auto;
-      padding: 0 1em;
-      font: 1rem/1.6 Georgia, serif;
-      color: #222;
-      background: #fff;
+    :root { --bg: #faf7f0; --text: #26231e; --muted: #8a857b; --link: #7c4a1e; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #191714; --text: #e4dfd5; --muted: #837d71; --link: #d09154; }
     }
-    h1 { font-size: 1.4rem; font-weight: normal; margin-bottom: 0.2em; }
-    a { color: #1a4d8f; }
+    body {
+      max-width: 34em;
+      margin: 4em auto;
+      padding: 0 1.2em;
+      font: 1.05rem/1.65 Charter, Georgia, serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+    h1 { font-size: 1.3rem; font-weight: normal; margin-bottom: 1em; }
+    h2 { font-size: 1rem; font-weight: normal; color: var(--muted); margin-top: 3em; }
+    a { color: var(--link); }
     ul { list-style: none; padding: 0; }
-    li { margin: 0.5em 0; }
-    .date { color: #888; font-size: 0.85rem; margin-right: 0.8em; }
+    li { margin: 0.6em 0; }
+    .date { color: var(--muted); font-size: 0.85rem; margin-right: 0.8em; font-variant-numeric: tabular-nums; }
   </style>
 </head>
 <body>
   <h1>Anay Garodia</h1>
 
   <p>I'm a sophomore at Columbia studying math and computer science, from Kolkata.
-  I work on AI safety research at the ARiSE Lab and help run the CAIAC technical
-  fellowship.</p>
+  I spend most of my time doing math, building software, and writing to figure out
+  what I actually think.</p>
 
   <p><a href="mailto:ag5250@columbia.edu">email</a> ·
   <a href="https://github.com/AnayGarodia">github</a></p>
 
   <h2>Writing</h2>
   <ul>
-    <li><span class="date">Feb 2026</span><a href="articles/big-questions.html">Some Big Questions</a></li>
     <li><span class="date">Feb 2026</span><a href="articles/career-thoughts-1.html">Career Thoughts, Part 1</a></li>
-    <li><span class="date">Feb 2026</span><a href="articles/starting-to-think.html">Starting to Think</a></li>
-    <li><span class="date">Feb 2026</span><a href="articles/some-thoughts.html">Some Initial Thoughts</a></li>
+    <li><span class="date">Feb 2026</span><a href="articles/big-questions.html">Some Big Questions</a></li>
   </ul>
 </body>
 </html>
