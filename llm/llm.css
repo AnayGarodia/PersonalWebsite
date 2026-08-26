@@ -20,6 +20,7 @@ body {
   font: 1.05rem/1.7 Charter, Georgia, serif;
   color: var(--text); background: var(--bg);
 }
+p { text-align: justify; hyphens: auto; }
 a { color: var(--accent); }
 h1 { font-size: 1.6rem; font-weight: normal; line-height: 1.25; margin: 0 0 0.3em; }
 h2 { font-size: 1.05rem; font-weight: normal; color: var(--muted); margin-top: 2.5em; }
