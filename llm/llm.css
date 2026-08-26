@@ -1,0 +1,71 @@
+/* How to Train Your LLM — shared series styles.
+   Extends the anaygarodia.com look: warm paper, Charter, rust accent. */
+
+:root {
+  --bg: #faf7f0; --text: #26231e; --muted: #8a857b;
+  --accent: #7c4a1e; --line: #d8d2c4; --bar: #c9a273;
+  --slot-bg: #f3e9d8; --slot-edge: #d9b98a;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #191714; --text: #e4dfd5; --muted: #837d71;
+    --accent: #d09154; --line: #3a362f; --bar: #6b5637;
+    --slot-bg: #252017; --slot-edge: #6b5637;
+  }
+}
+
+* { box-sizing: border-box; }
+body {
+  max-width: 38em; margin: 4em auto; padding: 0 1.2em;
+  font: 1.05rem/1.7 Charter, Georgia, serif;
+  color: var(--text); background: var(--bg);
+}
+a { color: var(--accent); }
+h1 { font-size: 1.6rem; font-weight: normal; line-height: 1.25; margin: 0 0 0.3em; }
+h2 { font-size: 1.05rem; font-weight: normal; color: var(--muted); margin-top: 2.5em; }
+.kicker { color: var(--muted); font-size: 0.85rem; letter-spacing: 0.06em; }
+
+/* series mark: a tiny distribution — counting is the whole series */
+.mark { display: inline-flex; gap: 3px; align-items: flex-end; height: 1em; margin-right: 0.55em; }
+.mark i { width: 4px; background: var(--bar); border-radius: 1px; }
+.mark i:nth-child(1) { height: 100%; background: var(--accent); }
+.mark i:nth-child(2) { height: 62%; }
+.mark i:nth-child(3) { height: 38%; }
+.mark i:nth-child(4) { height: 22%; }
+.mark i:nth-child(5) { height: 10%; }
+
+/* the sequence list */
+.seq { list-style: none; padding: 0; margin: 0.6em 0 0; }
+.seq .part { margin: 1.5em 0 0.4em; color: var(--muted); font-size: 0.85rem;
+             letter-spacing: 0.05em; }
+.seq li { margin: 0.35em 0; display: flex; gap: 0.8em; baseline-source: first; }
+.seq .n { color: var(--muted); font-variant-numeric: tabular-nums;
+          min-width: 1.6em; text-align: right; }
+.seq .soon { color: var(--muted); }
+.seq .soon::after { content: " · soon"; font-size: 0.8rem; }
+
+/* prose slot: a visible brief for Anay to replace with real writing */
+.slot {
+  background: var(--slot-bg); border-left: 3px solid var(--slot-edge);
+  border-radius: 0 4px 4px 0; padding: 0.8em 1em; margin: 1.4em 0;
+  font-size: 0.9rem; color: var(--muted); font-style: italic;
+}
+.slot::before { content: "you write this — "; color: var(--accent);
+                font-style: normal; font-variant: small-caps; }
+
+/* margin/history note */
+.note { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+        padding: 0.7em 0; margin: 1.6em 0; font-size: 0.9rem; color: var(--muted); }
+.note b { color: var(--text); font-weight: normal; }
+
+/* widget frame */
+.widget-slot { border: 1px dashed var(--slot-edge); border-radius: 6px;
+               padding: 1em; margin: 1.6em 0; font-size: 0.9rem;
+               color: var(--muted); }
+.widget-slot::before { content: "widget — "; color: var(--accent);
+                       font-variant: small-caps; }
+
+.pagenav { display: flex; justify-content: space-between; margin-top: 3.5em;
+           padding-top: 1em; border-top: 1px solid var(--line);
+           font-size: 0.95rem; }
+footer { margin-top: 3em; color: var(--muted); font-size: 0.85rem; }
