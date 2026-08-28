@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>desk</title>
+  <style>
+    :root { --bg: #faf7f0; --text: #26231e; --muted: #8a857b; --link: #7c4a1e; --line: #d8d2c4; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #191714; --text: #e4dfd5; --muted: #837d71; --link: #d09154; --line: #3a362f; }
+    }
+    body {
+      max-width: 38em;
+      margin: 3em auto;
+      padding: 0 1.2em;
+      font: 1.05rem/1.65 Charter, Georgia, serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+    header { display: flex; gap: 0.7em; align-items: baseline; flex-wrap: wrap; margin-bottom: 1em; }
+    select, button {
+      font: 0.85rem Charter, Georgia, serif;
+      color: var(--link);
+      background: none;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 0.2em 0.6em;
+      cursor: pointer;
+    }
+    select { color: var(--text); max-width: 14em; }
+    button:hover { border-color: var(--link); }
+    #status { color: var(--muted); font-size: 0.8rem; margin-left: auto; font-variant-numeric: tabular-nums; }
+    textarea {
+      width: 100%;
+      min-height: 75vh;
+      font: inherit;
+      line-height: 1.7;
+      color: var(--text);
+      background: none;
+      border: none;
+      resize: vertical;
+      outline: none;
+    }
+    footer { color: var(--muted); font-size: 0.75rem; margin-top: 1.5em; }
+  </style>
+</head>
+<body>
+  <header>
+    <select id="docs"></select>
+    <button id="new">new</button>
+    <button id="rename">rename</button>
+    <button id="del">delete</button>
+    <button id="download">download</button>
+    <span id="status"></span>
+  </header>
+  <textarea id="text" spellcheck="true" placeholder="Write."></textarea>
+  <footer>Drafts live in this browser's localStorage only. Download anything you'd mind losing.</footer>
+
+<script>
+const KEY = "desk-docs";
+const $ = id => document.getElementById(id);
+let docs = JSON.parse(localStorage.getItem(KEY) || "null") || { "untitled": "" };
+let current = localStorage.getItem(KEY + "-current");
+if (!(current in docs)) current = Object.keys(docs)[0];
+
+function persist() {
+  localStorage.setItem(KEY, JSON.stringify(docs));
+  localStorage.setItem(KEY + "-current", current);
+}
+function renderList() {
+  $("docs").innerHTML = Object.keys(docs).map(n =>
+    `<option${n === current ? " selected" : ""}>${n.replace(/&/g,"&amp;").replace(/</g,"&lt;")}</option>`).join("");
+}
+function load() {
+  renderList();
+  $("text").value = docs[current];
+  count();
+}
+function count() {
+  const words = $("text").value.trim() ? $("text").value.trim().split(/\s+/).length : 0;
+  $("status").textContent = words + " words";
+}
+
+let timer;
+$("text").addEventListener("input", () => {
+  docs[current] = $("text").value;
+  count();
+  clearTimeout(timer);
+  timer = setTimeout(persist, 300);
+});
+$("docs").addEventListener("change", () => { current = $("docs").value; persist(); load(); });
+$("new").addEventListener("click", () => {
+  const name = prompt("Name:");
+  if (!name || name in docs) return;
+  docs[name] = ""; current = name; persist(); load(); $("text").focus();
+});
+$("rename").addEventListener("click", () => {
+  const name = prompt("Rename to:", current);
+  if (!name || name === current || name in docs) return;
+  docs[name] = docs[current]; delete docs[current]; current = name; persist(); load();
+});
+$("del").addEventListener("click", () => {
+  if (!confirm(`Delete "${current}"?`)) return;
+  delete docs[current];
+  if (!Object.keys(docs).length) docs = { "untitled": "" };
+  current = Object.keys(docs)[0]; persist(); load();
+});
+$("download").addEventListener("click", () => {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([docs[current]], { type: "text/plain" }));
+  a.download = current + ".txt";
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+window.addEventListener("beforeunload", persist);
+load();
+</script>
+</body>
+</html>
