@@ -55,18 +55,29 @@
     <span id="status"></span>
   </header>
   <textarea id="text" spellcheck="true" placeholder="Write."></textarea>
-  <footer>Drafts live in this browser's localStorage only. Download anything you'd mind losing.</footer>
+  <footer>Synced. Drafts save to the cloud a moment after you stop typing; the word count shows a check when saved.</footer>
 
 <script>
+const API = "https://desk-sync.desk-sync.workers.dev/711bde82";
 const KEY = "desk-docs";
 const $ = id => document.getElementById(id);
 let docs = JSON.parse(localStorage.getItem(KEY) || "null") || { "untitled": "" };
 let current = localStorage.getItem(KEY + "-current");
-if (!(current in docs)) current = Object.keys(docs)[0];
+let synced = true;
 
-function persist() {
+function persistLocal() {
   localStorage.setItem(KEY, JSON.stringify(docs));
   localStorage.setItem(KEY + "-current", current);
+}
+async function push(name) {
+  try {
+    await fetch(API + "/doc?name=" + encodeURIComponent(name), {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: docs[name] }),
+    });
+    synced = true; count();
+  } catch (e) { synced = false; count(); }
 }
 function renderList() {
   $("docs").innerHTML = Object.keys(docs).map(n =>
@@ -74,37 +85,43 @@ function renderList() {
 }
 function load() {
   renderList();
-  $("text").value = docs[current];
+  $("text").value = docs[current] || "";
   count();
 }
 function count() {
-  const words = $("text").value.trim() ? $("text").value.trim().split(/\s+/).length : 0;
-  $("status").textContent = words + " words";
+  const t = $("text").value.trim();
+  const words = t ? t.split(/\s+/).length : 0;
+  $("status").textContent = words + " words " + (synced ? "✓" : "…");
 }
 
 let timer;
 $("text").addEventListener("input", () => {
   docs[current] = $("text").value;
-  count();
+  synced = false; count();
+  persistLocal();
   clearTimeout(timer);
-  timer = setTimeout(persist, 300);
+  timer = setTimeout(() => push(current), 600);
 });
-$("docs").addEventListener("change", () => { current = $("docs").value; persist(); load(); });
+$("docs").addEventListener("change", () => { current = $("docs").value; persistLocal(); load(); });
 $("new").addEventListener("click", () => {
   const name = prompt("Name:");
   if (!name || name in docs) return;
-  docs[name] = ""; current = name; persist(); load(); $("text").focus();
+  docs[name] = ""; current = name; persistLocal(); push(name); load(); $("text").focus();
 });
-$("rename").addEventListener("click", () => {
+$("rename").addEventListener("click", async () => {
   const name = prompt("Rename to:", current);
   if (!name || name === current || name in docs) return;
-  docs[name] = docs[current]; delete docs[current]; current = name; persist(); load();
+  docs[name] = docs[current]; delete docs[current];
+  await fetch(API + "/doc?name=" + encodeURIComponent(current), { method: "DELETE" }).catch(() => {});
+  current = name; persistLocal(); push(name); load();
 });
-$("del").addEventListener("click", () => {
+$("del").addEventListener("click", async () => {
   if (!confirm(`Delete "${current}"?`)) return;
-  delete docs[current];
+  const dead = current;
+  delete docs[dead];
   if (!Object.keys(docs).length) docs = { "untitled": "" };
-  current = Object.keys(docs)[0]; persist(); load();
+  current = Object.keys(docs)[0]; persistLocal(); load();
+  await fetch(API + "/doc?name=" + encodeURIComponent(dead), { method: "DELETE" }).catch(() => {});
 });
 $("download").addEventListener("click", () => {
   const a = document.createElement("a");
@@ -113,8 +130,26 @@ $("download").addEventListener("click", () => {
   a.click();
   URL.revokeObjectURL(a.href);
 });
-window.addEventListener("beforeunload", persist);
-load();
+
+async function boot() {
+  load();
+  try {
+    const remote = await (await fetch(API + "/list")).json();
+    // Server wins where it has content; local-only docs get pushed up.
+    for (const [name, v] of Object.entries(remote)) {
+      if (v.text || !(name in docs)) docs[name] = v.text;
+    }
+    for (const name of Object.keys(docs)) {
+      if (!(name in remote)) push(name);
+    }
+    if (!(current in docs)) current = Object.keys(docs)[0];
+    persistLocal(); load();
+  } catch (e) { synced = false; count(); }
+}
+// Refresh from the server when the tab regains focus, so edits made
+// elsewhere (or by Claude) appear without a manual reload.
+window.addEventListener("focus", () => { if (synced) boot(); });
+boot();
 </script>
 </body>
 </html>
