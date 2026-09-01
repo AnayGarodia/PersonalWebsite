@@ -6,56 +6,107 @@
   <meta name="robots" content="noindex, nofollow" />
   <title>desk</title>
   <style>
-    :root { --bg: #faf7f0; --text: #26231e; --muted: #8a857b; --link: #7c4a1e; --line: #d8d2c4; }
+    :root { --bg: #faf7f0; --text: #26231e; --muted: #8a857b; --link: #7c4a1e; --line: #d8d2c4; --panel: #f1ecdf; }
     @media (prefers-color-scheme: dark) {
-      :root { --bg: #191714; --text: #e4dfd5; --muted: #837d71; --link: #d09154; --line: #3a362f; }
+      :root { --bg: #191714; --text: #e4dfd5; --muted: #837d71; --link: #d09154; --line: #3a362f; --panel: #201d19; }
     }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
     body {
-      max-width: 38em;
-      margin: 3em auto;
-      padding: 0 1.2em;
-      font: 1.05rem/1.65 Charter, Georgia, serif;
+      max-width: 36em;
+      margin: 0 auto;
+      padding: 2.5em 1.2em 0;
+      font: 1.08rem/1.75 Charter, Georgia, serif;
       color: var(--text);
       background: var(--bg);
+      display: flex;
+      flex-direction: column;
     }
-    header { display: flex; gap: 0.7em; align-items: baseline; flex-wrap: wrap; margin-bottom: 1em; }
-    select, button {
-      font: 0.85rem Charter, Georgia, serif;
-      color: var(--link);
-      background: none;
-      border: 1px solid var(--line);
-      border-radius: 4px;
-      padding: 0.2em 0.6em;
-      cursor: pointer;
+    header {
+      display: flex; gap: 1.1em; align-items: baseline;
+      opacity: 0.35; transition: opacity 0.25s;
+      margin-bottom: 2em;
+      font-size: 0.82rem;
     }
-    select { color: var(--text); max-width: 14em; }
-    button:hover { border-color: var(--link); }
-    #status { color: var(--muted); font-size: 0.8rem; margin-left: auto; font-variant-numeric: tabular-nums; }
+    header:hover, header:focus-within { opacity: 1; }
+    select {
+      font: inherit; color: var(--text); background: none;
+      border: none; padding: 0; max-width: 13em;
+      cursor: pointer; appearance: none; -webkit-appearance: none;
+    }
+    header button {
+      font: inherit; color: var(--muted); background: none;
+      border: none; padding: 0; cursor: pointer;
+    }
+    header button:hover { color: var(--link); }
+    #status { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
     textarea {
+      flex: 1;
       width: 100%;
-      min-height: 75vh;
       font: inherit;
-      line-height: 1.7;
       color: var(--text);
       background: none;
       border: none;
-      resize: vertical;
+      resize: none;
       outline: none;
+      caret-color: var(--link);
+      scrollbar-width: none;
+      padding-bottom: 40vh; /* typewriter headroom: the last line never sits at the screen bottom */
     }
-    footer { color: var(--muted); font-size: 0.75rem; margin-top: 1.5em; }
+    textarea::-webkit-scrollbar { display: none; }
+    textarea::selection { background: color-mix(in srgb, var(--link) 22%, transparent); }
+
+    /* margin editor */
+    #note {
+      position: fixed;
+      right: 1.2em; bottom: 1.2em;
+      max-width: 22em;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.9em 1.1em;
+      font-size: 0.88rem;
+      line-height: 1.55;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+      display: none;
+      white-space: pre-wrap;
+    }
+    #note.on { display: block; }
+    #note .who { color: var(--muted); font-size: 0.75rem; margin-bottom: 0.35em; }
+    #note .close { position: absolute; top: 0.4em; right: 0.7em; color: var(--muted); cursor: pointer; border: none; background: none; font: inherit; }
+    #ask {
+      width: 100%; margin-top: 0.7em;
+      font: inherit; font-size: 0.85rem;
+      color: var(--text); background: none;
+      border: none; border-top: 1px solid var(--line);
+      padding: 0.5em 0 0; outline: none;
+    }
+    #ask::placeholder { color: var(--muted); }
+    #hint {
+      position: fixed; right: 1.4em; bottom: 1.4em;
+      color: var(--muted); font-size: 0.72rem;
+      opacity: 0.5; pointer-events: none;
+    }
   </style>
 </head>
 <body>
   <header>
-    <select id="docs"></select>
+    <select id="docs" title="drafts"></select>
     <button id="new">new</button>
     <button id="rename">rename</button>
     <button id="del">delete</button>
     <button id="download">download</button>
     <span id="status"></span>
   </header>
-  <textarea id="text" spellcheck="true" placeholder="Write."></textarea>
-  <footer>Synced. Drafts save to the cloud a moment after you stop typing; the word count shows a check when saved.</footer>
+  <textarea id="text" spellcheck="false" placeholder="Write."></textarea>
+
+  <div id="note">
+    <button class="close" id="noteClose">×</button>
+    <div class="who">margin</div>
+    <div id="noteBody"></div>
+    <input id="ask" placeholder="ask something specific… (enter)" />
+  </div>
+  <span id="hint">⌘K margin note</span>
 
 <script>
 const API = "https://desk-sync.desk-sync.workers.dev/711bde82";
@@ -131,11 +182,53 @@ $("download").addEventListener("click", () => {
   URL.revokeObjectURL(a.href);
 });
 
+/* ---- margin editor (never speaks unless asked) ---- */
+let lastSelection = "";
+async function margin(ask) {
+  const ta = $("text");
+  const sel = ta.value.slice(ta.selectionStart, ta.selectionEnd) || lastSelection;
+  $("note").classList.add("on");
+  $("noteBody").textContent = "…";
+  $("hint").style.display = "none";
+  try {
+    const r = await fetch(API + "/ai", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ draft: ta.value, selection: sel, ask: ask || "" }),
+    });
+    const d = await r.json();
+    $("noteBody").textContent = d.note || d.error || "(nothing)";
+  } catch (e) {
+    $("noteBody").textContent = "unreachable";
+  }
+}
+function closeNote() {
+  $("note").classList.remove("on");
+  $("hint").style.display = "";
+  $("text").focus();
+}
+document.addEventListener("keydown", e => {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+    e.preventDefault();
+    const ta = $("text");
+    lastSelection = ta.value.slice(ta.selectionStart, ta.selectionEnd);
+    margin();
+  }
+  if (e.key === "Escape") closeNote();
+});
+$("noteClose").addEventListener("click", closeNote);
+$("ask").addEventListener("keydown", e => {
+  if (e.key === "Enter" && $("ask").value.trim()) {
+    margin($("ask").value.trim());
+    $("ask").value = "";
+  }
+  e.stopPropagation();
+});
+
 async function boot() {
   load();
   try {
     const remote = await (await fetch(API + "/list")).json();
-    // Server wins where it has content; local-only docs get pushed up.
     for (const [name, v] of Object.entries(remote)) {
       if (v.text || !(name in docs)) docs[name] = v.text;
     }
@@ -146,8 +239,6 @@ async function boot() {
     persistLocal(); load();
   } catch (e) { synced = false; count(); }
 }
-// Refresh from the server when the tab regains focus, so edits made
-// elsewhere (or by Claude) appear without a manual reload.
 window.addEventListener("focus", () => { if (synced) boot(); });
 boot();
 </script>
