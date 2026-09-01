@@ -6,19 +6,29 @@
   <meta name="robots" content="noindex, nofollow" />
   <title>desk</title>
   <style>
-    :root { --bg: #faf7f0; --text: #26231e; --muted: #8a857b; --link: #7c4a1e; --line: #d8d2c4; --panel: #f1ecdf; }
+    :root {
+      --bg: #faf7f0; --text: #26231e; --muted: #8a857b; --link: #7c4a1e; --line: #d8d2c4; --panel: #f1ecdf;
+      --fix: #b0483f; --style: #a07321; --fact: #5b6e9e;
+    }
     @media (prefers-color-scheme: dark) {
-      :root { --bg: #191714; --text: #e4dfd5; --muted: #837d71; --link: #d09154; --line: #3a362f; --panel: #201d19; }
+      :root {
+        --bg: #191714; --text: #e4dfd5; --muted: #837d71; --link: #d09154; --line: #3a362f; --panel: #201d19;
+        --fix: #d4756b; --style: #c9a24e; --fact: #8ea0cf;
+      }
     }
     * { box-sizing: border-box; }
     html, body { height: 100%; }
     body {
-      max-width: 36em;
-      margin: 0 auto;
-      padding: 2.5em 1.2em 0;
+      margin: 0;
       font: 1.08rem/1.75 Charter, Georgia, serif;
       color: var(--text);
       background: var(--bg);
+    }
+    #page {
+      max-width: 36em;
+      margin: 0 auto;
+      padding: 2.5em 1.2em 0;
+      height: 100%;
       display: flex;
       flex-direction: column;
     }
@@ -39,74 +49,135 @@
       border: none; padding: 0; cursor: pointer;
     }
     header button:hover { color: var(--link); }
+    #editorToggle.on { color: var(--link); }
     #status { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
-    textarea {
-      flex: 1;
-      width: 100%;
+
+    /* writing surface: transparent textarea over a mirror that carries the underlines */
+    #surface { position: relative; flex: 1; }
+    #mirror, textarea {
       font: inherit;
-      color: var(--text);
-      background: none;
+      line-height: inherit;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      width: 100%;
+      height: 100%;
+      padding: 0 0 40vh 0;
+      margin: 0;
       border: none;
+    }
+    #mirror {
+      position: absolute;
+      inset: 0;
+      color: transparent;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    #mirror mark {
+      color: transparent;
+      background: transparent;
+      border-bottom: 2px dotted var(--muted);
+    }
+    #mirror mark.fix   { border-color: var(--fix); }
+    #mirror mark.style { border-color: var(--style); }
+    #mirror mark.fact  { border-color: var(--fact); }
+    #mirror mark.active { background: color-mix(in srgb, var(--link) 14%, transparent); }
+    textarea {
+      position: relative;
+      display: block;
+      color: var(--text);
+      background: transparent;
       resize: none;
       outline: none;
       caret-color: var(--link);
       scrollbar-width: none;
-      padding-bottom: 40vh; /* typewriter headroom: the last line never sits at the screen bottom */
     }
     textarea::-webkit-scrollbar { display: none; }
     textarea::selection { background: color-mix(in srgb, var(--link) 22%, transparent); }
 
-    /* margin editor */
+    /* notes rail */
+    #rail {
+      position: fixed;
+      top: 5.5em;
+      right: 1em;
+      width: 15.5em;
+      max-height: 80vh;
+      overflow-y: auto;
+      scrollbar-width: none;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6em;
+    }
+    #rail::-webkit-scrollbar { display: none; }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--muted);
+      border-radius: 6px;
+      padding: 0.55em 0.8em;
+      cursor: pointer;
+    }
+    .card.fix   { border-left-color: var(--fix); }
+    .card.style { border-left-color: var(--style); }
+    .card.fact  { border-left-color: var(--fact); }
+    .card .q { color: var(--muted); font-style: italic; display: block; margin-bottom: 0.2em; }
+    .card .mute { float: right; color: var(--muted); border: none; background: none; cursor: pointer; font: inherit; font-size: 0.9em; }
+    .card .mute:hover { color: var(--link); }
+    #railStatus { color: var(--muted); font-size: 0.75rem; text-align: right; padding-right: 0.3em; }
+    @media (max-width: 62em) { #rail { display: none; } }
+
+    /* ask card (⌘K) */
     #note {
       position: fixed;
-      right: 1.2em; bottom: 1.2em;
-      max-width: 22em;
+      right: 1em; bottom: 1.2em;
+      width: 15.5em;
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 0.9em 1.1em;
-      font-size: 0.88rem;
+      padding: 0.8em 1em;
+      font-size: 0.83rem;
       line-height: 1.55;
       box-shadow: 0 4px 20px rgba(0,0,0,0.10);
       display: none;
       white-space: pre-wrap;
     }
     #note.on { display: block; }
-    #note .who { color: var(--muted); font-size: 0.75rem; margin-bottom: 0.35em; }
-    #note .close { position: absolute; top: 0.4em; right: 0.7em; color: var(--muted); cursor: pointer; border: none; background: none; font: inherit; }
+    #note .close { position: absolute; top: 0.3em; right: 0.6em; color: var(--muted); cursor: pointer; border: none; background: none; font: inherit; }
     #ask {
-      width: 100%; margin-top: 0.7em;
-      font: inherit; font-size: 0.85rem;
+      width: 100%; margin-top: 0.6em;
+      font: inherit; font-size: 0.95em;
       color: var(--text); background: none;
       border: none; border-top: 1px solid var(--line);
-      padding: 0.5em 0 0; outline: none;
+      padding: 0.45em 0 0; outline: none;
     }
     #ask::placeholder { color: var(--muted); }
-    #hint {
-      position: fixed; right: 1.4em; bottom: 1.4em;
-      color: var(--muted); font-size: 0.72rem;
-      opacity: 0.5; pointer-events: none;
-    }
   </style>
 </head>
 <body>
-  <header>
-    <select id="docs" title="drafts"></select>
-    <button id="new">new</button>
-    <button id="rename">rename</button>
-    <button id="del">delete</button>
-    <button id="download">download</button>
-    <span id="status"></span>
-  </header>
-  <textarea id="text" spellcheck="false" placeholder="Write."></textarea>
+  <div id="page">
+    <header>
+      <select id="docs" title="drafts"></select>
+      <button id="new">new</button>
+      <button id="rename">rename</button>
+      <button id="del">delete</button>
+      <button id="download">download</button>
+      <button id="editorToggle" title="ambient editor on/off">editor</button>
+      <span id="status"></span>
+    </header>
+    <div id="surface">
+      <div id="mirror" aria-hidden="true"></div>
+      <textarea id="text" spellcheck="false" placeholder="Write."></textarea>
+    </div>
+  </div>
+
+  <div id="rail"></div>
 
   <div id="note">
     <button class="close" id="noteClose">×</button>
-    <div class="who">margin</div>
     <div id="noteBody"></div>
-    <input id="ask" placeholder="ask something specific… (enter)" />
+    <input id="ask" placeholder="ask the editor… (⌘K)" />
   </div>
-  <span id="hint">⌘K margin note</span>
 
 <script>
 const API = "https://desk-sync.desk-sync.workers.dev/711bde82";
@@ -115,7 +186,13 @@ const $ = id => document.getElementById(id);
 let docs = JSON.parse(localStorage.getItem(KEY) || "null") || { "untitled": "" };
 let current = localStorage.getItem(KEY + "-current");
 let synced = true;
+let editorOn = localStorage.getItem(KEY + "-editor") !== "off";
+let muted = JSON.parse(localStorage.getItem(KEY + "-muted") || "[]");
+let marks = [];
+let checkedText = null;
+let checking = false;
 
+/* ---------- sync ---------- */
 function persistLocal() {
   localStorage.setItem(KEY, JSON.stringify(docs));
   localStorage.setItem(KEY + "-current", current);
@@ -137,7 +214,10 @@ function renderList() {
 function load() {
   renderList();
   $("text").value = docs[current] || "";
+  marks = []; checkedText = null;
+  renderMarks();
   count();
+  scheduleCheck(400);
 }
 function count() {
   const t = $("text").value.trim();
@@ -145,13 +225,111 @@ function count() {
   $("status").textContent = words + " words " + (synced ? "✓" : "…");
 }
 
+/* ---------- ambient editor ---------- */
+function esc(s) { return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function renderMarks() {
+  const text = $("text").value;
+  // Locate each quote; drop marks whose quote no longer appears.
+  const spans = [];
+  for (const m of marks) {
+    const i = text.indexOf(m.quote);
+    if (i >= 0) spans.push({ ...m, start: i, end: i + m.quote.length });
+  }
+  spans.sort((a, b) => a.start - b.start);
+  // Drop overlaps.
+  const clean = [];
+  let last = -1;
+  for (const s of spans) { if (s.start >= last) { clean.push(s); last = s.end; } }
+
+  let html = "", pos = 0;
+  clean.forEach((s, idx) => {
+    html += esc(text.slice(pos, s.start));
+    html += `<mark class="${s.kind}" data-i="${idx}">${esc(text.slice(s.start, s.end))}</mark>`;
+    pos = s.end;
+  });
+  html += esc(text.slice(pos));
+  $("mirror").innerHTML = html + "\n";
+
+  $("rail").innerHTML = clean.map((s, idx) =>
+    `<div class="card ${s.kind}" data-i="${idx}">
+       <button class="mute" data-kind="${s.kind}" title="mute all ${s.kind} notes">mute</button>
+       <span class="q">“${esc(s.quote.length > 42 ? s.quote.slice(0, 42) + "…" : s.quote)}”</span>${esc(s.note)}
+     </div>`).join("")
+    + (editorOn && checking ? `<div id="railStatus">reading…</div>` : "");
+
+  document.querySelectorAll("#rail .card").forEach(c =>
+    c.addEventListener("click", e => {
+      if (e.target.classList.contains("mute")) return;
+      const s = clean[+c.dataset.i];
+      const ta = $("text");
+      ta.focus();
+      ta.setSelectionRange(s.start, s.end);
+      const el = document.querySelector(`#mirror mark[data-i="${c.dataset.i}"]`);
+      if (el) {
+        document.querySelectorAll("#mirror mark").forEach(m => m.classList.remove("active"));
+        el.classList.add("active");
+        ta.scrollTop = Math.max(0, el.offsetTop - ta.clientHeight / 3);
+        syncScroll();
+      }
+    }));
+  document.querySelectorAll("#rail .mute").forEach(b =>
+    b.addEventListener("click", () => {
+      muted.push(b.dataset.kind);
+      muted = [...new Set(muted)];
+      localStorage.setItem(KEY + "-muted", JSON.stringify(muted));
+      marks = marks.filter(m => m.kind !== b.dataset.kind);
+      renderMarks();
+    }));
+}
+
+let checkTimer;
+function scheduleCheck(delay) {
+  clearTimeout(checkTimer);
+  if (!editorOn) return;
+  checkTimer = setTimeout(runCheck, delay ?? 4000);
+}
+async function runCheck() {
+  const text = $("text").value;
+  if (!editorOn || checking || text === checkedText) return;
+  checking = true; renderMarks();
+  try {
+    const r = await fetch(API + "/check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ draft: text, muted }),
+    });
+    const d = await r.json();
+    if ($("text").value === text) {          // stale check: discard
+      marks = (d.marks || []).filter(m => !muted.includes(m.kind));
+      checkedText = text;
+    }
+  } catch (e) {}
+  checking = false;
+  renderMarks();
+}
+function setEditor(on) {
+  editorOn = on;
+  localStorage.setItem(KEY + "-editor", on ? "on" : "off");
+  $("editorToggle").classList.toggle("on", on);
+  if (!on) { marks = []; renderMarks(); }
+  else scheduleCheck(400);
+}
+$("editorToggle").addEventListener("click", () => setEditor(!editorOn));
+
+function syncScroll() { $("mirror").scrollTop = $("text").scrollTop; }
+$("text").addEventListener("scroll", syncScroll);
+
+/* ---------- input ---------- */
 let timer;
 $("text").addEventListener("input", () => {
   docs[current] = $("text").value;
   synced = false; count();
   persistLocal();
+  renderMarks();                              // keep underlines glued to text
   clearTimeout(timer);
   timer = setTimeout(() => push(current), 600);
+  scheduleCheck();                            // re-read 4s after typing stops
 });
 $("docs").addEventListener("change", () => { current = $("docs").value; persistLocal(); load(); });
 $("new").addEventListener("click", () => {
@@ -182,14 +360,12 @@ $("download").addEventListener("click", () => {
   URL.revokeObjectURL(a.href);
 });
 
-/* ---- margin editor (never speaks unless asked) ---- */
-let lastSelection = "";
+/* ---------- ⌘K ask ---------- */
 async function margin(ask) {
   const ta = $("text");
-  const sel = ta.value.slice(ta.selectionStart, ta.selectionEnd) || lastSelection;
+  const sel = ta.value.slice(ta.selectionStart, ta.selectionEnd);
   $("note").classList.add("on");
   $("noteBody").textContent = "…";
-  $("hint").style.display = "none";
   try {
     const r = await fetch(API + "/ai", {
       method: "POST",
@@ -198,33 +374,20 @@ async function margin(ask) {
     });
     const d = await r.json();
     $("noteBody").textContent = d.note || d.error || "(nothing)";
-  } catch (e) {
-    $("noteBody").textContent = "unreachable";
-  }
+  } catch (e) { $("noteBody").textContent = "unreachable"; }
 }
-function closeNote() {
-  $("note").classList.remove("on");
-  $("hint").style.display = "";
-  $("text").focus();
-}
+function closeNote() { $("note").classList.remove("on"); $("text").focus(); }
 document.addEventListener("keydown", e => {
-  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-    e.preventDefault();
-    const ta = $("text");
-    lastSelection = ta.value.slice(ta.selectionStart, ta.selectionEnd);
-    margin();
-  }
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); margin(); $("ask").focus(); }
   if (e.key === "Escape") closeNote();
 });
 $("noteClose").addEventListener("click", closeNote);
 $("ask").addEventListener("keydown", e => {
-  if (e.key === "Enter" && $("ask").value.trim()) {
-    margin($("ask").value.trim());
-    $("ask").value = "";
-  }
+  if (e.key === "Enter" && $("ask").value.trim()) { margin($("ask").value.trim()); $("ask").value = ""; }
   e.stopPropagation();
 });
 
+/* ---------- boot ---------- */
 async function boot() {
   load();
   try {
@@ -238,6 +401,7 @@ async function boot() {
     if (!(current in docs)) current = Object.keys(docs)[0];
     persistLocal(); load();
   } catch (e) { synced = false; count(); }
+  setEditor(editorOn);
 }
 window.addEventListener("focus", () => { if (synced) boot(); });
 boot();
