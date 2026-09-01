@@ -7,12 +7,12 @@
   <title>desk</title>
   <style>
     :root {
-      --bg: #faf7f0; --text: #26231e; --muted: #8a857b; --link: #7c4a1e; --line: #d8d2c4; --panel: #f1ecdf;
+      --bg: #faf7f0; --text: #26231e; --dim: #a9a294; --muted: #8a857b; --link: #7c4a1e; --line: #d8d2c4; --panel: #f1ecdf;
       --fix: #b0483f; --style: #a07321; --fact: #5b6e9e;
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #191714; --text: #e4dfd5; --muted: #837d71; --link: #d09154; --line: #3a362f; --panel: #201d19;
+        --bg: #191714; --text: #e4dfd5; --dim: #57524a; --muted: #837d71; --link: #d09154; --line: #3a362f; --panel: #201d19;
         --fix: #d4756b; --style: #c9a24e; --fact: #8ea0cf;
       }
     }
@@ -20,25 +20,25 @@
     html, body { height: 100%; }
     body {
       margin: 0;
-      font: 1.08rem/1.75 Charter, Georgia, serif;
+      font: 1.12rem/1.62 Charter, Georgia, serif;
       color: var(--text);
       background: var(--bg);
     }
     #page {
-      max-width: 36em;
+      max-width: 34em;   /* ~64 characters per line at this size */
       margin: 0 auto;
-      padding: 2.5em 1.2em 0;
+      padding: 2.2em 1.2em 0;
       height: 100%;
       display: flex;
       flex-direction: column;
     }
     header {
       display: flex; gap: 1.1em; align-items: baseline;
-      opacity: 0.35; transition: opacity 0.25s;
+      opacity: 0; transition: opacity 0.3s;
       margin-bottom: 2em;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
     }
-    header:hover, header:focus-within { opacity: 1; }
+    header:hover, header:focus-within, body.editing header { opacity: 1; }
     select {
       font: inherit; color: var(--text); background: none;
       border: none; padding: 0; max-width: 13em;
@@ -49,10 +49,13 @@
       border: none; padding: 0; cursor: pointer;
     }
     header button:hover { color: var(--link); }
-    #editorToggle.on { color: var(--link); }
-    #status { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
+    #mode { margin-left: auto; }
+    body.editing #mode { color: var(--link); }
+    #status { color: var(--muted); font-variant-numeric: tabular-nums; }
 
-    /* writing surface: transparent textarea over a mirror that carries the underlines */
+    /* writing surface: textarea over a mirror.
+       write mode: mirror carries the ink (current paragraph full, rest dimmed), textarea ink transparent.
+       edit mode:  textarea carries the ink, mirror carries only underlines. */
     #surface { position: relative; flex: 1; }
     #mirror, textarea {
       font: inherit;
@@ -61,54 +64,59 @@
       overflow-wrap: break-word;
       width: 100%;
       height: 100%;
-      padding: 0 0 40vh 0;
+      padding: 0 0 55vh 0;
       margin: 0;
       border: none;
     }
     #mirror {
       position: absolute;
       inset: 0;
-      color: transparent;
       overflow: hidden;
       pointer-events: none;
+      color: var(--text);
     }
+    #mirror .dim { color: var(--dim); transition: color 0.4s; }
+    body.editing #mirror, body.editing #mirror .dim { color: transparent; }
     #mirror mark {
-      color: transparent;
+      color: inherit;
       background: transparent;
-      border-bottom: 2px dotted var(--muted);
+      border-bottom: 2px dotted transparent;
     }
-    #mirror mark.fix   { border-color: var(--fix); }
-    #mirror mark.style { border-color: var(--style); }
-    #mirror mark.fact  { border-color: var(--fact); }
-    #mirror mark.active { background: color-mix(in srgb, var(--link) 14%, transparent); }
+    body.editing #mirror mark.fix   { border-color: var(--fix); }
+    body.editing #mirror mark.style { border-color: var(--style); }
+    body.editing #mirror mark.fact  { border-color: var(--fact); }
+    body.editing #mirror mark.active { background: color-mix(in srgb, var(--link) 14%, transparent); }
     textarea {
       position: relative;
       display: block;
-      color: var(--text);
+      color: transparent;
       background: transparent;
       resize: none;
       outline: none;
       caret-color: var(--link);
       scrollbar-width: none;
     }
+    body.editing textarea { color: var(--text); }
     textarea::-webkit-scrollbar { display: none; }
     textarea::selection { background: color-mix(in srgb, var(--link) 22%, transparent); }
+    textarea::placeholder { color: var(--muted); }
 
-    /* notes rail */
+    /* notes rail (edit mode only) */
     #rail {
       position: fixed;
       top: 5.5em;
       right: 1em;
       width: 15.5em;
-      max-height: 80vh;
+      max-height: 82vh;
       overflow-y: auto;
       scrollbar-width: none;
       font-size: 0.8rem;
       line-height: 1.5;
-      display: flex;
+      display: none;
       flex-direction: column;
       gap: 0.6em;
     }
+    body.editing #rail { display: flex; }
     #rail::-webkit-scrollbar { display: none; }
     .card {
       background: var(--panel);
@@ -124,10 +132,14 @@
     .card .q { color: var(--muted); font-style: italic; display: block; margin-bottom: 0.2em; }
     .card .mute { float: right; color: var(--muted); border: none; background: none; cursor: pointer; font: inherit; font-size: 0.9em; }
     .card .mute:hover { color: var(--link); }
-    #railStatus { color: var(--muted); font-size: 0.75rem; text-align: right; padding-right: 0.3em; }
-    @media (max-width: 62em) { #rail { display: none; } }
+    .railrow { display: flex; gap: 0.9em; justify-content: flex-end; color: var(--muted); }
+    .railrow button { font: inherit; color: var(--muted); background: none; border: none; cursor: pointer; padding: 0; }
+    .railrow button:hover { color: var(--link); }
+    .scrap { background: none; border: 1px dashed var(--line); border-radius: 6px; padding: 0.5em 0.8em; color: var(--muted); cursor: pointer; }
+    .scrap:hover { color: var(--text); }
+    #railInfo { color: var(--muted); text-align: right; font-size: 0.75rem; padding-right: 0.2em; }
 
-    /* ask card (⌘K) */
+    /* ask card (edit mode, ⌘K) */
     #note {
       position: fixed;
       right: 1em; bottom: 1.2em;
@@ -152,6 +164,23 @@
       padding: 0.45em 0 0; outline: none;
     }
     #ask::placeholder { color: var(--muted); }
+
+    #historyView {
+      position: fixed; inset: 8vh 12vw;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+      display: none;
+      padding: 1.4em;
+      overflow-y: auto;
+      font-size: 0.95rem;
+      white-space: pre-wrap;
+      z-index: 5;
+    }
+    #historyView.on { display: block; }
+    #historyView .bar { display: flex; gap: 1.2em; margin-bottom: 1em; font-size: 0.85rem; }
+    #historyView .bar button, #historyView .bar select { font: inherit; color: var(--link); background: none; border: none; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -162,8 +191,8 @@
       <button id="rename">rename</button>
       <button id="del">delete</button>
       <button id="download">download</button>
-      <button id="editorToggle" title="ambient editor on/off">editor</button>
       <span id="status"></span>
+      <button id="mode" title="⌘E">edit</button>
     </header>
     <div id="surface">
       <div id="mirror" aria-hidden="true"></div>
@@ -176,7 +205,16 @@
   <div id="note">
     <button class="close" id="noteClose">×</button>
     <div id="noteBody"></div>
-    <input id="ask" placeholder="ask the editor… (⌘K)" />
+    <input id="ask" placeholder="ask the editor…" />
+  </div>
+
+  <div id="historyView">
+    <div class="bar">
+      <select id="histList"></select>
+      <button id="histRestore">restore this version</button>
+      <button id="histClose">close</button>
+    </div>
+    <div id="histBody"></div>
   </div>
 
 <script>
@@ -186,10 +224,10 @@ const $ = id => document.getElementById(id);
 let docs = JSON.parse(localStorage.getItem(KEY) || "null") || { "untitled": "" };
 let current = localStorage.getItem(KEY + "-current");
 let synced = true;
-let editorOn = localStorage.getItem(KEY + "-editor") !== "off";
+let editing = false;
 let muted = JSON.parse(localStorage.getItem(KEY + "-muted") || "[]");
 let marks = [];
-let checkedText = null;
+let scraps = [];
 let checking = false;
 
 /* ---------- sync ---------- */
@@ -214,10 +252,10 @@ function renderList() {
 function load() {
   renderList();
   $("text").value = docs[current] || "";
-  marks = []; checkedText = null;
-  renderMarks();
+  marks = []; scraps = [];
+  renderMirror(); renderRail();
   count();
-  scheduleCheck(400);
+  if (editing) runCheck();
 }
 function count() {
   const t = $("text").value.trim();
@@ -225,22 +263,45 @@ function count() {
   $("status").textContent = words + " words " + (synced ? "✓" : "…");
 }
 
-/* ---------- ambient editor ---------- */
+/* ---------- the mirror: ink in write mode, underlines in edit mode ---------- */
 function esc(s) { return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
-function renderMarks() {
-  const text = $("text").value;
-  // Locate each quote; drop marks whose quote no longer appears.
+function paraRange(text, caret) {
+  // Current paragraph = block between blank lines around the caret.
+  let start = text.lastIndexOf("\n\n", Math.max(0, caret - 1));
+  start = start === -1 ? 0 : start + 2;
+  let end = text.indexOf("\n\n", caret);
+  if (end === -1) end = text.length;
+  return [start, end];
+}
+
+let activeSpans = [];
+function renderMirror() {
+  const ta = $("text");
+  const text = ta.value;
+
+  if (!editing) {
+    // Focus mode: current paragraph in ink, everything else dimmed.
+    const [s, e] = paraRange(text, ta.selectionStart);
+    $("mirror").innerHTML =
+      `<span class="dim">${esc(text.slice(0, s))}</span>` +
+      `<span id="cm"></span>${esc(text.slice(s, e))}` +
+      `<span class="dim">${esc(text.slice(e))}</span>\n`;
+    typewriter(s);
+    return;
+  }
+
+  // Edit mode: transparent text bearing dotted underlines.
   const spans = [];
   for (const m of marks) {
     const i = text.indexOf(m.quote);
     if (i >= 0) spans.push({ ...m, start: i, end: i + m.quote.length });
   }
   spans.sort((a, b) => a.start - b.start);
-  // Drop overlaps.
   const clean = [];
   let last = -1;
   for (const s of spans) { if (s.start >= last) { clean.push(s); last = s.end; } }
+  activeSpans = clean;
 
   let html = "", pos = 0;
   clean.forEach((s, idx) => {
@@ -250,18 +311,46 @@ function renderMarks() {
   });
   html += esc(text.slice(pos));
   $("mirror").innerHTML = html + "\n";
+}
 
-  $("rail").innerHTML = clean.map((s, idx) =>
+function typewriter(paraStart) {
+  // Keep the writing line at a steady height (~38% down the viewport).
+  const cm = $("cm");
+  if (!cm) return;
+  const ta = $("text");
+  const target = cm.offsetTop - ta.clientHeight * 0.38;
+  if (Math.abs(ta.scrollTop - target) > 8 && target > 0) ta.scrollTop = target;
+  syncScroll();
+}
+function syncScroll() { $("mirror").scrollTop = $("text").scrollTop; }
+$("text").addEventListener("scroll", syncScroll);
+document.addEventListener("selectionchange", () => {
+  if (!editing && document.activeElement === $("text")) renderMirror();
+});
+
+/* ---------- edit-mode rail ---------- */
+function renderRail() {
+  if (!editing) return;
+  const cards = activeSpans.map((s, idx) =>
     `<div class="card ${s.kind}" data-i="${idx}">
        <button class="mute" data-kind="${s.kind}" title="mute all ${s.kind} notes">mute</button>
        <span class="q">“${esc(s.quote.length > 42 ? s.quote.slice(0, 42) + "…" : s.quote)}”</span>${esc(s.note)}
-     </div>`).join("")
-    + (editorOn && checking ? `<div id="railStatus">reading…</div>` : "");
+     </div>`).join("");
+  const scrapCards = scraps.map(s =>
+    `<div class="scrap" data-ts="${s.ts}" title="click to reinsert at caret">${esc(s.text.length > 90 ? s.text.slice(0, 90) + "…" : s.text)}</div>`).join("");
+  $("rail").innerHTML =
+    `<div class="railrow">
+       <button id="recheck">${checking ? "reading…" : "recheck"}</button>
+       <button id="readaloud">read aloud</button>
+       <button id="history">history</button>
+     </div>`
+    + (cards || `<div id="railInfo">${checking ? "" : "no notes"}</div>`)
+    + (scrapCards ? `<div class="railrow" style="justify-content:flex-start">scraps</div>` + scrapCards : "");
 
   document.querySelectorAll("#rail .card").forEach(c =>
     c.addEventListener("click", e => {
       if (e.target.classList.contains("mute")) return;
-      const s = clean[+c.dataset.i];
+      const s = activeSpans[+c.dataset.i];
       const ta = $("text");
       ta.focus();
       ta.setSelectionRange(s.start, s.end);
@@ -275,62 +364,106 @@ function renderMarks() {
     }));
   document.querySelectorAll("#rail .mute").forEach(b =>
     b.addEventListener("click", () => {
-      muted.push(b.dataset.kind);
-      muted = [...new Set(muted)];
+      muted = [...new Set([...muted, b.dataset.kind])];
       localStorage.setItem(KEY + "-muted", JSON.stringify(muted));
       marks = marks.filter(m => m.kind !== b.dataset.kind);
-      renderMarks();
+      renderMirror(); renderRail();
     }));
+  document.querySelectorAll("#rail .scrap").forEach(sc =>
+    sc.addEventListener("click", () => {
+      const s = scraps.find(x => x.ts === +sc.dataset.ts);
+      if (!s) return;
+      const ta = $("text");
+      const p = ta.selectionStart;
+      ta.value = ta.value.slice(0, p) + s.text + ta.value.slice(ta.selectionEnd);
+      onInput();
+      fetch(API + "/scraps?name=" + encodeURIComponent(current) + "&ts=" + s.ts, { method: "DELETE" }).catch(() => {});
+      scraps = scraps.filter(x => x.ts !== s.ts);
+      renderRail();
+    }));
+  const rc = $("recheck"); if (rc) rc.addEventListener("click", runCheck);
+  const ra = $("readaloud"); if (ra) ra.addEventListener("click", readAloud);
+  const h = $("history"); if (h) h.addEventListener("click", openHistory);
 }
 
-let checkTimer;
-function scheduleCheck(delay) {
-  clearTimeout(checkTimer);
-  if (!editorOn) return;
-  checkTimer = setTimeout(runCheck, delay ?? 4000);
-}
 async function runCheck() {
+  if (!editing || checking) return;
   const text = $("text").value;
-  if (!editorOn || checking || text === checkedText) return;
-  checking = true; renderMarks();
+  checking = true; renderRail();
   try {
-    const r = await fetch(API + "/check", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ draft: text, muted }),
-    });
+    const [r, sr] = await Promise.all([
+      fetch(API + "/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ draft: text, muted }),
+      }),
+      fetch(API + "/scraps?name=" + encodeURIComponent(current)),
+    ]);
     const d = await r.json();
-    if ($("text").value === text) {          // stale check: discard
-      marks = (d.marks || []).filter(m => !muted.includes(m.kind));
-      checkedText = text;
-    }
+    scraps = (await sr.json()).scraps || [];
+    if ($("text").value === text) marks = (d.marks || []).filter(m => !muted.includes(m.kind));
   } catch (e) {}
   checking = false;
-  renderMarks();
+  renderMirror(); renderRail();
 }
-function setEditor(on) {
-  editorOn = on;
-  localStorage.setItem(KEY + "-editor", on ? "on" : "off");
-  $("editorToggle").classList.toggle("on", on);
-  if (!on) { marks = []; renderMarks(); }
-  else scheduleCheck(400);
-}
-$("editorToggle").addEventListener("click", () => setEditor(!editorOn));
 
-function syncScroll() { $("mirror").scrollTop = $("text").scrollTop; }
-$("text").addEventListener("scroll", syncScroll);
+/* ---------- mode wall ---------- */
+function setMode(edit) {
+  editing = edit;
+  document.body.classList.toggle("editing", edit);
+  $("mode").textContent = edit ? "write" : "edit";
+  speechSynthesis.cancel();
+  if (edit) { runCheck(); }
+  else { marks = []; $("rail").innerHTML = ""; closeNote(); $("historyView").classList.remove("on"); }
+  renderMirror();
+  $("text").focus();
+}
+$("mode").addEventListener("click", () => setMode(!editing));
+
+/* ---------- read aloud ---------- */
+function readAloud() {
+  if (speechSynthesis.speaking) { speechSynthesis.cancel(); return; }
+  const ta = $("text");
+  const sel = ta.value.slice(ta.selectionStart, ta.selectionEnd);
+  const u = new SpeechSynthesisUtterance(sel || ta.value);
+  u.rate = 0.95;
+  speechSynthesis.speak(u);
+}
+
+/* ---------- history ---------- */
+async function openHistory() {
+  const r = await fetch(API + "/history?name=" + encodeURIComponent(current));
+  const { snapshots } = await r.json();
+  if (!snapshots.length) { alert("No snapshots yet. They accumulate as you write."); return; }
+  $("histList").innerHTML = snapshots.map(t =>
+    `<option value="${t}">${new Date(t).toLocaleString()}</option>`).join("");
+  $("historyView").classList.add("on");
+  showSnapshot(snapshots[0]);
+}
+async function showSnapshot(ts) {
+  const r = await fetch(API + "/history?name=" + encodeURIComponent(current) + "&ts=" + ts);
+  $("histBody").textContent = (await r.json()).text;
+}
+$("histList").addEventListener("change", () => showSnapshot($("histList").value));
+$("histClose").addEventListener("click", () => $("historyView").classList.remove("on"));
+$("histRestore").addEventListener("click", () => {
+  if (!confirm("Replace the current draft with this version? The current text will itself be snapshotted.")) return;
+  $("text").value = $("histBody").textContent;
+  onInput();
+  $("historyView").classList.remove("on");
+});
 
 /* ---------- input ---------- */
 let timer;
-$("text").addEventListener("input", () => {
+function onInput() {
   docs[current] = $("text").value;
   synced = false; count();
   persistLocal();
-  renderMarks();                              // keep underlines glued to text
+  renderMirror();
   clearTimeout(timer);
   timer = setTimeout(() => push(current), 600);
-  scheduleCheck();                            // re-read 4s after typing stops
-});
+}
+$("text").addEventListener("input", onInput);
 $("docs").addEventListener("change", () => { current = $("docs").value; persistLocal(); load(); });
 $("new").addEventListener("click", () => {
   const name = prompt("Name:");
@@ -360,7 +493,29 @@ $("download").addEventListener("click", () => {
   URL.revokeObjectURL(a.href);
 });
 
-/* ---------- ⌘K ask ---------- */
+/* ---------- keys ---------- */
+document.addEventListener("keydown", e => {
+  const cmd = e.metaKey || e.ctrlKey;
+  if (cmd && e.key.toLowerCase() === "e") { e.preventDefault(); setMode(!editing); }
+  if (cmd && e.key.toLowerCase() === "k" && editing) { e.preventDefault(); margin(); $("ask").focus(); }
+  if (cmd && e.shiftKey && e.key.toLowerCase() === "x") {          // cut to scraps
+    e.preventDefault();
+    const ta = $("text");
+    const sel = ta.value.slice(ta.selectionStart, ta.selectionEnd);
+    if (!sel.trim()) return;
+    fetch(API + "/scraps?name=" + encodeURIComponent(current), {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: sel }),
+    }).catch(() => {});
+    scraps.unshift({ text: sel, ts: Date.now() });
+    ta.setRangeText("", ta.selectionStart, ta.selectionEnd, "start");
+    onInput(); renderRail();
+  }
+  if (e.key === "Escape") closeNote();
+});
+
+/* ---------- ⌘K ask (edit mode) ---------- */
 async function margin(ask) {
   const ta = $("text");
   const sel = ta.value.slice(ta.selectionStart, ta.selectionEnd);
@@ -376,11 +531,7 @@ async function margin(ask) {
     $("noteBody").textContent = d.note || d.error || "(nothing)";
   } catch (e) { $("noteBody").textContent = "unreachable"; }
 }
-function closeNote() { $("note").classList.remove("on"); $("text").focus(); }
-document.addEventListener("keydown", e => {
-  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); margin(); $("ask").focus(); }
-  if (e.key === "Escape") closeNote();
-});
+function closeNote() { $("note").classList.remove("on"); }
 $("noteClose").addEventListener("click", closeNote);
 $("ask").addEventListener("keydown", e => {
   if (e.key === "Enter" && $("ask").value.trim()) { margin($("ask").value.trim()); $("ask").value = ""; }
@@ -401,9 +552,8 @@ async function boot() {
     if (!(current in docs)) current = Object.keys(docs)[0];
     persistLocal(); load();
   } catch (e) { synced = false; count(); }
-  setEditor(editorOn);
 }
-window.addEventListener("focus", () => { if (synced) boot(); });
+window.addEventListener("focus", () => { if (synced && !editing) boot(); });
 boot();
 </script>
 </body>
