@@ -7,12 +7,12 @@
   <title>desk</title>
   <style>
     :root {
-      --bg: #faf7f0; --text: #26231e; --dim: #a9a294; --muted: #8a857b; --link: #7c4a1e; --line: #d8d2c4; --panel: #f1ecdf;
+      --bg: #faf7f0; --text: #26231e; --dim: #9b9486; --muted: #8a857b; --link: #7c4a1e; --line: #d8d2c4; --panel: #f1ecdf;
       --fix: #b0483f; --style: #a07321; --fact: #5b6e9e;
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #191714; --text: #e4dfd5; --dim: #57524a; --muted: #837d71; --link: #d09154; --line: #3a362f; --panel: #201d19;
+        --bg: #191714; --text: #e4dfd5; --dim: #776f61; --muted: #837d71; --link: #d09154; --line: #3a362f; --panel: #201d19;
         --fix: #d4756b; --style: #c9a24e; --fact: #8ea0cf;
       }
     }
@@ -35,7 +35,7 @@
     header {
       display: flex; gap: 1.1em; align-items: baseline;
       opacity: 0; transition: opacity 0.3s;
-      margin-bottom: 2em;
+      margin-bottom: 1.4em;
       font-size: 0.8rem;
     }
     header:hover, header:focus-within, body.editing header { opacity: 1; }
@@ -52,6 +52,20 @@
     #mode { margin-left: auto; }
     body.editing #mode { color: var(--link); }
     #status { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+    #title {
+      font: 1.55rem/1.3 Charter, Georgia, serif;
+      font-weight: bold;
+      color: var(--text);
+      background: none;
+      border: none;
+      outline: none;
+      padding: 0;
+      margin: 0 0 1.1em;
+      width: 100%;
+      caret-color: var(--link);
+    }
+    #title::placeholder { color: var(--dim); }
 
     /* writing surface: textarea over a mirror.
        write mode: mirror carries the ink (current paragraph full, rest dimmed), textarea ink transparent.
@@ -188,12 +202,12 @@
     <header>
       <select id="docs" title="drafts"></select>
       <button id="new">new</button>
-      <button id="rename">rename</button>
       <button id="del">delete</button>
       <button id="download">download</button>
       <span id="status"></span>
       <button id="mode" title="⌘E">edit</button>
     </header>
+    <input id="title" placeholder="Untitled" autocomplete="off" spellcheck="false" />
     <div id="surface">
       <div id="mirror" aria-hidden="true"></div>
       <textarea id="text" spellcheck="false" placeholder="Write."></textarea>
@@ -251,6 +265,7 @@ function renderList() {
 }
 function load() {
   renderList();
+  $("title").value = current === "untitled" ? "" : current;
   $("text").value = docs[current] || "";
   marks = []; scraps = [];
   renderMirror(); renderRail();
@@ -272,6 +287,12 @@ function paraRange(text, caret) {
   start = start === -1 ? 0 : start + 2;
   let end = text.indexOf("\n\n", caret);
   if (end === -1) end = text.length;
+  // A fresh empty paragraph (enter-enter) would otherwise dim the whole
+  // draft; keep the previous paragraph inked until real ink arrives here.
+  if (!text.slice(start, end).trim() && start > 1) {
+    const prev = paraRange(text, Math.max(0, start - 2));
+    start = prev[0];
+  }
   return [start, end];
 }
 
@@ -282,12 +303,21 @@ function renderMirror() {
 
   if (!editing) {
     // Focus mode: current paragraph in ink, everything else dimmed.
-    const [s, e] = paraRange(text, ta.selectionStart);
-    $("mirror").innerHTML =
-      `<span class="dim">${esc(text.slice(0, s))}</span>` +
-      `<span id="cm"></span>${esc(text.slice(s, e))}` +
-      `<span class="dim">${esc(text.slice(e))}</span>\n`;
-    typewriter(s);
+    try {
+      const caret = ta.selectionStart;
+      const [s, e] = paraRange(text, caret);
+      const c = Math.min(Math.max(caret, s), e);
+      $("mirror").innerHTML =
+        `<span class="dim">${esc(text.slice(0, s))}</span>` +
+        esc(text.slice(s, c)) +
+        `<span id="cm"></span>` +
+        esc(text.slice(c, e)) +
+        `<span class="dim">${esc(text.slice(e))}</span>\n`;
+      typewriter();
+    } catch (err) {
+      // Never let a rendering fault make the ink disappear.
+      $("mirror").innerHTML = esc(text) + "\n";
+    }
     return;
   }
 
@@ -313,13 +343,14 @@ function renderMirror() {
   $("mirror").innerHTML = html + "\n";
 }
 
-function typewriter(paraStart) {
-  // Keep the writing line at a steady height (~38% down the viewport).
+function typewriter() {
+  // Keep the caret's line at a steady height (~38% down the viewport).
   const cm = $("cm");
   if (!cm) return;
   const ta = $("text");
   const target = cm.offsetTop - ta.clientHeight * 0.38;
-  if (Math.abs(ta.scrollTop - target) > 8 && target > 0) ta.scrollTop = target;
+  if (target <= 0) { if (ta.scrollTop !== 0) ta.scrollTop = 0; }
+  else if (Math.abs(ta.scrollTop - target) > 8) ta.scrollTop = target;
   syncScroll();
 }
 function syncScroll() { $("mirror").scrollTop = $("text").scrollTop; }
@@ -470,12 +501,19 @@ $("new").addEventListener("click", () => {
   if (!name || name in docs) return;
   docs[name] = ""; current = name; persistLocal(); push(name); load(); $("text").focus();
 });
-$("rename").addEventListener("click", async () => {
-  const name = prompt("Rename to:", current);
-  if (!name || name === current || name in docs) return;
-  docs[name] = docs[current]; delete docs[current];
-  await fetch(API + "/doc?name=" + encodeURIComponent(current), { method: "DELETE" }).catch(() => {});
-  current = name; persistLocal(); push(name); load();
+async function renameTo(name) {
+  name = name.trim() || "untitled";
+  if (name === current) return;
+  if (name in docs) { $("title").value = current === "untitled" ? "" : current; return; }
+  const old = current;
+  docs[name] = docs[old]; delete docs[old];
+  current = name; persistLocal(); renderList(); push(name);
+  await fetch(API + "/doc?name=" + encodeURIComponent(old), { method: "DELETE" }).catch(() => {});
+}
+$("title").addEventListener("change", () => renameTo($("title").value));
+$("title").addEventListener("keydown", e => {
+  if (e.key === "Enter") { e.preventDefault(); renameTo($("title").value); $("text").focus(); }
+  e.stopPropagation();
 });
 $("del").addEventListener("click", async () => {
   if (!confirm(`Delete "${current}"?`)) return;
